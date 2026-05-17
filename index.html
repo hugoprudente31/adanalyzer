@@ -1563,12 +1563,26 @@ async function fetchGAS(url) {
   const port  = window.location.port;
 
   const isFile   = proto === 'file:';
-  const isNode   = (host === 'localhost' || host === '127.0.0.1') && port === '3000';
-  const isRender = proto === 'https:' && !host.includes('script.google.com');
+  const isLocal  = (host === 'localhost' || host === '127.0.0.1') && port === '3000';
+  const isOnline = proto === 'https:' && !host.includes('script.google.com');
   const isGAS    = host.includes('script.google.com');
 
-  // ── abrir.bat (file://) — CORS desabilitado, chamada direta ──
-  if (isFile) {
+  // Online (Railway/ads.oticastgt.com.br) ou local Node.js — usa proxy /api/gas
+  if (isLocal || isOnline) {
+    const gasUrl = new URL(url);
+    const params = new URLSearchParams(gasUrl.searchParams).toString();
+    const resp   = await fetch('/api/gas?' + params, {
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ erro: 'HTTP ' + resp.status }));
+      throw new Error(err.erro || 'HTTP ' + resp.status);
+    }
+    return await resp.text();
+  }
+
+  // abrir.bat (file://) — CORS desabilitado, chamada direta
+  if (isFile || isGAS) {
     const resp = await fetch(url, {
       redirect: 'follow', credentials: 'omit',
       headers: { 'Accept': 'application/json, text/plain' },
@@ -1580,34 +1594,7 @@ async function fetchGAS(url) {
     return text;
   }
 
-  // ── Node.js local (localhost:3000) ou Render.com (https) ──
-  // Ambos servem o /api/gas proxy no servidor
-  if (isNode || isRender) {
-    const gasUrl = new URL(url);
-    const params = new URLSearchParams(gasUrl.searchParams).toString();
-    const resp = await fetch('/api/gas?' + params, {
-      signal: AbortSignal.timeout(30000)
-    });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ erro: 'HTTP ' + resp.status }));
-      throw new Error(err.erro || 'HTTP ' + resp.status);
-    }
-    return await resp.text();
-  }
-
-  // ── GAS publicado — mesmo domínio, sem CORS ──
-  if (isGAS) {
-    const resp = await fetch(url, {
-      redirect: 'follow', credentials: 'omit',
-      headers: { 'Accept': 'application/json, text/plain' },
-      signal: AbortSignal.timeout(30000)
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    return await resp.text();
-  }
-
-  // ── Live Server ou outro ambiente ──
-  throw new Error('Use o abrir.bat para abrir o dashboard localmente, ou acesse pela URL pública do Render.');
+  throw new Error('Use o abrir.bat para acesso local.');
 }
 
 // ══════════════════════════════════════════════════════
