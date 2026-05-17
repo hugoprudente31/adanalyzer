@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AdAnalyzer — Plataforma de Otimização</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #080810;
+  --bg2:      #0d0d18;
+  --bg3:      #12121f;
+  --bg4:      #181828;
+  --border:   #1e1e34;
+  --border2:  #28284a;
+  --text:     #e2e2f0;
+  --muted:    #6060a0;
+  --muted2:   #4040700;
+  --accent:   #5b5ef4;
+  --accentL:  #7b7ef6;
+  --green:    #00d68f;
+  --red:      #f43f5e;
+  --yellow:   #f59e0b;
+  --blue:     #38bdf8;
+  --purple:   #a855f7;
+  --radius:   10px;
+  --radius-lg:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Familjen Grotesk',sans-serif;font-size:14px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;z-index:10}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.main{overflow-y:auto;padding:24px}
+
+/* ── TOPBAR ── */
+.logo{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;letter-spacing:-.02em;color:var(--text)}
+.logo span{color:var(--accent)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tenant-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;padding:6px 10px;cursor:pointer}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white}
+.tag{font-size:10px;padding:2px 8px;border-radius:99px;font-family:'IBM Plex Mono',monospace;font-weight:500}
+.tag-pro{background:rgba(91,94,244,.18);color:var(--accentL);border:1px solid rgba(91,94,244,.3)}
+
+/* ── SIDEBAR ── */
+.nav-section{font-size:10px;color:var(--muted);letter-spacing:.1em;padding:8px 8px 4px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;border:1px solid transparent}
+.nav-item:hover,.nav-item.active{background:var(--bg3);color:var(--text);border-color:var(--border)}
+.nav-item.active{color:var(--accentL)}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--border2)}
+.nav-dot.green{background:var(--green)}
+.nav-dot.red{background:var(--red)}
+.nav-dot.yellow{background:var(--yellow)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.metric-label{font-size:11px;color:var(--muted);letter-spacing:.05em;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;display:flex;align-items:center;justify-content:between;gap:6px}
+.metric-val{font-size:26px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-.03em;line-height:1}
+.metric-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:6px}
+
+/* ── INPUTS ── */
+.inp{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px;width:100%;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--muted)}
+.inp-mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-family:'IBM Plex Mono',monospace}
+select.inp{cursor:pointer}
+
+/* ── BUTTONS ── */
+.btn{border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;padding:10px 18px;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:var(--accentL)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-danger{background:rgba(244,63,94,.15);color:var(--red);border:1px solid rgba(244,63,94,.25)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap}
+.badge-red{background:rgba(244,63,94,.12);color:#fb7185;border:1px solid rgba(244,63,94,.25)}
+.badge-yellow{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.badge-green{background:rgba(0,214,143,.1);color:#34d399;border:1px solid rgba(0,214,143,.2)}
+.badge-blue{background:rgba(56,189,248,.1);color:var(--blue);border:1px solid rgba(56,189,248,.2)}
+.badge-purple{background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.2)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.tbl td{padding:12px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl td.mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ── GRIDS ── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:10px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+/* ── AI STREAM ── */
+.ai-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:relative}
+.ai-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ai-avatar{width:32px;height:32px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-content{font-size:13.5px;line-height:1.75;color:var(--text)}
+.ai-content strong{color:var(--accentL);font-weight:600}
+.ai-content .highlight{background:rgba(91,94,244,.12);border-left:2px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.cursor{display:inline-block;width:2px;height:14px;background:var(--accent);animation:blink .7s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── ACTION ITEMS ── */
+.action-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s}
+.action-item:hover{border-color:var(--border2)}
+.action-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.action-body{flex:1;min-width:0}
+.action-title{font-weight:600;font-size:13px;margin-bottom:3px}
+.action-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.action-meta{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:6px}
+
+/* ── SCORE RING ── */
+.score-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.score-ring svg{transform:rotate(-90deg)}
+.score-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;line-height:1}
+.score-label{font-size:9px;color:var(--muted);letter-spacing:.06em}
+
+/* ── PROGRESS ── */
+.progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* ── TOAST ── */
+#toast-wrap{position:fixed;bottom:20px;right:20px;z-index:99;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;font-family:'IBM Plex Mono',monospace;animation:slideUp .3s ease;max-width:320px;pointer-events:all}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.section-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+/* ── PLAN CARDS ── */
+.plan-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;cursor:pointer;transition:all .2s}
+.plan-card:hover{border-color:var(--border2)}
+.plan-card.selected{border-color:var(--accent);background:rgba(91,94,244,.06)}
+.plan-price{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;line-height:1}
+.plan-feature{font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center}
+.plan-feature:last-child{border-bottom:none}
+
+/* misc */
+.divider{height:1px;background:var(--border);margin:16px 0}
+.text-green{color:var(--green)}.text-red{color:var(--red)}.text-yellow{color:var(--yellow)}.text-blue{color:var(--blue)}.text-muted{color:var(--muted)}.text-accent{color:var(--accentL)}
+.font-mono{font-family:'IBM Plex Mono',monospace}
+.text-xs{font-size:11px}.text-sm{font-size:12px}
+.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.flex-1{flex:1}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════ -->
+<div class="app">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">Ad<span>Analyzer</span></div>
+  <div class="tag tag-pro">PRO</div>
+  <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+  <span style="font-size:12px;color:var(--muted)">Workspace:</span>
+  <select class="tenant-select" id="workspace-select" onchange="trocarWorkspace(this.value)">
+    <option value="0">🏢 Agência Principal</option>
+    <option value="1">👤 Cliente: E-commerce X</option>
+    <option value="2">👤 Cliente: Clínica Y</option>
+    <option value="3">➕ Adicionar workspace...</option>
+  </select>
+  <div class="topbar-right">
+    <span style="font-size:12px;color:var(--muted)" id="sync-status">● Sincronizado</span>
+    <div class="avatar">JD</div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-section">PRINCIPAL</div>
+  <div class="nav-item active" onclick="navTo('dashboard',this)">
+    <span>⚡</span> Dashboard
+  </div>
+  <div class="nav-item" onclick="navTo('analyze',this)">
+    <span>🤖</span> Analisar com IA
+  </div>
+  <div class="nav-item" onclick="navTo('campaigns',this)" title="Configure objetivos de campanha">
+    <span>📊</span> Campanhas
+    <span style="font-size:9px;background:rgba(91,94,244,.2);color:var(--accentL);padding:1px 5px;border-radius:99px;margin-left:auto">ROI</span>
+  </div>
+  <div class="nav-item" onclick="navTo('reports',this)">
+    <span>📋</span> Relatórios
+  </div>
+  <div class="nav-item" onclick="navTo('roi',this)">
+    <span>📊</span> ROI Real
+  </div>
+
+  <div class="nav-section">CONTAS</div>
+  <div class="nav-item" onclick="navTo('integrations',this)">
+    <span>🔑</span> Integrações
+  </div>
+  <div class="nav-item" onclick="navTo('alerts',this)">
+    <span>🔔</span> Alertas
+  </div>
+
+  <div class="nav-section">SAAS</div>
+  <div class="nav-item" onclick="navTo('workspace',this)">
+    <span>🏢</span> Workspace
+  </div>
+  <div class="nav-item" onclick="navTo('billing',this)">
+    <span>💳</span> Planos
+  </div>
+
+  <div style="flex:1"></div>
+  <div style="padding:12px 10px;border-top:1px solid var(--border);margin-top:8px">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Análises este mês</div>
+    <div class="progress"><div class="progress-fill" style="width:68%;background:var(--accent)"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'IBM Plex Mono',monospace">34 / 50 <span style="color:var(--accentL)">PRO</span></div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main" id="main">
+
+<!-- ══════════════════════════════════ VIEW: DASHBOARD -->
+<div class="view active" id="view-dashboard">
+  <div class="row-between" style="margin-bottom:20px">
+    <div>
+      <div class="page-title">Visão Geral</div>
+      <div class="page-sub" id="dash-subtitle">Agência Principal · últimos 7 dias · 4 campanhas ativas</div>
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="simularSync()" id="btn-sync">↻ Meta</button>
+      <button class="btn btn-ghost" onclick="syncGASDashboard()" id="btn-sync-gas" style="color:var(--green);border-color:rgba(0,214,143,.3)">⚡ GAS</button>
+      <div id="meta-sync-info" style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace"></div>
+      <button class="btn btn-primary" onclick="navTo('analyze',null)">🤖 Analisar com IA</button>
+    </div>
+  </div>
+
+  <!-- Métricas principais -->
+  <div class="grid-4" style="margin-bottom:16px" id="dash-metrics">
+    <!-- populado por JS -->
+  </div>
+
+  <!-- Saúde das campanhas + Gráfico -->
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="section-title">🏥 Score de Saúde</div>
+      <div id="health-list" class="stack"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">📈 Evolução ROAS (7 dias)</div>
+      <div style="height:180px;position:relative"><canvas id="chart-roas"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Alertas automáticos -->
+  <div class="card">
+    <div class="section-title">⚡ Alertas Ativos <span class="badge badge-red" id="alert-count">0</span></div>
+    <div id="alerts-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: ANALYZE -->
+<div class="view" id="view-analyze">
+  <div class="page-title">Análise Inteligente com IA</div>
+  <div class="page-sub">Cole os dados das campanhas e deixe o Claude analisar em tempo real</div>
+
+  <div class="grid-2" style="align-items:start">
+    <!-- Painel de entrada -->
+    <div class="stack">
+      <div class="card">
+        <div class="section-title">📥 Dados das Campanhas</div>
+        <div class="stack">
+          <div>
+            <label>Selecionar campanha(s)</label>
+            <select class="inp" id="camp-select" multiple size="4" style="height:auto">
+              <!-- preenchido por JS -->
+            </select>
+          </div>
+          <div>
+            <label>Meta de CPA (R$)</label>
+            <input class="inp inp-mono" type="number" id="ai-cpa" value="50" placeholder="50"/>
+          </div>
+          <div>
+            <label>Meta de ROAS (x)</label>
+            <input class="inp inp-mono" type="number" id="ai-roas" value="3" step="0.1" placeholder="3.0"/>
+          </div>
+          <div>
+            <label>Contexto adicional (opcional)</label>
+            <textarea class="inp" rows="3" id="ai-context" placeholder="Ex: Black Friday se aproxima, orçamento total do mês é R$15.000, cliente prioriza volume de leads..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="rodarAnaliseIA()" id="btn-ai" style="width:100%;justify-content:center;padding:12px">
+            🤖 Analisar com Claude IA
+          </button>
+        </div>
+      </div>
+
+      <!-- Ações rápidas geradas pelas regras -->
+      <div class="card">
+        <div class="section-title">⚙️ Diagnóstico Rápido (Regras)</div>
+        <div id="quick-actions" class="stack"></div>
+      </div>
+    </div>
+
+    <!-- Output da IA -->
+    <div class="stack">
+      <div class="ai-block" id="ai-output-block">
+        <div class="ai-header">
+          <div class="ai-avatar">🤖</div>
+          <div>
+            <div style="font-weight:600;font-size:13px">Claude — Especialista em Tráfego Pago</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace" id="ai-model-tag">claude-sonnet-4-5</div>
+          </div>
+          <div style="margin-left:auto" id="ai-status-badge"></div>
+        </div>
+        <div class="ai-content" id="ai-output">
+          <span style="color:var(--muted)">A análise aparecerá aqui. Selecione campanhas e clique em "Analisar com Claude IA".</span>
+        </div>
+      </div>
+
+      <!-- Projeções -->
+      <div class="card" id="projection-card" style="display:none">
+        <div class="section-title">📡 Projeção de Escala</div>
+        <div id="projection-content"></div>
+        <div style="height:200px;position:relative;margin-top:14px"><canvas id="chart-proj"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: CAMPAIGNS -->
+<div class="view" id="view-campaigns">
+  <div class="row-between" style="margin-bottom:16px">
+    <div>
+      <div class="page-title">Campanhas</div>
+      <div class="page-sub">Configure o objetivo de cada campanha para calcular o ROI real</div>
+    </div>
+    <div class="row">
+      <select class="inp" style="width:140px" id="filtro-periodo">
+        <option value="7">Últimos 7 dias</option>
+        <option value="14">Últimos 14 dias</option>
+        <option value="30">Últimos 30 dias</option>
+      </select>
+      <select class="inp" style="width:120px" id="filtro-fonte">
+        <option value="">Todas fontes</option>
+        <option value="Meta Ads">Meta Ads</option>
+        <option value="Google Ads">Google Ads</option>
+      </select>
+      <button class="btn btn-ghost" onclick="salvarObjetivosCampanhas()" style="color:var(--green);border-color:rgba(0,214,143,.3)">💾 Salvar objetivos</button>
+    </div>
+  </div>
+
+  <!-- Legenda de objetivos -->
+  <div class="card" style="margin-bottom:12px;padding:14px 20px">
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">🎯 Objetivos de Campanha</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div class="card-sm" style="border-color:rgba(0,214,143,.3)">
+        <div style="font-size:12px;font-weight:600;color:var(--green)">🛒 Compra / E-commerce</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">ROAS = Receita ÷ Gasto</div>
+        <div style="font-size:11px;color:var(--muted)">Valor: pixel Meta ou agendamento</div>
+      </div>
+      <div class="card-sm" style="border-color:rgba(255,184,77,.3)">
+        <div style="font-size:12px;font-weight:600;color:var(--yellow)">💬 Lead / WhatsApp</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">CPL = Gasto ÷ Leads</div>
+        <div style="font-size:11px;color:var(--muted)">Valor: fixo por lead (você define)</div>
+      </div>
+      <div class="card-sm" style="border-color:rgba(56,189,248,.3)">
+        <div style="font-size:12px;font-weight:600;color:var(--blue)">📅 Agendamento</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">CPA = Gasto ÷ Consultas</div>
+        <div style="font-size:11px;color:var(--muted)">Valor: do sistema de agendamento</div>
+      </div>
+      <div class="card-sm" style="border-color:rgba(168,85,247,.3)">
+        <div style="font-size:12px;font-weight:600;color:var(--purple)">👁 Engajamento</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">CPM / CPC / CTR</div>
+        <div style="font-size:11px;color:var(--muted)">Valor: taxa × ticket médio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl" id="campaigns-table">
+      <thead>
+        <tr>
+          <th>Campanha</th>
+          <th>Fonte</th>
+          <th>Status</th>
+          <th>Gasto</th>
+          <th>🎯 Objetivo</th>
+          <th>💰 Valor Conv. (R$)</th>
+          <th>ROI Real</th>
+          <th>Métrica</th>
+          <th>CTR</th>
+          <th>Saúde</th>
+        </tr>
+      </thead>
+      <tbody id="campaigns-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: INTEGRATIONS -->
+<div class="view" id="view-integrations">
+  <div class="page-title">Integrações de API</div>
+  <div class="page-sub">Configure os tokens de acesso para cada plataforma de anúncios</div>
+
+  <div class="grid-2">
+    <!-- Meta Ads -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(24,119,242,.15);display:flex;align-items:center;justify-content:center;font-size:20px">📘</div>
+        <div>
+          <div style="font-weight:600">Meta Ads</div>
+          <div id="meta-status" class="text-sm text-muted">Não configurado</div>
+        </div>
+        <div style="margin-left:auto" id="meta-badge"><span class="badge badge-red">Desconectado</span></div>
+      </div>
+      <div class="stack">
+        <div>
+          <label>Access Token</label>
+          <input class="inp inp-mono" type="password" id="int-meta-token" placeholder="EAAxxxxxxx..."/>
+        </div>
+        <div>
+          <label>Ad Account ID</label>
+          <input class="inp inp-mono" id="int-meta-account" placeholder="act_XXXXXXXXXX"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary flex-1" id="btn-conectar-meta" onclick="conectarMeta()">Conectar</button>
+          <button class="btn btn-ghost" onclick="testarMeta()">Testar Token</button>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted)">
+          💡 <strong>Token de usuário:</strong> developers.facebook.com/tools/explorer<br>
+          Permissões: <span class="font-mono">ads_read</span> + <span class="font-mono">ads_management</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Ads -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔍</div>
+        <div>
+          <div style="font-weight:600">Google Ads</div>
+          <div class="text-sm text-muted">Não configurado</div>
+        </div>
+        <div style="margin-left:auto"><span class="badge badge-red">Desconectado</span></div>
+      </div>
+      <div class="stack">
+        <div>
+          <label>Developer Token</label>
+          <input class="inp inp-mono" type="password" placeholder="xxxxxxxxxxxxxxxxxxxxxx"/>
+        </div>
+        <div>
+          <label>Customer ID</label>
+          <input class="inp inp-mono" placeholder="1234567890"/>
+        </div>
+        <div>
+          <label>Refresh Token</label>
+          <input class="inp inp-mono" type="password" placeholder="1//xxxxxxxxxxxxx"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center">Conectar Google Ads</button>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted)">
+          💡 Gere o Refresh Token via OAuth Playground com scope <span class="font-mono">https://www.googleapis.com/auth/adwords</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Claude IA Card -->
+  <div class="card" style="margin-top:16px;border-color:rgba(91,94,244,.3)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(91,94,244,.15);display:flex;align-items:center;justify-content:center;font-size:20px">🤖</div>
+      <div>
+        <div style="font-weight:600">Claude IA — Anthropic</div>
+        <div id="claude-status" class="text-sm text-muted">Não configurado</div>
+      </div>
+      <div style="margin-left:auto" id="claude-badge"><span class="badge badge-red">Desconectado</span></div>
+    </div>
+    <div class="stack">
+      <div>
+        <label>API Key da Anthropic</label>
+        <input class="inp inp-mono" type="password" id="int-claude-key" placeholder="sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxx"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary flex-1" id="btn-conectar-claude" onclick="conectarClaude()">Salvar API Key</button>
+        <button class="btn btn-ghost" onclick="testarClaude()">Testar</button>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">
+        💡 <strong>Como obter sua API key:</strong><br>
+        1. Acesse <span class="font-mono" style="color:var(--accentL)">console.anthropic.com</span><br>
+        2. Menu → <span class="font-mono">API Keys</span> → <span class="font-mono">Create Key</span><br>
+        3. Copie a chave e cole aqui<br><br>
+        🔒 A chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para servidores externos.
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- GAS Sync Card -->
+  <div class="card" style="margin-top:16px;border-color:rgba(0,214,143,.25)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(0,214,143,.12);display:flex;align-items:center;justify-content:center;font-size:20px">⚡</div>
+      <div>
+        <div style="font-weight:600">Google Apps Script — Sync</div>
+        <div id="gas-status" class="text-sm text-muted">Não configurado</div>
+      </div>
+      <div style="margin-left:auto" id="gas-badge"><span class="badge badge-red">Desconectado</span></div>
+    </div>
+    <div class="stack">
+      <div>
+        <label>URL do Web App GAS</label>
+        <input class="inp inp-mono" id="int-gas-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
+      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary flex-1" id="btn-conectar-gas" onclick="conectarGAS()">Sincronizar Agora</button>
+        <button class="btn btn-ghost" onclick="testarGAS()">Testar URL</button>
+      </div>
+      <div class="divider"></div>
+      <div id="gas-last-sync" style="display:none" class="card-sm">
+        <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px">ÚLTIMA SINCRONIZAÇÃO</div>
+        <div id="gas-sync-details" style="font-size:12px;color:var(--text)"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">
+        💡 <strong>Como configurar:</strong><br>
+        1. No GAS: <span class="font-mono" style="color:var(--green)">Implantar → Gerenciar implantações</span><br>
+        2. Copie a <span class="font-mono">URL do Web App</span><br>
+        3. Cole aqui e clique <strong>Sincronizar Agora</strong><br><br>
+        O GAS buscará dados do Meta + Google Ads no servidor do Google e retornará o ROI consolidado para cá.
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- ROI Real card -->
+  <div class="card" style="margin-top:16px;border-color:rgba(245,158,11,.3)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+      <div>
+        <div style="font-weight:600">ROI Real — Sistema de Agendamento</div>
+        <div id="roi-status" class="text-sm text-muted">Não configurado</div>
+      </div>
+      <div style="margin-left:auto" id="roi-badge"><span class="badge badge-red">Desconectado</span></div>
+    </div>
+    <div class="stack">
+      <div>
+        <label>URL do Sistema de Agendamento (GAS)</label>
+        <input class="inp inp-mono" id="int-roi-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
+      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
+      </div>
+      <div>
+        <label>Período de análise (dias)</label>
+        <select class="inp" id="int-roi-dias">
+          <option value="7">Últimos 7 dias</option>
+          <option value="14">Últimos 14 dias</option>
+          <option value="30" selected>Últimos 30 dias</option>
+          <option value="60">Últimos 60 dias</option>
+          <option value="90">Últimos 90 dias</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="btn-roi-sync" onclick="sincronizarROI()" style="width:100%;justify-content:center">
+        📊 Buscar ROI Real Agora
+      </button>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">
+        💡 O sistema de agendamento rastreia:<br>
+        <span style="color:var(--green)">🟢 Semáforo verde</span> = cliente <strong>compareceu e comprou</strong><br>
+        <span style="color:var(--blue)">📘 Meta Ads</span> = tags <span class="font-mono">origem:facebook</span>, <span class="font-mono">origem:instagram</span>, <span class="font-mono">origem:trafego-pago</span><br>
+        <span style="color:var(--green)">🔍 Google Ads</span> = tags <span class="font-mono">origem:google</span>, <span class="font-mono">origem:site</span><br><br>
+        O ROI é calculado cruzando o gasto das plataformas com a receita real gerada.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: ALERTS -->
+<div class="view" id="view-alerts">
+  <div class="page-title">Alertas Automáticos</div>
+  <div class="page-sub">Configure gatilhos para ser notificado quando algo fugir da meta</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">🔔 Regras de Alerta</div>
+      <div class="stack" id="alert-rules">
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500;font-size:13px">CPA &gt; Meta em 20%</div><div class="text-sm text-muted">Notificar quando CPA ultrapassar</div></div>
+          <label style="margin:0;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"/></label>
+        </div>
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500;font-size:13px">ROAS &lt; 2x por 2 dias</div><div class="text-sm text-muted">Alerta de campanha em risco</div></div>
+          <label style="margin:0;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"/></label>
+        </div>
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500;font-size:13px">Budget esgotando (>90%)</div><div class="text-sm text-muted">Oportunidade de escala detectada</div></div>
+          <label style="margin:0;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"/></label>
+        </div>
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500;font-size:13px">CTR caiu &gt;30%</div><div class="text-sm text-muted">Criativo pode estar saturado</div></div>
+          <label style="margin:0;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent)"/></label>
+        </div>
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500;font-size:13px">Zero conversões em 24h</div><div class="text-sm text-muted">Possível problema de pixel</div></div>
+          <label style="margin:0;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--accent)"/></label>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📬 Canais de Notificação</div>
+      <div class="stack">
+        <div><label>E-mail</label><input class="inp" type="email" placeholder="contato@agencia.com"/></div>
+        <div><label>Webhook Slack (opcional)</label><input class="inp inp-mono" placeholder="https://hooks.slack.com/..."/></div>
+        <div><label>WhatsApp (opcional)</label><input class="inp inp-mono" placeholder="+55 11 99999-9999"/></div>
+        <div class="row-between" style="padding-top:4px">
+          <span style="font-size:12px;color:var(--muted)">Frequência dos relatórios diários</span>
+          <select class="inp" style="width:120px"><option>08:00</option><option>09:00</option><option>18:00</option></select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center">Salvar Alertas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: WORKSPACE -->
+<div class="view" id="view-workspace">
+  <div class="page-title">Workspace — Agência Principal</div>
+  <div class="page-sub">Gerencie clientes, membros e permissões</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">👥 Membros</div>
+      <table class="tbl">
+        <thead><tr><th>Nome</th><th>Role</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>João Dono</td><td><span class="badge badge-purple">Admin</span></td><td><span class="badge badge-green">Ativo</span></td></tr>
+          <tr><td>Ana Gestora</td><td><span class="badge badge-blue">Gestor</span></td><td><span class="badge badge-green">Ativo</span></td></tr>
+          <tr><td>Pedro Analista</td><td><span class="badge badge-yellow">Viewer</span></td><td><span class="badge badge-yellow">Pendente</span></td></tr>
+        </tbody>
+      </table>
+      <button class="btn btn-ghost" style="margin-top:12px;width:100%;justify-content:center">+ Convidar membro</button>
+    </div>
+    <div class="card">
+      <div class="section-title">🏢 Clientes (Sub-workspaces)</div>
+      <div class="stack">
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500">E-commerce X</div><div class="text-sm text-muted">Meta Ads conectado</div></div>
+          <span class="badge badge-green">Ativo</span>
+        </div>
+        <div class="card-sm row-between">
+          <div><div style="font-weight:500">Clínica Y</div><div class="text-sm text-muted">Meta + Google conectados</div></div>
+          <span class="badge badge-green">Ativo</span>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center">+ Novo cliente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: BILLING -->
+<div class="view" id="view-billing">
+  <div class="page-title">Planos</div>
+  <div class="page-sub">Você está no plano <strong style="color:var(--accentL)">PRO</strong>. Próxima cobrança: 16/06/2026</div>
+  <div class="grid-3">
+    <div class="plan-card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">FREE</div>
+      <div class="plan-price">R$ 0<span style="font-size:14px;color:var(--muted)">/mês</span></div>
+      <div class="divider"></div>
+      <div class="plan-feature">✓ 1 workspace</div>
+      <div class="plan-feature">✓ 1 conta de anúncios</div>
+      <div class="plan-feature">✓ 10 análises/mês</div>
+      <div class="plan-feature" style="color:var(--muted)">✗ IA explicativa</div>
+      <div class="plan-feature" style="color:var(--muted)">✗ Alertas automáticos</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:14px">Fazer downgrade</button>
+    </div>
+    <div class="plan-card selected">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accentL)">PRO</span>
+        <span class="badge badge-purple">Plano atual</span>
+      </div>
+      <div class="plan-price">R$ 197<span style="font-size:14px;color:var(--muted)">/mês</span></div>
+      <div class="divider"></div>
+      <div class="plan-feature">✓ 3 workspaces</div>
+      <div class="plan-feature">✓ Contas ilimitadas</div>
+      <div class="plan-feature">✓ 50 análises IA/mês</div>
+      <div class="plan-feature">✓ Alertas em tempo real</div>
+      <div class="plan-feature">✓ Relatórios PDF</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:14px;opacity:.4;cursor:default">Plano atual</button>
+    </div>
+    <div class="plan-card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">AGENCY</div>
+      <div class="plan-price">R$ 497<span style="font-size:14px;color:var(--muted)">/mês</span></div>
+      <div class="divider"></div>
+      <div class="plan-feature">✓ Workspaces ilimitados</div>
+      <div class="plan-feature">✓ Multi-tenant completo</div>
+      <div class="plan-feature">✓ Análises ilimitadas</div>
+      <div class="plan-feature">✓ White-label</div>
+      <div class="plan-feature">✓ API pública</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px">Fazer upgrade</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: ROI REAL -->
+<div class="view" id="view-roi">
+  <div class="row-between" style="margin-bottom:20px">
+    <div>
+      <div class="page-title">ROI Real por Plataforma</div>
+      <div class="page-sub" id="roi-periodo-label">Dados do sistema de agendamento · conversões reais</div>
+    </div>
+    <button class="btn btn-primary" onclick="sincronizarROI()">↻ Atualizar ROI</button>
+  </div>
+
+  <!-- Cards de resumo geral -->
+  <div class="grid-4" id="roi-resumo-cards" style="margin-bottom:16px">
+    <div class="card">
+      <div class="metric-label">💸 TOTAL LEADS</div>
+      <div class="metric-val text-text" id="roi-total-leads">—</div>
+      <div class="metric-sub text-muted">período selecionado</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">✅ CONVERTIDOS</div>
+      <div class="metric-val text-success" id="roi-total-conv">—</div>
+      <div class="metric-sub text-muted" id="roi-taxa-geral">Taxa: —%</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">💰 RECEITA REAL</div>
+      <div class="metric-val text-yellow" id="roi-receita-total">R$ —</div>
+      <div class="metric-sub text-muted" id="roi-ticket-medio">Ticket: R$ —</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">📈 ROI CALCULADO</div>
+      <div class="metric-val" id="roi-calculado" style="color:var(--accentL)">—</div>
+      <div class="metric-sub text-muted" id="roi-roas-real">ROAS real: —x</div>
+    </div>
+  </div>
+
+  <!-- Comparativo por plataforma -->
+  <div class="grid-2" style="margin-bottom:16px">
+
+    <!-- Meta Ads ROI -->
+    <div class="card" id="roi-meta-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(24,119,242,.15);display:flex;align-items:center;justify-content:center;font-size:20px">📘</div>
+        <div>
+          <div style="font-weight:700;font-size:14px">Meta Ads</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">Facebook + Instagram + Tráfego Pago</div>
+        </div>
+        <div id="roi-meta-semaforo" style="margin-left:auto"></div>
+      </div>
+      <div id="roi-meta-content">
+        <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
+      </div>
+    </div>
+
+    <!-- Google Ads ROI -->
+    <div class="card" id="roi-google-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔍</div>
+        <div>
+          <div style="font-weight:700;font-size:14px">Google Ads</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">Site + Orgânico + Google</div>
+        </div>
+        <div id="roi-google-semaforo" style="margin-left:auto"></div>
+      </div>
+      <div id="roi-google-content">
+        <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROI por loja -->
+  <div class="card" id="roi-lojas-card">
+    <div class="section-title">🏪 ROI por Loja</div>
+    <div id="roi-lojas-content">
+      <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
+    </div>
+  </div>
+
+  <!-- Funil de conversão -->
+  <div class="card">
+    <div class="section-title">🎯 Funil de Conversão</div>
+    <div style="height:220px;position:relative"><canvas id="chart-funil"></canvas></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: REPORTS -->
+<div class="view" id="view-reports">
+  <div class="page-title">Relatórios</div>
+  <div class="page-sub">Histórico de análises e relatórios gerados pela IA</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <thead><tr><th>Data</th><th>Workspace</th><th>Campanhas</th><th>Score</th><th>Gerado por</th><th>Ação</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono">16/05 12:31</td><td>Agência Principal</td><td>4 campanhas</td>
+          <td><span class="badge badge-green">72/100</span></td><td>Claude IA</td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
+        </tr>
+        <tr>
+          <td class="mono">15/05 09:15</td><td>E-commerce X</td><td>6 campanhas</td>
+          <td><span class="badge badge-yellow">58/100</span></td><td>Claude IA</td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
+        </tr>
+        <tr>
+          <td class="mono">14/05 18:00</td><td>Clínica Y</td><td>2 campanhas</td>
+          <td><span class="badge badge-red">41/100</span></td><td>Automático</td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- Toast container -->
+<div id="toast-wrap"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════════════════════
+// DADOS DE CAMPANHAS (simulados / substituir pela API real)
+// ══════════════════════════════════════════════════════
+const WORKSPACES = [
+  {
+    nome: 'Agência Principal',
+    campanhas: [
+      { id:'c1', nome:'Black Friday — Conversões', fonte:'Meta Ads', status:'ACTIVE',
+        orcamento:600, gastos:2100, cliques:4200, impressoes:98000, conversoes:48,
+        valorConv:9600, ctr:4.29, cpc:0.50, cpa:43.75, roas:4.57, cvr:1.14 },
+      { id:'c2', nome:'Retargeting — Carrinho Abandonado', fonte:'Meta Ads', status:'ACTIVE',
+        orcamento:200, gastos:1380, cliques:1100, impressoes:22000, conversoes:8,
+        valorConv:3200, ctr:5.0, cpc:1.25, cpa:172.5, roas:2.32, cvr:0.73 },
+      { id:'c3', nome:'Search — Marca + Produtos', fonte:'Google Ads', status:'ACTIVE',
+        orcamento:150, gastos:290, cliques:580, impressoes:7200, conversoes:5,
+        valorConv:1100, ctr:8.06, cpc:0.50, cpa:58, roas:3.79, cvr:0.86 },
+      { id:'c4', nome:'Performance Max — E-commerce', fonte:'Google Ads', status:'PAUSED',
+        orcamento:80, gastos:70, cliques:140, impressoes:3800, conversoes:1,
+        valorConv:300, ctr:3.68, cpc:0.50, cpa:70, roas:4.26, cvr:0.71 },
+    ]
+  },
+  {
+    nome: 'E-commerce X',
+    campanhas: [
+      { id:'e1', nome:'Prospecting — Lookalike', fonte:'Meta Ads', status:'ACTIVE',
+        orcamento:800, gastos:3200, cliques:8400, impressoes:210000, conversoes:62,
+        valorConv:18600, ctr:4.0, cpc:0.38, cpa:51.6, roas:5.81, cvr:0.74 },
+      { id:'e2', nome:'Google Shopping', fonte:'Google Ads', status:'ACTIVE',
+        orcamento:400, gastos:980, cliques:2300, impressoes:45000, conversoes:28,
+        valorConv:5600, ctr:5.11, cpc:0.43, cpa:35, roas:5.71, cvr:1.22 },
+    ]
+  },
+  {
+    nome: 'Clínica Y',
+    campanhas: [
+      { id:'y1', nome:'Leads — Procedimentos', fonte:'Meta Ads', status:'ACTIVE',
+        orcamento:300, gastos:1050, cliques:910, impressoes:31000, conversoes:12,
+        valorConv:4800, ctr:2.93, cpc:1.15, cpa:87.5, roas:4.57, cvr:1.32 },
+    ]
+  }
+];
+
+let wsIdx = 0;
+let chartRoas = null;
+let chartProj = null;
+
+function workspace() { return WORKSPACES[wsIdx]; }
+function campanhas() { return workspace().campanhas; }
+
+// ══════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════
+function navTo(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'analyze')   renderAnalyze();
+  if (id === 'campaigns') renderCampaignsTable();
+}
+
+function trocarWorkspace(val) {
+  if (val === '3') { toast('Funcionalidade de criar workspace disponível no plano Agency ✨', 'blue'); wsIdx = 0; document.getElementById('workspace-select').value = '0'; return; }
+  wsIdx = parseInt(val);
+  renderDashboard();
+  renderCampaignsTable();
+  document.getElementById('dash-subtitle').textContent = workspace().nome + ' · últimos 7 dias · ' + campanhas().length + ' campanhas';
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderDashboard() {
+  const camps = campanhas();
+  const totalGasto = camps.reduce((s,c) => s + c.gastos, 0);
+  const totalConv  = camps.reduce((s,c) => s + c.conversoes, 0);
+  const totalValor = camps.reduce((s,c) => s + c.valorConv, 0);
+  const roasMedio  = totalGasto > 0 ? totalValor / totalGasto : 0;
+  const cpaMedio   = totalConv  > 0 ? totalGasto / totalConv  : 0;
+  const ctrMedio   = camps.reduce((s,c) => s + c.ctr, 0) / camps.length;
+
+  const m = (v,d=2) => 'R$ ' + v.toFixed(d).replace('.',',');
+  const n = (v,d=2) => v.toFixed(d);
+
+  // Cards de métricas
+  document.getElementById('dash-metrics').innerHTML = `
+    ${metricCard('TOTAL GASTO', m(totalGasto), '7 dias · todas plataformas', 'text', '💸')}
+    ${metricCard('ROAS MÉDIO', n(roasMedio)+'x', roasMedio >= 3 ? '▲ Acima da meta' : '▼ Abaixo da meta',
+      roasMedio >= 3 ? 'green' : 'red', '📈')}
+    ${metricCard('CPA MÉDIO', m(cpaMedio), cpaMedio <= 50 ? '▲ Dentro da meta' : '▼ Acima da meta',
+      cpaMedio <= 50 ? 'green' : 'yellow', '🎯')}
+    ${metricCard('CONVERSÕES', totalConv.toFixed(0), 'Valor: '+m(totalValor), 'blue', '✅')}
+  `;
+
+  // Score de saúde por campanha
+  document.getElementById('health-list').innerHTML = camps.map(c => {
+    const score = calcScore(c);
+    const cor = score >= 70 ? 'var(--green)' : score >= 45 ? 'var(--yellow)' : 'var(--red)';
+    return `
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="score-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="6"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="${cor}" stroke-width="6"
+              stroke-dasharray="${2*Math.PI*32}" stroke-dashoffset="${2*Math.PI*32*(1-score/100)}"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="score-val">
+            <div class="score-num" style="color:${cor}">${score}</div>
+            <div class="score-label">SCORE</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;font-size:12px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${c.fonte} · ROAS ${c.roas}x · CPA R$${c.cpa}</div>
+          <div class="progress" style="margin-top:6px"><div class="progress-fill" style="width:${score}%;background:${cor}"></div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Alertas
+  const alertas = gerarAlertas(camps);
+  document.getElementById('alert-count').textContent = alertas.length;
+  document.getElementById('alerts-list').innerHTML = alertas.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum alerta ativo. Todas as campanhas estão saudáveis 🎉</div>'
+    : alertas.map(a => `
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:18px;flex-shrink:0">${a.icon}</span>
+        <div>
+          <div style="font-weight:500;font-size:13px">${a.titulo}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${a.desc}</div>
+        </div>
+        <div style="margin-left:auto"><span class="badge badge-${a.cor}">${a.nivel}</span></div>
+      </div>
+    `).join('');
+
+  // Gráfico ROAS evolução
+  renderChartRoas(camps);
+
+  document.getElementById('dash-subtitle').textContent = workspace().nome + ' · últimos 7 dias · ' + camps.filter(c=>c.status==='ACTIVE').length + ' campanhas ativas';
+}
+
+function metricCard(label, val, sub, cor, emoji) {
+  const corClass = {green:'var(--green)', red:'var(--red)', yellow:'var(--yellow)', blue:'var(--blue)', text:'var(--text)'}[cor] || 'var(--text)';
+  return `
+    <div class="card">
+      <div class="metric-label">${emoji} ${label}</div>
+      <div class="metric-val" style="color:${corClass}">${val}</div>
+      <div class="metric-sub" style="color:${cor==='text'?'var(--muted)':corClass}">${sub}</div>
+    </div>
+  `;
+}
+
+function calcScore(c) {
+  let s = 100;
+  if (c.roas < 1)   s -= 50;
+  if (c.roas < 2)   s -= 20;
+  if (c.roas < 3)   s -= 10;
+  if (c.cpa > 50)   s -= 15;
+  if (c.cpa > 100)  s -= 15;
+  if (c.ctr < 1.5)  s -= 10;
+  if (c.cvr < 1)    s -= 10;
+  if (c.conversoes === 0 && c.gastos > 50) s -= 30;
+  return Math.max(0, Math.min(100, s));
+}
+
+function gerarAlertas(camps) {
+  const alertas = [];
+  camps.forEach(c => {
+    if (c.cpa > 50) alertas.push({ icon:'⚠️', titulo:`CPA alto: ${c.nome}`, desc:`CPA R$${c.cpa} está acima da meta de R$50`, nivel:'Alta', cor:'yellow' });
+    if (c.roas < 2 && c.roas > 0) alertas.push({ icon:'🔴', titulo:`ROAS crítico: ${c.nome}`, desc:`ROAS ${c.roas}x — campanha pode estar no prejuízo`, nivel:'Crítica', cor:'red' });
+    if (c.gastos / c.orcamento >= 0.85 && c.roas >= 3) alertas.push({ icon:'🚀', titulo:`Escalar: ${c.nome}`, desc:`ROAS ${c.roas}x com orçamento ${((c.gastos/c.orcamento)*100).toFixed(0)}% usado`, nivel:'Oportunidade', cor:'blue' });
+    if (c.ctr < 1.5) alertas.push({ icon:'🎨', titulo:`CTR baixo: ${c.nome}`, desc:`CTR ${c.ctr}% abaixo do mínimo de 1.5%`, nivel:'Média', cor:'yellow' });
+  });
+  return alertas;
+}
+
+function renderChartRoas(camps) {
+  const ctx = document.getElementById('chart-roas').getContext('2d');
+  if (chartRoas) chartRoas.destroy();
+  const dias = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const datasets = camps.slice(0,3).map((c,i) => {
+    const cores = ['#5b5ef4','#00d68f','#f59e0b'];
+    const base = c.roas;
+    return {
+      label: c.nome.split('—')[0].trim(),
+      data: dias.map((_,d) => +(base + (Math.random()-.5)*0.8).toFixed(2)),
+      borderColor: cores[i], backgroundColor: 'transparent',
+      borderWidth: 2, pointRadius: 3, tension: 0.4,
+    };
+  });
+  chartRoas = new Chart(ctx, {
+    type:'line',
+    data:{ labels:dias, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 }, boxWidth:12 } } },
+      scales:{
+        x:{ grid:{ color:'rgba(30,30,52,.6)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 } } },
+        y:{ grid:{ color:'rgba(30,30,52,.6)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 }, callback: v=>v+'x' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// CAMPANHAS TABLE
+// ══════════════════════════════════════════════════════
+// ── Objetivos salvos por campanha ────────────────────────────
+// Estrutura: { [campId]: { objetivo, valorConv, ticketMedio, taxaConv } }
+let objetivosCampanhas = JSON.parse(localStorage.getItem('objetivos_campanhas') || '{}');
+
+const OBJETIVOS = [
+  { id:'compra',       label:'🛒 Compra',       cor:'var(--green)',  badge:'green'  },
+  { id:'lead',         label:'💬 Lead/WhatsApp', cor:'var(--yellow)', badge:'yellow' },
+  { id:'agendamento',  label:'📅 Agendamento',   cor:'var(--blue)',   badge:'blue'   },
+  { id:'engajamento',  label:'👁 Engajamento',   cor:'var(--purple)', badge:'purple' },
+];
+
+/**
+ * Calcula a métrica principal conforme o objetivo da campanha.
+ * Retorna { metrica, valor, label, cor }
+ */
+function calcularMetricaObjetivo(c) {
+  const obj = objetivosCampanhas[c.id] || {};
+  const objetivo = obj.objetivo || 'lead';
+  const valorConv = Number(obj.valorConv || 0);
+  const ticketMedio = Number(obj.ticketMedio || 0);
+  const taxaConv = Number(obj.taxaConv || c.cvr || 0);
+  const gastos = c.gastos || 0;
+  const conversoes = c.conversoes || 0;
+  const cliques = c.cliques || 0;
+
+  switch(objetivo) {
+    case 'compra': {
+      // ROAS real: usa valor do agendamento ou valor configurado
+      const receita = valorConv > 0 ? valorConv * conversoes : c.valorConv || 0;
+      const roas = gastos > 0 ? receita / gastos : 0;
+      const roi  = gastos > 0 ? ((receita - gastos) / gastos * 100) : 0;
+      return {
+        metricaPrincipal: `${roas.toFixed(2)}x ROAS`,
+        secundaria: `ROI ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%`,
+        cor: roas >= 3 ? 'var(--green)' : roas >= 1 ? 'var(--yellow)' : 'var(--red)',
+        roi: roi.toFixed(0)
+      };
+    }
+    case 'lead': {
+      // CPL = Gasto ÷ Leads | ROI = (Leads × Valor) ÷ Gasto
+      const cpl = conversoes > 0 ? gastos / conversoes : 0;
+      const receita = valorConv * conversoes;
+      const roi = gastos > 0 && valorConv > 0 ? ((receita - gastos) / gastos * 100) : null;
+      return {
+        metricaPrincipal: `R$ ${cpl.toFixed(2)} CPL`,
+        secundaria: roi !== null ? `ROI ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%` : `${conversoes} leads`,
+        cor: cpl > 0 && cpl <= 50 ? 'var(--green)' : 'var(--yellow)',
+        roi: roi ? roi.toFixed(0) : null
+      };
+    }
+    case 'agendamento': {
+      // CPA = Gasto ÷ Consultas | Usa dados reais do sistema de agendamento
+      const cpa = conversoes > 0 ? gastos / conversoes : 0;
+      const receita = valorConv > 0 ? valorConv * conversoes : c.valorConv || 0;
+      const roi = gastos > 0 && receita > 0 ? ((receita - gastos) / gastos * 100) : null;
+      return {
+        metricaPrincipal: `R$ ${cpa.toFixed(2)} CPA`,
+        secundaria: roi !== null ? `ROI ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%` : `${conversoes} agend.`,
+        cor: cpa > 0 && cpa <= 80 ? 'var(--green)' : 'var(--yellow)',
+        roi: roi ? roi.toFixed(0) : null
+      };
+    }
+    case 'engajamento': {
+      // CPM / CPC / CTR + estimativa de conversão
+      const cpm = c.impressoes > 0 ? (gastos / c.impressoes * 1000) : 0;
+      const cpc = cliques > 0 ? gastos / cliques : c.cpc || 0;
+      const convEstimada = ticketMedio > 0 && taxaConv > 0
+        ? Math.round(cliques * (taxaConv / 100))
+        : 0;
+      const receitaEst = convEstimada * ticketMedio;
+      const roi = gastos > 0 && receitaEst > 0 ? ((receitaEst - gastos) / gastos * 100) : null;
+      return {
+        metricaPrincipal: `R$ ${cpc.toFixed(2)} CPC`,
+        secundaria: roi !== null ? `ROI est. ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%` : `CPM R$ ${cpm.toFixed(2)}`,
+        cor: 'var(--purple)',
+        roi: roi ? roi.toFixed(0) : null
+      };
+    }
+    default:
+      return { metricaPrincipal: '—', secundaria: '—', cor: 'var(--muted)', roi: null };
+  }
+}
+
+function renderCampaignsTable() {
+  const rows = campanhas().map(c => {
+    const score  = calcScore(c);
+    const corScore = score>=70?'green':score>=45?'yellow':'red';
+    const obj    = objetivosCampanhas[c.id] || {};
+    const objSel = obj.objetivo || 'lead';
+    const metrica = calcularMetricaObjetivo(c);
+    const objInfo = OBJETIVOS.find(o => o.id === objSel) || OBJETIVOS[1];
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.nome}">${c.nome}</div>
+        </td>
+        <td><span class="badge badge-${c.fonte==='Meta Ads'?'blue':'green'}" style="font-size:10px">${c.fonte}</span></td>
+        <td><span class="badge badge-${c.status==='ACTIVE'?'green':'yellow'}" style="font-size:10px">${c.status}</span></td>
+        <td class="mono" style="color:var(--yellow);font-size:12px">R$ ${(c.gastos||0).toFixed(2)}</td>
+
+        <!-- Seletor de objetivo -->
+        <td>
+          <select class="inp" style="padding:4px 6px;font-size:11px;width:130px;font-family:'IBM Plex Mono',monospace"
+            onchange="atualizarObjetivo('${c.id}', this.value)">
+            ${OBJETIVOS.map(o => `<option value="${o.id}" ${objSel===o.id?'selected':''}>${o.label}</option>`).join('')}
+          </select>
+        </td>
+
+        <!-- Campo de valor por conversão -->
+        <td>
+          ${objSel === 'engajamento'
+            ? `<div style="display:flex;gap:4px">
+                <input class="inp inp-mono" type="number" placeholder="Ticket R$" value="${obj.ticketMedio||''}"
+                  style="width:70px;padding:3px 6px;font-size:11px"
+                  onchange="atualizarValorConv('${c.id}','ticketMedio',this.value)">
+                <input class="inp inp-mono" type="number" placeholder="Taxa%" value="${obj.taxaConv||''}"
+                  style="width:55px;padding:3px 6px;font-size:11px"
+                  onchange="atualizarValorConv('${c.id}','taxaConv',this.value)">
+              </div>`
+            : `<input class="inp inp-mono" type="number" placeholder="${objSel==='compra'?'R$ por venda':'R$ por conv.'}"
+                value="${obj.valorConv||''}"
+                style="width:110px;padding:3px 6px;font-size:11px"
+                onchange="atualizarValorConv('${c.id}','valorConv',this.value)">`
+          }
+        </td>
+
+        <!-- ROI calculado -->
+        <td class="mono" style="color:${metrica.cor};font-size:12px;font-weight:700">
+          ${metrica.metricaPrincipal}<br>
+          <span style="font-size:10px;color:var(--muted);font-weight:400">${metrica.secundaria}</span>
+        </td>
+
+        <!-- Conversões -->
+        <td class="mono" style="font-size:12px">
+          <span style="color:var(--blue)">${(c.conversoes||0).toFixed(0)}</span>
+          <span style="font-size:10px;color:var(--muted)"> conv.</span>
+        </td>
+
+        <!-- CTR -->
+        <td class="mono" style="font-size:12px;color:${(c.ctr||0)>=1.5?'var(--green)':'var(--yellow)'}">${(c.ctr||0).toFixed(2)}%</td>
+
+        <!-- Score de saúde -->
+        <td><span class="badge badge-${corScore}" style="font-size:10px">${score}/100</span></td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.</td></tr>';
+
+  document.getElementById('campaigns-tbody').innerHTML = rows;
+}
+
+function atualizarObjetivo(campId, objetivo) {
+  if (!objetivosCampanhas[campId]) objetivosCampanhas[campId] = {};
+  objetivosCampanhas[campId].objetivo = objetivo;
+  renderCampaignsTable(); // re-render para mostrar campos corretos
+  toast(`Objetivo atualizado para "${OBJETIVOS.find(o=>o.id===objetivo)?.label}"`, 'green');
+}
+
+function atualizarValorConv(campId, campo, valor) {
+  if (!objetivosCampanhas[campId]) objetivosCampanhas[campId] = {};
+  objetivosCampanhas[campId][campo] = parseFloat(valor) || 0;
+}
+
+function salvarObjetivosCampanhas() {
+  localStorage.setItem('objetivos_campanhas', JSON.stringify(objetivosCampanhas));
+  toast('✅ Objetivos salvos! O ROI será recalculado em todas as análises.', 'green');
+  renderCampaignsTable();
+  renderDashboard(); // atualiza dashboard com novos cálculos
+}
+
+// ══════════════════════════════════════════════════════
+// ANÁLISE COM IA
+// ══════════════════════════════════════════════════════
+function renderAnalyze() {
+  const sel = document.getElementById('camp-select');
+  sel.innerHTML = campanhas().map(c =>
+    `<option value="${c.id}">${c.fonte === 'Meta Ads' ? '📘' : '🔍'} ${c.nome}</option>`
+  ).join('');
+  // seleciona todas por padrão
+  Array.from(sel.options).forEach(o => o.selected = true);
+  renderQuickActions();
+}
+
+function renderQuickActions() {
+  const camps = campanhas();
+  const metaCPA = parseFloat(document.getElementById('ai-cpa')?.value) || 50;
+  const metaROAS = parseFloat(document.getElementById('ai-roas')?.value) || 3;
+  const acoes = [];
+
+  camps.forEach(c => {
+    if (c.roas > 0 && c.roas < 1) acoes.push({ icon:'⏸', titulo:`Pausar: ${c.nome}`, desc:`ROAS ${c.roas}x = prejuízo`, cor:'red' });
+    if (c.cpa > metaCPA * 1.5) acoes.push({ icon:'📉', titulo:`Reduzir budget: ${c.nome}`, desc:`CPA R$${c.cpa} (${((c.cpa/metaCPA-1)*100).toFixed(0)}% acima)`, cor:'yellow' });
+    if (c.roas >= metaROAS && c.gastos/c.orcamento >= 0.8) acoes.push({ icon:'🚀', titulo:`Escalar 20%: ${c.nome}`, desc:`ROAS ${c.roas}x + budget ${((c.gastos/c.orcamento)*100).toFixed(0)}% usado`, cor:'green' });
+    if (c.ctr < 1.5) acoes.push({ icon:'🎨', titulo:`Trocar criativo: ${c.nome}`, desc:`CTR ${c.ctr}% abaixo do mínimo`, cor:'blue' });
+  });
+
+  document.getElementById('quick-actions').innerHTML = acoes.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--muted)">Todas as campanhas dentro das metas ✅</div>'
+    : acoes.map(a => `
+      <div class="action-item">
+        <div class="action-icon" style="background:var(--bg)">${a.icon}</div>
+        <div class="action-body">
+          <div class="action-title">${a.titulo}</div>
+          <div class="action-desc">${a.desc}</div>
+        </div>
+        <span class="badge badge-${a.cor}">${{red:'Urgente',yellow:'Alta',green:'Oportunidade',blue:'Média'}[a.cor]}</span>
+      </div>
+    `).join('');
+}
+
+async function rodarAnaliseIA() {
+  const btn = document.getElementById('btn-ai');
+  const out = document.getElementById('ai-output');
+  const statusBadge = document.getElementById('ai-status-badge');
+
+  const sel = document.getElementById('camp-select');
+  const selectedIds = Array.from(sel.selectedOptions).map(o => o.value);
+  const campsSelec = campanhas().filter(c => selectedIds.includes(c.id));
+
+  if (campsSelec.length === 0) { toast('Selecione ao menos uma campanha', 'red'); return; }
+
+  const metaCPA  = parseFloat(document.getElementById('ai-cpa').value)  || 50;
+  const metaROAS = parseFloat(document.getElementById('ai-roas').value) || 3;
+  const contexto = document.getElementById('ai-context').value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Analisando...';
+  statusBadge.innerHTML = '<span class="badge badge-yellow">● Gerando</span>';
+  out.innerHTML = '<span id="ai-cursor" class="cursor"></span>';
+
+  // Monta prompt para o Claude
+  const dadosJSON = JSON.stringify(campsSelec.map(c => ({
+    campanha: c.nome, fonte: c.fonte, status: c.status,
+    gastos_7d: c.gastos, conversoes: c.conversoes, valor_conversoes: c.valorConv,
+    roas: c.roas, cpa: c.cpa, ctr_percent: c.ctr, cvr_percent: c.cvr,
+    cpc: c.cpc, impressoes: c.impressoes, cliques: c.cliques,
+    orcamento_diario: c.orcamento, utilizacao_budget_percent: +((c.gastos/c.orcamento/7)*100).toFixed(1)
+  })), null, 2);
+
+  const systemPrompt = `Você é um Especialista Sênior em Tráfego Pago com 10+ anos de experiência em Meta Ads e Google Ads. 
+Analise os dados de campanhas fornecidos com profundidade técnica e responda em português brasileiro.
+
+Sua resposta deve ser estruturada com estes blocos:
+1. **Diagnóstico Geral** (2-3 frases sobre o estado do conjunto de campanhas)
+2. **Análise por Campanha** (para cada uma: o que está bom, o que está ruim, causa raiz provável)
+3. **Prioridades de Ação** (lista numerada do mais urgente ao menos urgente, com impacto estimado)
+4. **Projeção** (o que acontece com os resultados se as ações forem implementadas)
+5. **Alerta Estratégico** (1 insight mais profundo que o anunciante provavelmente não está vendo)
+
+Use linguagem técnica mas acessível. Seja direto e específico com os números.`;
+
+  const userPrompt = `Metas definidas: CPA máximo R$${metaCPA} | ROAS mínimo ${metaROAS}x
+
+Dados das campanhas (últimos 7 dias):
+${dadosJSON}
+
+${contexto ? `Contexto adicional fornecido pelo gestor:\n${contexto}` : ''}
+
+Por favor, analise e forneça recomendações práticas e priorizadas.`;
+
+  // Verifica se tem API key configurada
+  const claudeKey = localStorage.getItem('claude_api_key') || '';
+
+  if (!claudeKey) {
+    toast('Configure a API key do Claude em Integrações primeiro', 'yellow');
+    btn.disabled = false;
+    btn.innerHTML = '🤖 Analisar com Claude IA';
+    out.innerHTML = '<span style="color:var(--yellow)">⚠️ API key não configurada. Vá em <strong>Integrações → Claude IA</strong> e salve sua chave.</span>';
+    statusBadge.innerHTML = '<span class="badge badge-yellow">● Sem API key</span>';
+    return;
+  }
+
+  try {
+    statusBadge.innerHTML = '<span class="badge badge-yellow">● Gerando análise...</span>';
+    out.innerHTML = '<span class="cursor"></span>';
+
+    // Detecta se está rodando local (VS Code) ou no GAS publicado
+    const isLocal = window.location.hostname === 'localhost'
+                 || window.location.hostname === '127.0.0.1';
+
+    const claudeEndpoint = isLocal
+      ? '/api/claude'   // proxy local (sem CORS)
+      : 'https://api.anthropic.com/v1/messages'; // direto (GAS publicado)
+
+    const claudeHeaders = isLocal
+      ? { 'Content-Type': 'application/json' }  // server.js adiciona a key
+      : {
+          'Content-Type':  'application/json',
+          'x-api-key':     claudeKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        };
+
+    const claudeBody = isLocal
+      ? { apiKey: claudeKey, model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] }
+      : { model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
+
+    const resp = await fetch(claudeEndpoint, {
+      method: 'POST',
+      headers: claudeHeaders,
+      body: JSON.stringify(claudeBody)
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      // Erros comuns e como resolver
+      const erros = {
+        'authentication_error': 'API key inválida. Verifique em Integrações → Claude IA.',
+        'permission_error':     'Sem permissão. Verifique se a API key tem créditos disponíveis.',
+        'rate_limit_error':     'Limite de uso atingido. Aguarde alguns segundos e tente novamente.',
+        'overloaded_error':     'Claude está sobrecarregado. Tente novamente em instantes.',
+      };
+      const msg = erros[data.error.type] || data.error.message;
+      throw new Error(msg);
+    }
+
+    const texto = data.content.map(b => b.text || '').join('');
+    await streamText(out, texto);
+    statusBadge.innerHTML = '<span class="badge badge-green">● Análise concluída</span>';
+    renderProjecao(campsSelec, metaROAS);
+
+    // Salva análise no histórico (localStorage)
+    salvarHistoricoAnalise(campsSelec, texto);
+
+    toast('✅ Análise gerada pelo Claude com sucesso!', 'green');
+
+  } catch(e) {
+    console.error('Claude API error:', e);
+    statusBadge.innerHTML = '<span class="badge badge-red">● Erro</span>';
+    out.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
+    toast('Erro: ' + e.message, 'red');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🤖 Analisar com Claude IA';
+  }
+}
+
+// Salva no histórico de análises
+function salvarHistoricoAnalise(camps, texto) {
+  try {
+    const hist = JSON.parse(localStorage.getItem('analise_historico') || '[]');
+    hist.unshift({
+      data:       new Date().toISOString(),
+      campanhas:  camps.map(c => c.nome),
+      resumo:     texto.slice(0, 200) + '...',
+    });
+    localStorage.setItem('analise_historico', JSON.stringify(hist.slice(0, 20)));
+  } catch(e) {}
+}
+
+function gerarRespostaDemo(camps, metaCPA, metaROAS) {
+  const criticas = camps.filter(c => c.cpa > metaCPA * 1.5);
+  const escalar  = camps.filter(c => c.roas >= metaROAS && c.gastos/c.orcamento >= 0.8);
+  const totalGasto = camps.reduce((s,c)=>s+c.gastos,0);
+  const roasMedio  = camps.reduce((s,c)=>s+c.valorConv,0) / totalGasto;
+
+  return `## Diagnóstico Geral
+
+O conjunto de **${camps.length} campanhas** apresenta desempenho misto. O ROAS médio ponderado de **${roasMedio.toFixed(2)}x** está ${roasMedio >= metaROAS ? 'acima' : 'abaixo'} da meta de ${metaROAS}x, com investimento total de **R$ ${totalGasto.toLocaleString('pt-BR')}** nos últimos 7 dias. O principal problema concentra-se em ineficiência de CPA em ${criticas.length} campanha(s), que está consumindo orçamento sem retorno adequado.
+
+## Análise por Campanha
+
+${camps.map(c => `**${c.nome}** (${c.fonte})
+- Status: ROAS ${c.roas}x | CPA R$${c.cpa} | CTR ${c.ctr}%
+- ${c.roas >= metaROAS ? '✅ ROAS dentro da meta' : '❌ ROAS abaixo da meta — revisão necessária'}
+- ${c.cpa <= metaCPA ? '✅ CPA dentro do target' : `⚠️ CPA ${((c.cpa/metaCPA-1)*100).toFixed(0)}% acima do limite`}
+- Causa provável: ${c.ctr < 1.5 ? 'CTR baixo indica problema criativo' : c.cvr < 1 ? 'CTR ok mas CVR baixo — revisar landing page' : 'Segmentação pode estar muito ampla'}`).join('\n\n')}
+
+## Prioridades de Ação
+
+${criticas.length > 0 ? criticas.map((c,i) => `${i+1}. **PAUSAR ou reduzir 30%** "${c.nome}" — CPA R$${c.cpa} está gerando prejuízo relativo. Impacto: economia de ~R$${(c.gastos*0.3).toFixed(0)}/semana`).join('\n') : ''}
+${escalar.length > 0 ? escalar.map((c,i) => `${criticas.length+i+1}. **ESCALAR 20%** "${c.nome}" — ROAS ${c.roas}x com budget ${((c.gastos/c.orcamento)*100).toFixed(0)}% utilizado. Impacto: +R$${(c.valorConv*0.2).toFixed(0)} em receita projetada`).join('\n') : ''}
+${camps.filter(c=>c.ctr<1.5).map((c,i)=>`${criticas.length+escalar.length+i+1}. **TESTAR novos criativos** em "${c.nome}" — CTR ${c.ctr}% está abaixo de 1.5%. Leve saturação de audiência detectada`).join('\n')}
+
+## Projeção
+
+Implementando as ações acima em 14 dias:
+- Redução de CPA médio estimada: **-18 a -25%**
+- Aumento de ROAS médio: **+0.8 a 1.2x**
+- Receita adicional projetada: **R$ ${(totalGasto*0.4).toFixed(0)} a R$ ${(totalGasto*0.7).toFixed(0)}**
+
+## Alerta Estratégico
+
+⚡ **Concentração de risco:** ${((camps.sort((a,b)=>b.gastos-a.gastos)[0].gastos/totalGasto)*100).toFixed(0)}% do investimento está concentrado em uma única campanha. Distribua o budget progressivamente à medida que valida novas estruturas, reduzindo a dependência de um único ativo de tráfego.`;
+}
+
+async function streamText(el, texto) {
+  el.innerHTML = '';
+  const words = texto.split(' ');
+  for (let i = 0; i < words.length; i++) {
+    el.innerHTML = formatAIText(words.slice(0,i+1).join(' ')) + '<span class="cursor"></span>';
+    await sleep(18);
+  }
+  el.innerHTML = formatAIText(texto);
+}
+
+function renderAIText(el, texto) {
+  el.innerHTML = formatAIText(texto);
+}
+
+function formatAIText(t) {
+  return t
+    .replace(/## (.+)/g, '<h3 style="font-size:14px;font-weight:600;color:var(--accentL);margin:14px 0 6px">$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/✅/g, '<span style="color:var(--green)">✅</span>')
+    .replace(/❌/g, '<span style="color:var(--red)">❌</span>')
+    .replace(/⚠️/g, '<span style="color:var(--yellow)">⚠️</span>')
+    .replace(/⚡/g, '<span style="color:var(--accentL)">⚡</span>')
+    .replace(/\n/g, '<br/>');
+}
+
+function renderProjecao(camps, metaROAS) {
+  const card = document.getElementById('projection-card');
+  const content = document.getElementById('projection-content');
+  card.style.display = 'block';
+
+  const refCamp = camps.sort((a,b)=>b.gastos-a.gastos)[0];
+  const pcts = [10, 20, 30, 50];
+
+  const projecoes = pcts.map(pct => {
+    const f = 1 + pct/100;
+    const fe = 1 - pct/1000;
+    const novoGasto = refCamp.gastos * f;
+    const novosCliques = refCamp.cliques > 0 ? Math.round(novoGasto / (refCamp.gastos/refCamp.cliques/fe)) : 0;
+    const novasConv = Math.round(novosCliques * (refCamp.cvr/100) * fe);
+    const novoValor = novasConv > 0 && refCamp.conversoes > 0 ? (refCamp.valorConv/refCamp.conversoes)*novasConv : 0;
+    const novoROAS = novoGasto > 0 ? novoValor/novoGasto : 0;
+    return { pct, novoGasto, novasConv, novoValor, novoROAS };
+  });
+
+  content.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">
+      Referência: <strong style="color:var(--text)">${refCamp.nome}</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${projecoes.map(p => `
+        <div class="card-sm" style="text-align:center">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);margin-bottom:4px">+${p.pct}%</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:${p.novoROAS>=metaROAS?'var(--green)':'var(--yellow)'}">
+            ${p.novoROAS.toFixed(2)}x
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">ROAS</div>
+          <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:4px">
+            R$${p.novoGasto.toFixed(0)}<br>${p.novasConv} conv.
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  const ctx = document.getElementById('chart-proj').getContext('2d');
+  if (chartProj) chartProj.destroy();
+  chartProj = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['Atual', ...pcts.map(p=>'+'+p+'%')],
+      datasets:[
+        { label:'Investimento', data:[refCamp.gastos, ...projecoes.map(p=>+p.novoGasto.toFixed(2))], backgroundColor:'rgba(91,94,244,.6)', borderRadius:4 },
+        { label:'Receita Estimada', data:[refCamp.valorConv, ...projecoes.map(p=>+p.novoValor.toFixed(2))], backgroundColor:'rgba(0,214,143,.5)', borderRadius:4 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#6060a0', font:{family:'IBM Plex Mono',size:10}, boxWidth:12 } } },
+      scales:{
+        x:{ grid:{color:'rgba(30,30,52,.6)'}, ticks:{color:'#6060a0',font:{family:'IBM Plex Mono',size:10}} },
+        y:{ grid:{color:'rgba(30,30,52,.6)'}, ticks:{color:'#6060a0',font:{family:'IBM Plex Mono',size:10},callback:v=>'R$'+v.toLocaleString('pt-BR')} }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// CONFIGURAÇÃO DO SISTEMA DE AGENDAMENTO
+// URL de implantação embutida — não precisa configurar
+// ══════════════════════════════════════════════════════
+
+// URL do próprio projeto GAS — injetada pelo AdAnalyzer.gs via template
+// Quando rodando dentro do GAS, <?= gasUrl ?> é substituído pela URL real
+// Quando rodando local (VS Code), usa o valor hardcoded como fallback
+const GAS_AGENDAMENTO_URL = (function() {
+const GAS_ADMIN_EMAIL = 'admin@empresa.com';
+  const templateUrl = '<?= gasUrl ?>';
+  // Se o template foi processado pelo GAS, usa a URL dinâmica
+  if (templateUrl && !templateUrl.includes('<?=')) return templateUrl;
+  // Fallback para desenvolvimento local
+  return 'https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec';
+})();
+
+// ══════════════════════════════════════════════════════
+// CORS PROXY — necessário para chamar GAS do navegador
+// O GAS não inclui header Access-Control-Allow-Origin,
+// então usamos um proxy que adiciona esse header.
+// ══════════════════════════════════════════════════════
+
+/**
+ * Envolve uma URL do GAS num proxy CORS público.
+ * Usa corsproxy.io como primário e allorigins como fallback.
+ * @param {string} url — URL do GAS Web App
+ * @returns {string}  — URL com proxy aplicado
+ */
+function aplicarCorsProxy(url) {
+  // Proxy 1: corsproxy.io (mais confiável)
+  return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+}
+
+/**
+ * Fetch via proxy local Node.js (/api/gas).
+ * O servidor local chama o GAS sem restrição de CORS.
+ * Funciona tanto no VS Code (localhost:3000) quanto no GAS publicado.
+ */
+async function fetchGAS(url) {
+  const proto = window.location.protocol;
+  const host  = window.location.hostname;
+  const port  = window.location.port;
+
+  const isFile   = proto === 'file:';
+  const isNode   = (host === 'localhost' || host === '127.0.0.1') && port === '3000';
+  const isRender = proto === 'https:' && !host.includes('script.google.com');
+  const isGAS    = host.includes('script.google.com');
+
+  // ── abrir.bat (file://) — CORS desabilitado, chamada direta ──
+  if (isFile) {
+    const resp = await fetch(url, {
+      redirect: 'follow', credentials: 'omit',
+      headers: { 'Accept': 'application/json, text/plain' },
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    if (text.trim().startsWith('<')) throw new Error('GAS retornou HTML. Configure: Implantar → Qualquer pessoa');
+    return text;
+  }
+
+  // ── Node.js local (localhost:3000) ou Render.com (https) ──
+  // Ambos servem o /api/gas proxy no servidor
+  if (isNode || isRender) {
+    const gasUrl = new URL(url);
+    const params = new URLSearchParams(gasUrl.searchParams).toString();
+    const resp = await fetch('/api/gas?' + params, {
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ erro: 'HTTP ' + resp.status }));
+      throw new Error(err.erro || 'HTTP ' + resp.status);
+    }
+    return await resp.text();
+  }
+
+  // ── GAS publicado — mesmo domínio, sem CORS ──
+  if (isGAS) {
+    const resp = await fetch(url, {
+      redirect: 'follow', credentials: 'omit',
+      headers: { 'Accept': 'application/json, text/plain' },
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return await resp.text();
+  }
+
+  // ── Live Server ou outro ambiente ──
+  throw new Error('Use o abrir.bat para abrir o dashboard localmente, ou acesse pela URL pública do Render.');
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADO DA INTEGRAÇÃO META
+// ══════════════════════════════════════════════════════
+let metaState = {
+  token:   localStorage.getItem('meta_token')   || '',
+  account: localStorage.getItem('meta_account') || '',
+  conectado: false,
+  apiVersion: 'v19.0'
+};
+
+// Restaura credenciais salvas ao carregar
+window.addEventListener('DOMContentLoaded', () => {
+  if (metaState.token) {
+    document.getElementById('int-meta-token').value   = metaState.token;
+    document.getElementById('int-meta-account').value = metaState.account;
+  }
+});
+
+// ══════════════════════════════════════════════════════
+// CONECTAR META — valida token e busca campanhas reais
+// ══════════════════════════════════════════════════════
+async function conectarMeta() {
+  const token   = document.getElementById('int-meta-token').value.trim();
+  const account = document.getElementById('int-meta-account').value.trim();
+
+  if (!token)   { toast('Insira o Access Token do Meta', 'red'); return; }
+  if (!account) { toast('Insira o Ad Account ID', 'red'); return; }
+  if (!account.startsWith('act_')) {
+    toast('Account ID deve começar com act_ (ex: act_123456)', 'yellow');
+    return;
+  }
+
+  setBtnLoading('btn-conectar-meta', true, '⏳ Conectando...');
+
+  try {
+    // Passo 1: valida token buscando info do usuário
+    const meResp = await fetch(
+      `https://graph.facebook.com/${metaState.apiVersion}/me?fields=id,name&access_token=${token}`
+    );
+    const meData = await meResp.json();
+
+    if (meData.error) throw new Error(meData.error.message);
+
+    // Passo 2: valida acesso à conta de anúncios
+    const accResp = await fetch(
+      `https://graph.facebook.com/${metaState.apiVersion}/${account}?fields=id,name,currency,account_status&access_token=${token}`
+    );
+    const accData = await accResp.json();
+
+    if (accData.error) throw new Error(accData.error.message);
+    if (accData.account_status === 2) throw new Error('Conta de anúncios desabilitada');
+
+    // Salva credenciais
+    metaState.token   = token;
+    metaState.account = account;
+    metaState.conectado = true;
+    localStorage.setItem('meta_token',   token);
+    localStorage.setItem('meta_account', account);
+
+    // Atualiza UI
+    document.getElementById('meta-badge').innerHTML =
+      '<span class="badge badge-green">● Conectado</span>';
+    document.getElementById('meta-status').textContent =
+      `${accData.name} · ${accData.currency}`;
+
+    toast(`✅ Conectado como ${meData.name} · ${accData.name}`, 'green');
+
+    // Passo 3: busca campanhas automaticamente após conectar
+    await sincronizarMetaAds();
+
+  } catch(e) {
+    toast('Erro: ' + e.message, 'red');
+    document.getElementById('meta-badge').innerHTML =
+      '<span class="badge badge-red">● Erro</span>';
+  } finally {
+    setBtnLoading('btn-conectar-meta', false, 'Conectar');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// TESTAR TOKEN — verificação rápida sem buscar campanhas
+// ══════════════════════════════════════════════════════
+async function testarMeta() {
+  const token = document.getElementById('int-meta-token').value.trim();
+  if (!token) { toast('Insira o token primeiro', 'yellow'); return; }
+
+  toast('Testando token...', 'blue');
+  try {
+    const r = await fetch(
+      `https://graph.facebook.com/${metaState.apiVersion}/me?fields=id,name&access_token=${token}`
+    );
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+
+    // Verifica expiração do token
+    const debugR = await fetch(
+      `https://graph.facebook.com/${metaState.apiVersion}/debug_token?input_token=${token}&access_token=${token}`
+    );
+    const debugD = await debugR.json();
+    const exp = debugD.data?.expires_at;
+    const expStr = exp ? new Date(exp * 1000).toLocaleDateString('pt-BR') : 'Não expira';
+
+    toast(`✅ Token válido · Usuário: ${d.name} · Expira: ${expStr}`, 'green');
+  } catch(e) {
+    toast('Token inválido: ' + e.message, 'red');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SINCRONIZAR — busca campanhas e insights da Meta API
+// ══════════════════════════════════════════════════════
+async function sincronizarMetaAds() {
+  if (!metaState.token || !metaState.account) {
+    toast('Configure a integração Meta Ads primeiro', 'yellow');
+    navTo('integrations', null);
+    return;
+  }
+
+  const btn    = document.getElementById('btn-sync');
+  const status = document.getElementById('sync-status');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Buscando...'; }
+  if (status) { status.textContent = '⟳ Conectando à Meta API...'; status.style.color = 'var(--yellow)'; }
+
+  try {
+    // ── Passo 1: busca campanhas via GET (nunca POST para leitura) ──
+    const campResp = await fetch(
+      `https://graph.facebook.com/${metaState.apiVersion}/${metaState.account}/campaigns` +
+      `?fields=id,name,status,daily_budget,lifetime_budget` +
+      `&limit=100` +
+      `&access_token=${metaState.token}`
+    );
+    const campData = await campResp.json();
+    if (campData.error) throw new Error(campData.error.message);
+
+    const todasCampanhas = (campData.data || [])
+      .filter(c => ['ACTIVE','PAUSED','CAMPAIGN_PAUSED'].includes(c.status));
+
+    if (todasCampanhas.length === 0) {
+      toast('Nenhuma campanha ativa encontrada nessa conta', 'yellow');
+      return;
+    }
+
+    if (status) status.textContent = `⟳ Buscando insights de ${todasCampanhas.length} campanhas...`;
+
+    // ── Passo 2: busca insights de cada campanha (últimos 7 dias) ──
+    const campanhasComInsights = await Promise.all(
+      todasCampanhas.map(c => buscarInsightsCampanha(c))
+    );
+
+    // ── Passo 3: injeta dados reais no workspace 0 (Agência Principal) ──
+    WORKSPACES[0].campanhas = campanhasComInsights;
+    WORKSPACES[0].nome = 'Meta Ads — Conta Real';
+
+    // Atualiza workspace selector
+    document.querySelector('#workspace-select option[value="0"]').textContent =
+      '📘 ' + WORKSPACES[0].nome;
+
+    wsIdx = 0;
+    renderDashboard();
+    renderCampaignsTable();
+
+    const ativas = campanhasComInsights.filter(c => c.status === 'ACTIVE').length;
+    toast(`✅ ${campanhasComInsights.length} campanhas carregadas · ${ativas} ativas`, 'green');
+
+    if (status) { status.textContent = '● Sincronizado'; status.style.color = 'var(--green)'; }
+
+  } catch(e) {
+    toast('Erro ao sincronizar: ' + e.message, 'red');
+    if (status) { status.textContent = '● Erro'; status.style.color = 'var(--red)'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '↻ Sincronizar'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// BUSCAR INSIGHTS — métricas reais por campanha
+// Suporta: Conversão, Leads, WhatsApp, Mensagens, Tráfego
+// ══════════════════════════════════════════════════════
+async function buscarInsightsCampanha(campanha) {
+  // Todos os tipos de conversão/resultado do Meta Ads
+  // Cobre: Compras, Leads, WhatsApp, Mensagens, Registros, Contatos
+  const TIPOS_CONV = [
+    'purchase', 'offsite_conversion.fb_pixel_purchase', 'omni_purchase',
+    'lead', 'offsite_conversion.fb_pixel_lead', 'onsite_conversion.lead_grouped',
+    'complete_registration', 'offsite_conversion.fb_pixel_complete_registration',
+    'contact', 'offsite_conversion.fb_pixel_contact',
+    'onsite_conversion.messaging_conversation_started_7d',
+    'onsite_conversion.messaging_first_reply',
+    'onsite_conversion.post_save',
+    'link_click', 'landing_page_view',
+    'initiate_checkout', 'offsite_conversion.fb_pixel_initiate_checkout',
+    'add_to_cart', 'offsite_conversion.fb_pixel_add_to_cart',
+    'schedule', 'offsite_conversion.fb_pixel_schedule',
+    'submit_application', 'offsite_conversion.fb_pixel_submit_application',
+  ];
+
+  const r2 = v => Math.round(v * 100) / 100;
+
+  try {
+    // Busca insights agregados do período (time_increment=all = 1 linha com total)
+    // Tenta last_7_days primeiro, fallback para last_30_days
+    const campos = 'spend,clicks,impressions,ctr,cpc,reach,actions,action_values,cost_per_action_type';
+
+    const url7d = `https://graph.facebook.com/${metaState.apiVersion}/${campanha.id}/insights` +
+      `?fields=${campos}&date_preset=last_7d&time_increment=all_days&access_token=${metaState.token}`;
+
+    const resp = await fetch(url7d);
+    const data = await resp.json();
+
+    // Log para debug no console do navegador (F12)
+    if (data.error) {
+      console.warn(`[${campanha.name}] Insight error:`, data.error.message);
+      throw new Error(data.error.message);
+    }
+
+    const rows = data.data || [];
+    console.log(`[${campanha.name}] Insights rows:`, rows.length, rows[0] || 'sem dados');
+
+    // Se sem dados nos últimos 7 dias, tenta last_30_days
+    if (rows.length === 0 || Number(rows[0]?.spend || 0) === 0) {
+      const url30d = `https://graph.facebook.com/${metaState.apiVersion}/${campanha.id}/insights` +
+        `?fields=${campos}&date_preset=last_30d&time_increment=all_days&access_token=${metaState.token}`;
+      const resp30 = await fetch(url30d);
+      const data30 = await resp30.json();
+      if (!data30.error && (data30.data || []).length > 0) {
+        rows.push(...data30.data);
+        campanha._periodo = '30 dias';
+        console.log(`[${campanha.name}] Usando last_30_days`);
+      }
+    }
+
+    let gastos=0, cliques=0, impressoes=0, conversoes=0, valorConv=0, alcance=0;
+    let melhorTipoConv = null; // rastreia qual tipo de resultado essa campanha usa
+
+    rows.forEach(r => {
+      gastos     += Number(r.spend       || 0);
+      cliques    += Number(r.clicks      || 0);
+      impressoes += Number(r.impressions || 0);
+      alcance    += Number(r.reach       || 0);
+
+      // Encontra o tipo de conversão principal desta campanha
+      const acoes = r.actions || [];
+      if (!melhorTipoConv && acoes.length > 0) {
+        // Pega o tipo com maior volume dentre os reconhecidos
+        const acoesConhecidas = acoes.filter(a => TIPOS_CONV.includes(a.action_type));
+        if (acoesConhecidas.length > 0) {
+          melhorTipoConv = acoesConhecidas.sort((a,b) => Number(b.value)-Number(a.value))[0].action_type;
+        }
+      }
+
+      // Soma conversões de todos os tipos reconhecidos
+      acoes.forEach(a => {
+        if (TIPOS_CONV.includes(a.action_type)) {
+          conversoes += Number(a.value || 0);
+        }
+      });
+
+      (r.action_values || []).forEach(a => {
+        if (TIPOS_CONV.includes(a.action_type)) {
+          valorConv += Number(a.value || 0);
+        }
+      });
+    });
+
+    const ctr  = impressoes > 0 ? (cliques/impressoes)*100 : 0;
+    const cpc  = cliques    > 0 ? gastos/cliques           : 0;
+    const cpa  = conversoes > 0 ? gastos/conversoes        : 0;
+    const roas = gastos     > 0 ? valorConv/gastos         : 0;
+    const cvr  = cliques    > 0 ? (conversoes/cliques)*100 : 0;
+
+    console.log(`[${campanha.name}] ✅ gastos=${gastos} conv=${conversoes} cpa=${cpa.toFixed(2)} roas=${roas.toFixed(2)}`);
+
+    return {
+      id:          campanha.id,
+      nome:        campanha.name,
+      fonte:       'Meta Ads',
+      status:      campanha.status,
+      periodo:     campanha._periodo || '7 dias',
+      tipoConv:    melhorTipoConv || 'N/A',
+      orcamento:   campanha.daily_budget ? Number(campanha.daily_budget)/100 : 0,
+      gastos:      r2(gastos),
+      cliques:     Math.round(cliques),
+      impressoes:  Math.round(impressoes),
+      alcance:     Math.round(alcance),
+      conversoes:  r2(conversoes),
+      valorConv:   r2(valorConv),
+      ctr:         r2(ctr),
+      cpc:         r2(cpc),
+      cpa:         r2(cpa),
+      roas:        r2(roas),
+      cvr:         r2(cvr),
+    };
+
+  } catch(e) {
+    console.error(`[${campanha.name}] Falha ao buscar insights:`, e.message);
+    return {
+      id: campanha.id, nome: campanha.name, fonte: 'Meta Ads',
+      status: campanha.status, periodo: 'erro', tipoConv: 'N/A',
+      orcamento: campanha.daily_budget ? Number(campanha.daily_budget)/100 : 0,
+      gastos:0, cliques:0, impressoes:0, alcance:0, conversoes:0, valorConv:0,
+      ctr:0, cpc:0, cpa:0, roas:0, cvr:0,
+    };
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SYNC BOTÃO DO DASHBOARD
+// ══════════════════════════════════════════════════════
+function simularSync() {
+  if (metaState.conectado) {
+    sincronizarMetaAds();
+  } else {
+    // Sem integração real: simula com dados demo
+    const btn    = document.getElementById('btn-sync');
+    const status = document.getElementById('sync-status');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Sincronizando...';
+    status.textContent = '⟳ Buscando dados...';
+    status.style.color = 'var(--yellow)';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '↻ Sincronizar';
+      status.textContent = '● Sincronizado';
+      status.style.color = 'var(--green)';
+      toast('Dados demo atualizados · Configure a integração Meta para dados reais', 'blue');
+      renderDashboard();
+    }, 1800);
+  }
+}
+
+// helper: desabilita botão durante loading
+function setBtnLoading(id, loading, label) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.disabled = loading;
+  el.textContent = label;
+}
+
+// ══════════════════════════════════════════════════════
+// ROI REAL — Sistema de Agendamento
+// Cruza dados de conversão com gastos de anúncios
+// ══════════════════════════════════════════════════════
+
+let roiDados = null; // cache dos dados de ROI
+
+/**
+ * Busca dados de ROI do Sistema de Agendamento.
+ * Endpoint: [URL_AGENDAMENTO]/exec?format=roi&dias=30
+ */
+async function sincronizarROI() {
+  const url  = GAS_AGENDAMENTO_URL
+               || document.getElementById('int-roi-url')?.value?.trim()
+               || localStorage.getItem('roi_url') || '';
+  const dias = document.getElementById('int-roi-dias')?.value || '30';
+
+  if (!url) {
+    toast('Configure a URL do Sistema de Agendamento em Integrações', 'yellow');
+    navTo('integrations', null);
+    return;
+  }
+
+  localStorage.setItem('roi_url',  url);
+  localStorage.setItem('roi_dias', dias);
+
+  setBtnLoading('btn-roi-sync', true, '⏳ Buscando conversões...');
+  const statusEl = document.getElementById('roi-status');
+  const badgeEl  = document.getElementById('roi-badge');
+  if (statusEl) statusEl.textContent = 'Buscando dados...';
+
+  try {
+    // Monta endpoint com login admin interno
+    const adminEmail = (typeof GAS_ADMIN_EMAIL !== 'undefined')
+      ? GAS_ADMIN_EMAIL : 'admin@empresa.com';
+    const endpoint = url
+      + (url.includes('?') ? '&' : '?')
+      + 'format=roi'
+      + '&dias=' + dias
+      + '&email=' + encodeURIComponent(adminEmail);
+
+    console.log('[ROI] Buscando com admin:', adminEmail);
+
+    // fetchGAS aplica proxy CORS automaticamente
+    const texto = await fetchGAS(endpoint);
+    let dados;
+    try {
+      dados = JSON.parse(texto);
+    } catch(parseErr) {
+      if (texto.includes('<html') || texto.includes('login')) {
+        throw new Error('O Web App requer login. Reimplante com "Acesso: Qualquer pessoa"');
+      }
+      throw new Error('Resposta inválida: ' + texto.slice(0, 120));
+    }
+    if (dados.ok === false) throw new Error(dados.erro || 'Erro desconhecido');
+
+    roiDados = dados;
+    renderizarROI(dados);
+
+    if (statusEl) statusEl.textContent = `${dados.periodo.diasHistorico} dias · ${dados.resumo.totalLeads} leads · atualizado agora`;
+    if (badgeEl)  badgeEl.innerHTML = '<span class="badge badge-green">● Conectado</span>';
+
+    toast(`✅ ROI carregado · ${dados.resumo.totalConvertidos} conversões · R$ ${dados.resumo.totalReceita.toFixed(2)}`, 'green');
+
+  } catch(e) {
+    if (badgeEl) badgeEl.innerHTML = '<span class="badge badge-red">● Erro</span>';
+    if (statusEl) statusEl.textContent = 'Erro: ' + e.message;
+    toast('Erro ao buscar ROI: ' + e.message, 'red');
+  } finally {
+    setBtnLoading('btn-roi-sync', false, '📊 Buscar ROI Real Agora');
+  }
+}
+
+/**
+ * Renderiza todos os painéis de ROI com os dados recebidos.
+ */
+function renderizarROI(dados) {
+  const r   = dados.resumo || {};
+  const p   = dados.plataformas || {};
+  const meta   = p.meta   || {};
+  const google = p.google || {};
+
+  // Atualiza label do período
+  const periodoEl = document.getElementById('roi-periodo-label');
+  if (periodoEl) {
+    periodoEl.textContent = `${dados.periodo.de} → ${dados.periodo.ate} · ${dados.periodo.diasHistorico} dias · ${dados.sistema}`;
+  }
+
+  // Cards de resumo geral
+  setText('roi-total-leads', r.totalLeads || 0);
+  setText('roi-total-conv',  r.totalConvertidos || 0);
+  setText('roi-receita-total', moeda(r.totalReceita));
+  setText('roi-taxa-geral', `Taxa: ${(r.taxaConversaoGeral||0).toFixed(1)}%`);
+  setText('roi-ticket-medio', `Ticket: ${moeda(r.ticketMedio)}`);
+
+  // ROI calculado (cruzando com gastos do Meta/Google se disponíveis)
+  const gastoMeta   = (estadoApp.dadosAnalise?.resumo?.totalGastos || 0);
+  const receitaTotal = r.totalReceita || 0;
+  if (gastoMeta > 0 && receitaTotal > 0) {
+    const roiPct  = ((receitaTotal - gastoMeta) / gastoMeta * 100).toFixed(0);
+    const roasReal = (receitaTotal / gastoMeta).toFixed(2);
+    const cor = roiPct >= 0 ? 'var(--green)' : 'var(--red)';
+    const el = document.getElementById('roi-calculado');
+    if (el) { el.textContent = `${roiPct >= 0 ? '+' : ''}${roiPct}%`; el.style.color = cor; }
+    setText('roi-roas-real', `ROAS real: ${roasReal}x`);
+  } else {
+    setText('roi-calculado', 'Sem gasto Ad');
+    setText('roi-roas-real', 'Sincronize as campanhas primeiro');
+  }
+
+  // Painéis por plataforma
+  renderPainelPlataforma('meta',   meta,   gastoMeta * 0.6); // estimativa Meta = 60% do gasto total
+  renderPainelPlataforma('google', google, gastoMeta * 0.4); // estimativa Google = 40%
+
+  // Tabela por loja (une Meta + Google)
+  renderTabelaLojas(meta.lojas || {}, google.lojas || {});
+
+  // Gráfico funil
+  renderChartFunil(dados);
+
+  // Navega para a view de ROI automaticamente
+  navTo('roi', document.querySelector('.nav-item[onclick*="roi"]'));
+}
+
+function renderPainelPlataforma(plat, dados, gastoEstimado) {
+  const el = document.getElementById(`roi-${plat}-content`);
+  const sm = document.getElementById(`roi-${plat}-semaforo`);
+  if (!el) return;
+
+  const leads    = dados.leads    || 0;
+  const conv     = dados.convertidos || 0;
+  const receita  = dados.receita  || 0;
+  const taxa     = dados.taxaConversao || 0;
+  const ticket   = dados.ticketMedio  || 0;
+  const comp     = dados.compareceram || 0;
+  const taxaComp = dados.taxaComparecimento || 0;
+
+  // ROI da plataforma (se tiver gasto)
+  let roiHtml = '';
+  if (gastoEstimado > 0) {
+    const roas = gastoEstimado > 0 ? (receita / gastoEstimado).toFixed(2) : '—';
+    const roi  = gastoEstimado > 0 ? (((receita - gastoEstimado) / gastoEstimado) * 100).toFixed(0) : '—';
+    const cor  = parseFloat(roi) >= 0 ? 'var(--green)' : 'var(--red)';
+    roiHtml = `
+      <div style="background:var(--bg);border-radius:var(--radius);padding:12px;margin-top:10px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px">ROI ESTIMADO (gasto aproximado)</div>
+        <div style="display:flex;gap:16px">
+          <div><div style="font-size:11px;color:var(--muted)">Gasto estimado</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700">${moeda(gastoEstimado)}</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">Receita</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--green)">${moeda(receita)}</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">ROAS Real</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accentL)">${roas}x</div></div>
+          <div><div style="font-size:11px;color:var(--muted)">ROI</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:${cor}">${roi >= 0 ? '+' : ''}${roi}%</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Semáforo da plataforma
+  const saude = taxa >= 30 ? 'green' : taxa >= 15 ? 'yellow' : 'red';
+  if (sm) sm.innerHTML = `<span class="badge badge-${saude}">${taxa.toFixed(1)}% conv.</span>`;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      <div class="card-sm" style="text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">LEADS</div>
+        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--blue)">${leads}</div>
+      </div>
+      <div class="card-sm" style="text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">COMPARECERAM</div>
+        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--yellow)">${comp}</div>
+        <div style="font-size:10px;color:var(--muted)">${taxaComp.toFixed(0)}%</div>
+      </div>
+      <div class="card-sm" style="text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">🟢 COMPRARAM</div>
+        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green)">${conv}</div>
+        <div style="font-size:10px;color:var(--muted)">${taxa.toFixed(1)}% dos leads</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+      <div>
+        <div style="font-size:11px;color:var(--muted)">Receita Total</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:var(--green)">${moeda(receita)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted)">Ticket Médio</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700">${moeda(ticket)}</div>
+      </div>
+    </div>
+    ${roiHtml}
+  `;
+}
+
+function renderTabelaLojas(lojasMetaObj, lojasGoogleObj) {
+  const el = document.getElementById('roi-lojas-content');
+  if (!el) return;
+
+  // Une lojas de ambas as plataformas
+  const todasLojas = new Set([...Object.keys(lojasMetaObj), ...Object.keys(lojasGoogleObj)]);
+
+  if (todasLojas.size === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhuma loja encontrada no período.</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Plataforma</th>
+            <th>Leads</th>
+            <th>Compareceram</th>
+            <th>🟢 Compraram</th>
+            <th>Taxa Conv.</th>
+            <th>Receita</th>
+            <th>Ticket Médio</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[...todasLojas].sort().flatMap(loja => {
+            const rows = [];
+            const meta   = lojasMetaObj[loja]   || null;
+            const google = lojasGoogleObj[loja]  || null;
+            if (meta)   rows.push(renderLinhaLoja(loja, '📘 Meta', meta,   'blue'));
+            if (google) rows.push(renderLinhaLoja(loja, '🔍 Google', google, 'green'));
+            return rows;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderLinhaLoja(loja, plat, d, cor) {
+  const taxa = (d.taxaConversao || 0).toFixed(1);
+  const corTaxa = parseFloat(taxa) >= 30 ? 'var(--green)' : parseFloat(taxa) >= 15 ? 'var(--yellow)' : 'var(--red)';
+  return `
+    <tr>
+      <td style="font-weight:600">${loja}</td>
+      <td><span class="badge badge-${cor}">${plat}</span></td>
+      <td class="mono text-blue">${d.leads || 0}</td>
+      <td class="mono text-yellow">${d.compareceram || 0}</td>
+      <td class="mono" style="color:var(--green);font-weight:700">${d.convertidos || 0}</td>
+      <td class="mono" style="color:${corTaxa};font-weight:700">${taxa}%</td>
+      <td class="mono" style="color:var(--green)">${moeda(d.receita || 0)}</td>
+      <td class="mono">${moeda(d.ticketMedio || 0)}</td>
+    </tr>
+  `;
+}
+
+function renderChartFunil(dados) {
+  const ctx = document.getElementById('chart-funil');
+  if (!ctx) return;
+
+  const meta   = dados.plataformas?.meta   || {};
+  const google = dados.plataformas?.google || {};
+
+  if (window._chartFunil) window._chartFunil.destroy();
+
+  window._chartFunil = new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Leads Gerados', 'Compareceram', '🟢 Compraram'],
+      datasets: [
+        {
+          label: '📘 Meta Ads',
+          data: [meta.leads||0, meta.compareceram||0, meta.convertidos||0],
+          backgroundColor: 'rgba(24,119,242,.6)',
+          borderColor: '#1877f2',
+          borderWidth: 1, borderRadius: 6,
+        },
+        {
+          label: '🔍 Google Ads',
+          data: [google.leads||0, google.compareceram||0, google.convertidos||0],
+          backgroundColor: 'rgba(52,211,153,.5)',
+          borderColor: '#34d399',
+          borderWidth: 1, borderRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color:'#6060a0', font:{ family:'IBM Plex Mono', size:11 }, boxWidth:12 } },
+        tooltip: {
+          backgroundColor: '#16161f', borderColor: '#1e1e34', borderWidth: 1,
+          titleColor: '#e2e2f0', bodyColor: '#6060a0',
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} registros` }
+        }
+      },
+      scales: {
+        x: { grid:{ color:'rgba(30,30,52,.5)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 } } },
+        y: { grid:{ color:'rgba(30,30,52,.5)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 } } }
+      }
+    }
+  });
+}
+
+// Helper para setar texto com segurança
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// Restaura configuração de ROI salva
+(function restaurarROI() {
+  // URL embutida — sempre configurado
+  localStorage.setItem('roi_url', GAS_AGENDAMENTO_URL);
+  const inp = document.getElementById('int-roi-url');
+  if (inp) inp.value = GAS_AGENDAMENTO_URL;
+  const dias = localStorage.getItem('roi_dias') || '30';
+  const dEl = document.getElementById('int-roi-dias');
+  if (dEl) dEl.value = dias;
+  const b = document.getElementById('roi-badge');
+  if (b) b.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
+  const s = document.getElementById('roi-status');
+  if (s) s.textContent = 'Sistema de Agendamento vinculado — clique Buscar ROI';
+})();
+
+// ══════════════════════════════════════════════════════
+// INTEGRAÇÃO GOOGLE APPS SCRIPT — Sync de ROI
+// ══════════════════════════════════════════════════════
+
+/**
+ * Conecta e sincroniza dados do GAS Web App.
+ * A URL deve apontar para o endpoint: ?format=json
+ */
+async function conectarGAS() {
+  const url = document.getElementById('int-gas-url').value.trim();
+  if (!url) { toast('Cole a URL do Web App GAS', 'red'); return; }
+  if (!url.includes('script.google.com')) {
+    toast('URL inválida — deve ser do script.google.com', 'yellow');
+    return;
+  }
+
+  localStorage.setItem('gas_url', url);
+  setBtnLoading('btn-conectar-gas', true, '⏳ Sincronizando...');
+
+  try {
+    await sincronizarGAS(url);
+  } finally {
+    setBtnLoading('btn-conectar-gas', false, 'Sincronizar Agora');
+  }
+}
+
+async function testarGAS() {
+  const ADMIN_EMAIL_FALLBACK = (typeof GAS_ADMIN_EMAIL !== 'undefined') ? GAS_ADMIN_EMAIL : 'admin@empresa.com';
+  const url = (typeof GAS_AGENDAMENTO_URL !== 'undefined' ? GAS_AGENDAMENTO_URL : '') || document.getElementById('int-gas-url')?.value?.trim() || localStorage.getItem('gas_url') || '';
+  if (!url) { toast('URL não configurada', 'yellow'); return; }
+
+  toast('Testando conexão com o GAS...', 'blue');
+  try {
+    const gasUrl = url + (url.includes('?') ? '&' : '?') + 'format=json';
+    const texto = await fetchGAS(gasUrl);
+    let d;
+    try { d = JSON.parse(texto); } catch(e) {
+      throw new Error(texto.includes('login') ? 'Requer login: reimplante com "Acesso: Qualquer pessoa"' : 'Resposta inválida');
+    }
+    if (d.erro) throw new Error(d.erro);
+    toast(`✅ GAS respondeu · ${d.campanhas?.length || 0} campanhas · v${d.versao || '?'}`, 'green');
+  } catch(e) {
+    toast('Erro ao conectar: ' + e.message, 'red');
+  }
+}
+
+/**
+ * Busca dados do GAS e injeta no AdAnalyzer.
+ * Mescla campanhas GAS com campanhas já carregadas do Meta direto.
+ */
+async function sincronizarGAS(url) {
+  url = url || localStorage.getItem('gas_url');
+  if (!url) return;
+
+  try {
+    // Endpoint com autenticação admin silenciosa
+    const endpoint = url
+      + (url.includes('?') ? '&' : '?')
+      + `format=json&email=${encodeURIComponent((typeof GAS_ADMIN_EMAIL !== "undefined") ? GAS_ADMIN_EMAIL : "admin@empresa.com")}`;
+
+    const texto = await fetchGAS(endpoint);
+    let dados;
+    try { dados = JSON.parse(texto); }
+    catch(e) { throw new Error('GAS bloqueado por login. No GAS do Agendamento: Implantar → Gerenciar → Quem tem acesso: Qualquer pessoa'); }
+    if (dados.erro) throw new Error(dados.erro);
+
+    const campanhasGAS = dados.campanhas || [];
+    if (campanhasGAS.length === 0) {
+      toast('GAS retornou 0 campanhas — verifique as credenciais no Código.gs', 'yellow');
+      return;
+    }
+
+    // Injeta campanhas do GAS como workspace separado
+    const wsGAS = {
+      nome: '⚡ GAS — Meta + Google',
+      campanhas: campanhasGAS.map(c => ({
+        id:          c.id || 'gas-' + Math.random(),
+        nome:        c.nome,
+        fonte:       c.fonte || 'GAS Sync',
+        status:      c.status || 'ACTIVE',
+        orcamento:   c.orcamentoDiario || 0,
+        gastos:      c.gastos       || 0,
+        cliques:     c.cliques      || 0,
+        impressoes:  c.impressoes   || 0,
+        conversoes:  c.conversoes   || 0,
+        valorConv:   c.valorConversao || 0,
+        ctr:         c.ctr          || 0,
+        cpc:         c.cpc          || 0,
+        cpa:         c.cpa          || 0,
+        roas:        c.roas         || 0,
+        cvr:         c.cvr          || 0,
+      }))
+    };
+
+    // Adiciona ou atualiza workspace GAS
+    const idxExistente = WORKSPACES.findIndex(w => w.nome.includes('GAS'));
+    if (idxExistente >= 0) {
+      WORKSPACES[idxExistente] = wsGAS;
+    } else {
+      WORKSPACES.push(wsGAS);
+      // Adiciona opção no select de workspace
+      const sel = document.getElementById('workspace-select');
+      const opt = document.createElement('option');
+      opt.value = WORKSPACES.length - 1;
+      opt.textContent = wsGAS.nome;
+      sel.insertBefore(opt, sel.lastElementChild);
+    }
+
+    // Atualiza UI
+    const ts = new Date(dados.geradoEm || Date.now()).toLocaleString('pt-BR');
+    document.getElementById('gas-badge').innerHTML   = '<span class="badge badge-green">● Sincronizado</span>';
+    document.getElementById('gas-status').textContent = `${campanhasGAS.length} campanhas · ${ts}`;
+
+    const det = document.getElementById('gas-sync-details');
+    const res = dados.resumo || {};
+    det.innerHTML = `
+      ${campanhasGAS.length} campanhas · Gasto: <strong style="color:var(--yellow)">R$ ${(res.totalGastos||0).toFixed(2)}</strong>
+      · ROAS: <strong style="color:${res.roasMedio>=3?'var(--green)':'var(--red)'}">${(res.roasMedio||0).toFixed(2)}x</strong>
+      · CPA: <strong>R$ ${(res.cpaMedio||0).toFixed(2)}</strong>
+      · Conversões: <strong style="color:var(--blue)">${res.totalConversoes||0}</strong>
+    `;
+    document.getElementById('gas-last-sync').style.display = 'block';
+
+    // Muda para o workspace GAS automaticamente
+    wsIdx = WORKSPACES.findIndex(w => w.nome.includes('GAS'));
+    document.getElementById('workspace-select').value = wsIdx;
+    renderDashboard();
+    renderCampaignsTable();
+
+    toast(`✅ GAS sincronizado · ${campanhasGAS.length} campanhas · ROAS ${(res.roasMedio||0).toFixed(2)}x`, 'green');
+
+  } catch(e) {
+    document.getElementById('gas-badge').innerHTML = '<span class="badge badge-red">● Erro</span>';
+    toast('Erro GAS: ' + e.message, 'red');
+    throw e;
+  }
+}
+
+// Restaura URL do GAS e agenda auto-sync
+(function restaurarGAS() {
+  const url = GAS_AGENDAMENTO_URL || localStorage.getItem('gas_url');
+  if (!url) return;
+  localStorage.setItem('gas_url', url);
+  const inp = document.getElementById('int-gas-url');
+  if (inp) inp.value = url;
+  const badge  = document.getElementById('gas-badge');
+  const status = document.getElementById('gas-status');
+  if (badge)  badge.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
+  if (status) status.textContent = 'Clique em Sincronizar para buscar dados';
+})();
+
+// ══════════════════════════════════════════════════════
+// INTEGRAÇÃO CLAUDE IA
+// ══════════════════════════════════════════════════════
+
+function conectarClaude() {
+  const key = document.getElementById('int-claude-key').value.trim();
+  if (!key) { toast('Cole sua API key do Claude', 'red'); return; }
+  if (!key.startsWith('sk-ant-')) {
+    toast('API key inválida — deve começar com sk-ant-', 'yellow');
+    return;
+  }
+  localStorage.setItem('claude_api_key', key);
+  document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
+  document.getElementById('claude-status').textContent = 'API key salva ✅';
+  toast('Claude IA configurado! Vá em "Analisar com IA" para usar.', 'green');
+}
+
+async function testarClaude() {
+  const key = document.getElementById('int-claude-key').value.trim()
+              || localStorage.getItem('claude_api_key') || '';
+  if (!key) { toast('Cole sua API key primeiro', 'yellow'); return; }
+
+  toast('Testando conexão com o Claude...', 'blue');
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'x-api-key':      key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5', max_tokens: 20,
+        messages: [{ role: 'user', content: 'Responda apenas: OK' }]
+      })
+    });
+    const d = await resp.json();
+    if (d.error) throw new Error(d.error.message);
+    toast('✅ Claude respondeu: API key válida e funcionando!', 'green');
+    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
+    document.getElementById('claude-status').textContent = 'API key válida ✅';
+  } catch(e) {
+    toast('❌ Erro: ' + e.message, 'red');
+  }
+}
+
+// Restaura API key do Claude salva
+(function restaurarClaude() {
+  const k = localStorage.getItem('claude_api_key');
+  if (k) {
+    const inp = document.getElementById('int-claude-key');
+    if (inp) inp.value = k;
+    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
+    document.getElementById('claude-status').textContent = 'API key configurada ✅';
+  }
+})();
+
+// ══════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════
+function toast(msg, cor='blue') {
+  const el = document.createElement('div');
+  const cores = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',blue:'var(--blue)',purple:'var(--purple)'};
+  el.className = 'toast';
+  el.style.borderLeft = '3px solid ' + (cores[cor]||'var(--blue)');
+  el.textContent = msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; }, 3500);
+  setTimeout(() => el.remove(), 4000);
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+
+async function syncGASDashboard() {
+  const btn = document.getElementById('btn-sync-gas');
+  const url = GAS_AGENDAMENTO_URL || localStorage.getItem('gas_url');
+  if (!url) {
+    toast('URL do Sistema de Agendamento não configurada', 'yellow');
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '⏳ GAS...';
+  try {
+    await sincronizarGAS(url);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ GAS';
+  }
+}
+
+renderDashboard();
+renderCampaignsTable();
+
+// Auto-busca ROI ao carregar (só quando aberto pelo abrir.bat)
+(async function autoCarregarROI() {
+  // Só executa automaticamente se aberto via file:// (abrir.bat)
+  if (window.location.protocol !== 'file:') return;
+  try {
+    await new Promise(r => setTimeout(r, 1500)); // aguarda page load
+    await sincronizarROI();
+  } catch(e) {
+    console.warn('[ROI auto-load]', e.message);
+  }
+})();
+
+// Restaura credenciais salvas e atualiza badge de status
+(function restaurarSessao() {
+  const t = localStorage.getItem('meta_token');
+  const a = localStorage.getItem('meta_account');
+  if (t && a) {
+    metaState.token   = t;
+    metaState.account = a;
+    metaState.conectado = true;
+    document.getElementById('meta-badge').innerHTML =
+      '<span class="badge badge-green">● Conectado</span>';
+    document.getElementById('meta-status').textContent = a;
+    // Informa no dashboard que há integração ativa
+    const info = document.getElementById('meta-sync-info');
+    if (info) info.textContent = '📘 Meta conectado · clique para atualizar';
+    toast('Integração Meta restaurada · clique em Sincronizar para atualizar dados', 'blue');
+  }
+})();
+</script>
+</body>
+</html>
