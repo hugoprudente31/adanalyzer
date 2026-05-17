@@ -1,0 +1,3 @@
+[deploy]
+startCommand = "node servidor.js"
+healthcheckPath = "/api/status"
