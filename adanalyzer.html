@@ -461,7 +461,7 @@ select.inp{cursor:pointer}
           <div class="ai-avatar">🤖</div>
           <div>
             <div style="font-weight:600;font-size:13px">Claude — Especialista em Tráfego Pago</div>
-            <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace" id="ai-model-tag">claude-sonnet-4-5</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace" id="ai-model-tag">claude-sonnet-4-6</div>
           </div>
           <div style="margin-left:auto" id="ai-status-badge"></div>
         </div>
@@ -2963,7 +2963,7 @@ Por favor, analise e forneça recomendações práticas e priorizadas.`;
     // Sempre usa o proxy do servidor (funciona em localhost E Railway)
     const claudeEndpoint = '/api/claude';
     const claudeHeaders  = { 'Content-Type': 'application/json' };
-    const claudeBody     = { apiKey: claudeKey, model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
+    const claudeBody     = { apiKey: claudeKey, model: 'claude-sonnet-4-6', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
 
     const resp = await fetch(claudeEndpoint, {
       method: 'POST',
@@ -5373,7 +5373,7 @@ async function rodarAnaliseRapida(tipo) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey: key,
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1200,
         system: 'Voce e um especialista em trafego pago com 10+ anos de experiencia em Meta Ads e Google Ads. Responda em portugues brasileiro de forma direta e pratica, com dados especificos e acoes concretas.',
         messages: [{ role: 'user', content: cfg.buildPrompt(camps) }],
@@ -5426,12 +5426,14 @@ async function testarClaude() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey: key,
-        model: 'claude-sonnet-4-5', max_tokens: 20,
+        model: 'claude-sonnet-4-6', max_tokens: 20,
         messages: [{ role: 'user', content: 'Responda apenas: OK' }]
       })
     });
     const d = await resp.json();
     if (d.error) throw new Error(d.error.message);
+    // Salva a key no localStorage ao confirmar que é válida
+    localStorage.setItem('claude_api_key', key);
     toast('✅ Claude respondeu: API key válida e funcionando!', 'green');
     document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
     document.getElementById('claude-status').textContent = 'API key válida ✅';
