@@ -5142,7 +5142,7 @@ function conectarGTM() {
   if (preview) {
     preview.style.display = 'block';
     preview.innerHTML = '&lt;!-- Google Tag Manager --&gt;<br>' +
-      '&lt;script&gt;(function(w,d,s,l,i){...})(' + "'window','document','script','dataLayer','" + id + "');&lt;/script&gt;<br>' +
+      '&lt;script&gt;(function(w,d,s,l,i){...})(' + id + ');&lt;/script&gt;<br>' +
       '&lt;!-- Adicione no &lt;head&gt; do seu site --&gt;';
   }
   toast('GTM ' + id + ' configurado! Adicione a tag ao seu site para rastrear conversões.', 'green');
