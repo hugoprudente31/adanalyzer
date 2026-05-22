@@ -226,9 +226,6 @@ select.inp{cursor:pointer}
   <div class="nav-item" onclick="navTo('reports',this)">
     <span>📋</span> Relatórios
   </div>
-  <div class="nav-item" onclick="navTo('roi',this)">
-    <span>📊</span> ROI Real
-  </div>
   <div class="nav-item" onclick="navTo('funil',this)">
     <span>🎯</span> Funil Budget
   </div>
@@ -563,49 +560,68 @@ select.inp{cursor:pointer}
       </div>
     </div>
   </div>
-</div>
 
-</div>
-
-  <!-- ROI Real card -->
-  <div class="card" style="margin-top:16px;border-color:rgba(245,158,11,.3)">
+  <!-- CRM e Ferramentas -->
+  <div class="card" style="margin-top:16px;border-color:rgba(16,185,129,.25)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔗</div>
       <div>
-        <div style="font-weight:600">ROI Real — Sistema de Agendamento</div>
-        <div id="roi-status" class="text-sm text-muted">Não configurado</div>
+        <div style="font-weight:600">CRM e Ferramentas</div>
+        <div style="font-size:12px;color:var(--muted)">Conecte seu CRM para cruzar leads com anúncios</div>
       </div>
-      <div style="margin-left:auto" id="roi-badge"><span class="badge badge-red">Desconectado</span></div>
     </div>
     <div class="stack">
-      <div>
-        <label>URL do Sistema de Agendamento (GAS)</label>
-        <input class="inp inp-mono" id="int-roi-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
-      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
+      <!-- Kommo CRM -->
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">🟣 Kommo CRM <span style="font-size:10px;color:var(--muted);font-weight:400">(ex-amoCRM)</span></div>
+        <div class="stack">
+          <div>
+            <label>Domínio da conta</label>
+            <input class="inp inp-mono" id="crm-kommo-domain" placeholder="suaconta.kommo.com" oninput="saveCrmField('kommo_domain',this.value)">
+          </div>
+          <div>
+            <label>Access Token (OAuth)</label>
+            <input class="inp inp-mono" id="crm-kommo-token" type="password" placeholder="Bearer token do Kommo" oninput="saveCrmField('kommo_token',this.value)">
+          </div>
+          <div id="crm-kommo-badge"><span class="badge badge-red">● Não configurado</span></div>
+        </div>
       </div>
-      <div>
-        <label>Período de análise (dias)</label>
-        <select class="inp" id="int-roi-dias">
-          <option value="7">Últimos 7 dias</option>
-          <option value="14">Últimos 14 dias</option>
-          <option value="30" selected>Últimos 30 dias</option>
-          <option value="60">Últimos 60 dias</option>
-          <option value="90">Últimos 90 dias</option>
-        </select>
+      <!-- Kondado -->
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">🔵 Kondado</div>
+        <div class="stack">
+          <div>
+            <label>API Key</label>
+            <input class="inp inp-mono" id="crm-kondado-key" type="password" placeholder="API Key do Kondado" oninput="saveCrmField('kondado_key',this.value)">
+          </div>
+          <div id="crm-kondado-badge"><span class="badge badge-red">● Não configurado</span></div>
+        </div>
       </div>
-      <button class="btn btn-primary" id="btn-roi-sync" onclick="sincronizarROI()" style="width:100%;justify-content:center">
-        📊 Buscar ROI Real Agora
-      </button>
-      <div class="divider"></div>
+      <!-- Outras ferramentas -->
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">⚙️ Outra ferramenta</div>
+        <div class="stack">
+          <div>
+            <label>Nome da ferramenta</label>
+            <input class="inp" id="crm-outro-nome" placeholder="Ex: HubSpot, RD Station, Pipedrive" oninput="saveCrmField('outro_nome',this.value)">
+          </div>
+          <div>
+            <label>API Key / Token</label>
+            <input class="inp inp-mono" id="crm-outro-token" type="password" placeholder="Token de API" oninput="saveCrmField('outro_token',this.value)">
+          </div>
+          <div>
+            <label>Webhook URL (opcional)</label>
+            <input class="inp inp-mono" id="crm-outro-webhook" placeholder="https://sua-ferramenta.com/webhook">
+          </div>
+        </div>
+      </div>
       <div style="font-size:11px;color:var(--muted);line-height:1.7">
-        💡 O sistema de agendamento rastreia:<br>
-        <span style="color:var(--green)">🟢 Semáforo verde</span> = cliente <strong>compareceu e comprou</strong><br>
-        <span style="color:var(--blue)">📘 Meta Ads</span> = tags <span class="font-mono">origem:facebook</span>, <span class="font-mono">origem:instagram</span>, <span class="font-mono">origem:trafego-pago</span><br>
-        <span style="color:var(--green)">🔍 Google Ads</span> = tags <span class="font-mono">origem:google</span>, <span class="font-mono">origem:site</span><br><br>
-        O ROI é calculado cruzando o gasto das plataformas com a receita real gerada.
+        💡 As credenciais são salvas apenas no <strong>localStorage do seu navegador</strong>. Nunca são enviadas a servidores externos.
       </div>
     </div>
   </div>
+</div>
+
 </div>
 
 <!-- ══════════════════════════════════ VIEW: ALERTS -->
@@ -732,89 +748,6 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: ROI REAL -->
-<div class="view" id="view-roi">
-  <div class="row-between" style="margin-bottom:20px">
-    <div>
-      <div class="page-title">ROI Real por Plataforma</div>
-      <div class="page-sub" id="roi-periodo-label">Dados do sistema de agendamento · conversões reais</div>
-    </div>
-    <button class="btn btn-primary" onclick="sincronizarROI()">↻ Atualizar ROI</button>
-  </div>
-
-  <!-- Cards de resumo geral -->
-  <div class="grid-4" id="roi-resumo-cards" style="margin-bottom:16px">
-    <div class="card">
-      <div class="metric-label">💸 TOTAL LEADS</div>
-      <div class="metric-val text-text" id="roi-total-leads">—</div>
-      <div class="metric-sub text-muted">período selecionado</div>
-    </div>
-    <div class="card">
-      <div class="metric-label">✅ CONVERTIDOS</div>
-      <div class="metric-val text-success" id="roi-total-conv">—</div>
-      <div class="metric-sub text-muted" id="roi-taxa-geral">Taxa: —%</div>
-    </div>
-    <div class="card">
-      <div class="metric-label">💰 RECEITA REAL</div>
-      <div class="metric-val text-yellow" id="roi-receita-total">R$ —</div>
-      <div class="metric-sub text-muted" id="roi-ticket-medio">Ticket: R$ —</div>
-    </div>
-    <div class="card">
-      <div class="metric-label">📈 ROI CALCULADO</div>
-      <div class="metric-val" id="roi-calculado" style="color:var(--accentL)">—</div>
-      <div class="metric-sub text-muted" id="roi-roas-real">ROAS real: —x</div>
-    </div>
-  </div>
-
-  <!-- Comparativo por plataforma -->
-  <div class="grid-2" style="margin-bottom:16px">
-
-    <!-- Meta Ads ROI -->
-    <div class="card" id="roi-meta-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(24,119,242,.15);display:flex;align-items:center;justify-content:center;font-size:20px">📘</div>
-        <div>
-          <div style="font-weight:700;font-size:14px">Meta Ads</div>
-          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">Facebook + Instagram + Tráfego Pago</div>
-        </div>
-        <div id="roi-meta-semaforo" style="margin-left:auto"></div>
-      </div>
-      <div id="roi-meta-content">
-        <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
-      </div>
-    </div>
-
-    <!-- Google Ads ROI -->
-    <div class="card" id="roi-google-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔍</div>
-        <div>
-          <div style="font-weight:700;font-size:14px">Google Ads</div>
-          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">Site + Orgânico + Google</div>
-        </div>
-        <div id="roi-google-semaforo" style="margin-left:auto"></div>
-      </div>
-      <div id="roi-google-content">
-        <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROI por loja -->
-  <div class="card" id="roi-lojas-card">
-    <div class="section-title">🏪 ROI por Loja</div>
-    <div id="roi-lojas-content">
-      <div style="text-align:center;padding:20px;color:var(--muted)">Aguardando sincronização...</div>
-    </div>
-  </div>
-
-  <!-- Funil de conversão -->
-  <div class="card">
-    <div class="section-title">🎯 Funil de Conversão</div>
-    <div style="height:220px;position:relative"><canvas id="chart-funil"></canvas></div>
-  </div>
-</div>
-
 <!-- ══════════════════════════════════ VIEW: REPORTS -->
 <div class="view" id="view-reports">
   <div class="page-title">Relatórios</div>
@@ -847,54 +780,92 @@ select.inp{cursor:pointer}
 <div class="view" id="view-funil">
   <div class="row-between" style="margin-bottom:20px">
     <div>
-      <div class="page-title">Funil de Budget</div>
-      <div class="page-sub">Distribua o orçamento diário por etapa do funil e visualize a arquitetura estratégica</div>
+      <div class="page-title">Funil de Conversão</div>
+      <div class="page-sub">Do primeiro contato até a conversão — WhatsApp · Mensagens · Formulários · Leads</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="funil-badge"><span class="badge badge-yellow">● Planejamento</span></div>
+      <button class="btn btn-ghost" onclick="atualizarFunil()">↻ Atualizar</button>
     </div>
   </div>
-  <div class="grid-2" style="align-items:start">
-    <div class="card">
-      <div class="section-title">💰 Budget Diário Total</div>
-      <div class="row-between" style="margin-bottom:8px">
-        <span style="font-size:12px;color:var(--muted)">Arraste para ajustar</span>
-        <span class="font-mono" style="color:var(--accentL);font-size:18px;font-weight:700" id="funil-total-lbl">R$ 590</span>
-      </div>
-      <input type="range" min="100" max="5000" value="590" step="10" id="funil-slider"
-        class="budget-slider" style="margin-bottom:20px" oninput="atualizarFunil()">
-      <div class="section-title" style="margin-top:4px">🎯 Distribuição por Etapa</div>
-      <div id="funil-bars"></div>
+
+  <!-- Filtros por objetivo de campanha -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin-bottom:10px">🎯 Selecionar Campanhas por Objetivo</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="funil-obj-filters">
+      <div style="font-size:12px;color:var(--muted);padding:4px">Conecte o Meta Ads para ver os objetivos das suas campanhas</div>
     </div>
+    <div id="funil-filter-actions" style="display:none;margin-top:10px;gap:8px">
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="funil_selecionarTodos(true)">✓ Todos</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="funil_selecionarTodos(false)">✗ Nenhum</button>
+    </div>
+  </div>
+
+  <div class="grid-2" style="align-items:start;margin-bottom:16px">
+    <!-- FUNIL VISUAL Power BI -->
     <div class="card">
-      <div class="section-title">📋 Estratégia por Estágio</div>
-      <div class="stack">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#6366f1;margin-bottom:6px;letter-spacing:.06em">TOPO — Descoberta</div>
-          <div style="font-size:12px;color:var(--muted);border-left:2px solid #6366f140;padding-left:10px;line-height:2">
-            → Públicos frios — interesses amplos<br>→ Lookalike 5–10%<br>→ Vídeo de conscientização<br>→ CPM como métrica principal
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#8b5cf6;margin-bottom:6px;letter-spacing:.06em">MEIO — Consideração</div>
-          <div style="font-size:12px;color:var(--muted);border-left:2px solid #8b5cf640;padding-left:10px;line-height:2">
-            → Visitantes do site 7–30 dias<br>→ Engajadores de vídeo 25–75%<br>→ Lookalike 1–3% de compradores<br>→ CTR e CPC como foco
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#a855f7;margin-bottom:6px;letter-spacing:.06em">FUNDO — Decisão</div>
-          <div style="font-size:12px;color:var(--muted);border-left:2px solid #a855f740;padding-left:10px;line-height:2">
-            → Remarketing 1–3 dias<br>→ Adicionou ao carrinho / agendou<br>→ Oferta direta + urgência<br>→ CPA e ROAS como foco
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#c026d3;margin-bottom:6px;letter-spacing:.06em">RETENÇÃO — Fidelização</div>
-          <div style="font-size:12px;color:var(--muted);border-left:2px solid #c026d340;padding-left:10px;line-height:2">
-            → Compradores 30–180 dias<br>→ Upsell e cross-sell<br>→ LTV e repeat purchase<br>→ Audiências de valor
-          </div>
+      <div class="section-title">📊 Funil Visual</div>
+      <div id="funil-visual" style="padding:8px 0 4px">
+        <div style="text-align:center;padding:40px;color:var(--muted)">
+          <div style="font-size:36px;margin-bottom:10px">📡</div>
+          <div style="font-size:13px">Conecte o Meta Ads para ver o funil real</div>
         </div>
       </div>
     </div>
+    <!-- MÉTRICAS POR ETAPA -->
+    <div class="card">
+      <div class="section-title">📈 Métricas por Etapa</div>
+      <div id="funil-metricas" class="stack">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados...</div>
+      </div>
+    </div>
   </div>
-  <div class="card" style="margin-top:16px">
-    <div class="section-title">📊 Resumo de Alocação</div>
+
+  <!-- LEADS POR CANAL -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title">💬 Captação de Leads por Canal</div>
+    <div id="funil-leads-channels" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px">
+      <div class="card" style="text-align:center;border-color:#25D36640">
+        <div style="font-size:28px;margin-bottom:6px">💬</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#25D366;margin-bottom:4px">WHATSAPP</div>
+        <div style="font-size:24px;font-weight:700;color:#25D366;font-family:'IBM Plex Mono',monospace" id="funil-ch-wpp">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Conversas iniciadas</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:#0EA5E940">
+        <div style="font-size:28px;margin-bottom:6px">📝</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#0EA5E9;margin-bottom:4px">FORMULÁRIOS</div>
+        <div style="font-size:24px;font-weight:700;color:#0EA5E9;font-family:'IBM Plex Mono',monospace" id="funil-ch-form">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Leads por form</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:#10b98140">
+        <div style="font-size:28px;margin-bottom:6px">🛒</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#10b981;margin-bottom:4px">COMPRAS</div>
+        <div style="font-size:24px;font-weight:700;color:#10b981;font-family:'IBM Plex Mono',monospace" id="funil-ch-compra">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Conversões de venda</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:#8b5cf640">
+        <div style="font-size:28px;margin-bottom:6px">✅</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#8b5cf6;margin-bottom:4px">OUTROS</div>
+        <div style="font-size:24px;font-weight:700;color:#8b5cf6;font-family:'IBM Plex Mono',monospace" id="funil-ch-outros">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Outros resultados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANEJAMENTO (sem dados reais) -->
+  <div id="funil-planning-mode" class="card" style="margin-bottom:16px">
+    <div class="section-title">💰 Planejamento de Budget (mode simulação)</div>
+    <div class="row-between" style="margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)">Arraste para ajustar o budget diário</span>
+      <span class="font-mono" style="color:var(--accentL);font-size:18px;font-weight:700" id="funil-total-lbl">R$ 590</span>
+    </div>
+    <input type="range" min="100" max="5000" value="590" step="10" id="funil-slider" class="budget-slider" style="margin-bottom:16px" oninput="atualizarFunil()">
+    <div id="funil-bars"></div>
+  </div>
+
+  <!-- RESUMO BUDGET POR ETAPA -->
+  <div class="card">
+    <div class="section-title">📊 Resumo de Alocação por Etapa do Funil</div>
     <div class="grid-4" id="funil-summary"></div>
   </div>
 </div>
@@ -948,8 +919,8 @@ select.inp{cursor:pointer}
 <div class="view" id="view-localidades">
   <div class="row-between" style="margin-bottom:20px">
     <div>
-      <div class="page-title">Localidades</div>
-      <div class="page-sub">De onde vêm as pessoas que veem e clicam nos seus anúncios · últimos 30 dias · Meta Ads</div>
+      <div class="page-title">Localidades e Comportamento</div>
+      <div class="page-sub">Onde estão e como se comportam as pessoas que veem seus anúncios · Meta Ads · últimos 30 dias</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div id="loc-badge"><span class="badge badge-red">● Desconectado</span></div>
@@ -957,27 +928,52 @@ select.inp{cursor:pointer}
     </div>
   </div>
 
-  <div class="card">
-    <div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
-      <div>#</div>
-      <div>REGIÃO / ESTADO</div>
-      <div>GASTO</div>
-      <div>IMPRESSÕES</div>
-      <div>CLIQUES</div>
-      <div>CTR</div>
-      <div>CONVERSÕES</div>
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px">
+    <button id="loc-tab-cidades" onclick="locSetTab('cidades')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500">📍 Cidades</button>
+    <button id="loc-tab-comportamento" onclick="locSetTab('comportamento')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit">👥 Comportamento</button>
+  </div>
+
+  <!-- Tab: Cidades -->
+  <div id="loc-panel-cidades">
+    <div class="card">
+      <div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
+        <div>#</div><div>CIDADE</div><div>GASTO</div><div>IMPRESSÕES</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
+      </div>
+      <div id="loc-table-body">
+        <div style="padding:48px;text-align:center;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:14px">📍</div>
+          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver cidades</div>
+          <div style="font-size:12px">Veja de quais cidades do Brasil vêm os cliques nos seus anúncios</div>
+        </div>
+      </div>
     </div>
-    <div id="loc-table-body">
-      <div style="padding:48px;text-align:center;color:var(--muted)">
-        <div style="font-size:40px;margin-bottom:14px">📍</div>
-        <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver localidades</div>
-        <div style="font-size:12px">Veja de quais estados e regiões do Brasil vêm os acessos aos seus anúncios</div>
+  </div>
+
+  <!-- Tab: Comportamento -->
+  <div id="loc-panel-comportamento" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-title">👤 Idade e Gênero</div>
+      <div id="loc-idade-genero" style="margin-top:10px">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Clique em Atualizar para carregar</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-title">📱 Dispositivos</div>
+      <div id="loc-dispositivos" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;width:100%">Clique em Atualizar para carregar</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📌 Posicionamentos — Onde seus anúncios aparecem</div>
+      <div id="loc-posicionamentos" style="margin-top:10px">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Clique em Atualizar para carregar</div>
       </div>
     </div>
   </div>
 
   <div style="font-size:11px;color:var(--muted);margin-top:10px">
-    Fonte: Meta Ads API · breakdown por região · últimos 30 dias · atualizado automaticamente ao sincronizar
+    Fonte: Meta Ads API · últimos 30 dias · atualizado ao sincronizar
   </div>
 </div>
 
@@ -1660,98 +1656,6 @@ function renderProjecao(camps, metaROAS) {
 }
 
 // ══════════════════════════════════════════════════════
-// CONFIGURAÇÃO DO SISTEMA DE AGENDAMENTO
-// URL de implantação embutida — não precisa configurar
-// ══════════════════════════════════════════════════════
-
-// URL do próprio projeto GAS — injetada pelo AdAnalyzer.gs via template
-// Quando rodando dentro do GAS, <?= gasUrl ?> é substituído pela URL real
-// Quando rodando local (VS Code), usa o valor hardcoded como fallback
-const GAS_AGENDAMENTO_URL = (function() {
-const GAS_ADMIN_EMAIL = 'admin@empresa.com';
-  const templateUrl = '<?= gasUrl ?>';
-  // Se o template foi processado pelo GAS, usa a URL dinâmica
-  if (templateUrl && !templateUrl.includes('<?=')) return templateUrl;
-  // Fallback para desenvolvimento local
-  return 'https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec';
-})();
-
-// ══════════════════════════════════════════════════════
-// CORS PROXY — necessário para chamar GAS do navegador
-// O GAS não inclui header Access-Control-Allow-Origin,
-// então usamos um proxy que adiciona esse header.
-// ══════════════════════════════════════════════════════
-
-/**
- * Envolve uma URL do GAS num proxy CORS público.
- * Usa corsproxy.io como primário e allorigins como fallback.
- * @param {string} url — URL do GAS Web App
- * @returns {string}  — URL com proxy aplicado
- */
-function aplicarCorsProxy(url) {
-  // Proxy 1: corsproxy.io (mais confiável)
-  return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-}
-
-/**
- * Fetch via proxy local Node.js (/api/gas).
- * O servidor local chama o GAS sem restrição de CORS.
- * Funciona tanto no VS Code (localhost:3000) quanto no GAS publicado.
- */
-async function fetchGAS(url) {
-  const proto = window.location.protocol;
-  const host  = window.location.hostname;
-  const port  = window.location.port;
-
-  const isFile   = proto === 'file:';
-  const isNode   = (host === 'localhost' || host === '127.0.0.1') && port === '3000';
-  const isRender = proto === 'https:' && !host.includes('script.google.com');
-  const isGAS    = host.includes('script.google.com');
-
-  // ── abrir.bat (file://) — CORS desabilitado, chamada direta ──
-  if (isFile) {
-    const resp = await fetch(url, {
-      redirect: 'follow', credentials: 'omit',
-      headers: { 'Accept': 'application/json, text/plain' },
-      signal: AbortSignal.timeout(30000)
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const text = await resp.text();
-    if (text.trim().startsWith('<')) throw new Error('GAS retornou HTML. Configure: Implantar → Qualquer pessoa');
-    return text;
-  }
-
-  // ── Node.js local (localhost:3000) ou Render.com (https) ──
-  // Ambos servem o /api/gas proxy no servidor
-  if (isNode || isRender) {
-    const gasUrl = new URL(url);
-    const params = new URLSearchParams(gasUrl.searchParams).toString();
-    const resp = await fetch('/api/gas?' + params, {
-      signal: AbortSignal.timeout(30000)
-    });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ erro: 'HTTP ' + resp.status }));
-      throw new Error(err.erro || 'HTTP ' + resp.status);
-    }
-    return await resp.text();
-  }
-
-  // ── GAS publicado — mesmo domínio, sem CORS ──
-  if (isGAS) {
-    const resp = await fetch(url, {
-      redirect: 'follow', credentials: 'omit',
-      headers: { 'Accept': 'application/json, text/plain' },
-      signal: AbortSignal.timeout(30000)
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    return await resp.text();
-  }
-
-  // ── Live Server ou outro ambiente ──
-  throw new Error('Use o abrir.bat para abrir o dashboard localmente, ou acesse pela URL pública do Render.');
-}
-
-// ══════════════════════════════════════════════════════
 // ESTADO DA INTEGRAÇÃO META
 // ══════════════════════════════════════════════════════
 let metaState = {
@@ -1985,6 +1889,7 @@ async function buscarInsightsCampanha(campanha) {
     }
 
     let gastos=0, cliques=0, impressoes=0, conversoes=0, valorConv=0, alcance=0;
+    var acoesObj = { whatsapp: 0, form: 0, compra: 0, mensagem: 0 };
     let melhorTipoConv = null; // rastreia qual tipo de resultado essa campanha usa
 
     rows.forEach(r => {
@@ -2008,6 +1913,13 @@ async function buscarInsightsCampanha(campanha) {
         if (TIPOS_CONV.includes(a.action_type)) {
           conversoes += Number(a.value || 0);
         }
+      });
+
+      // Captura tipos específicos de ação
+      acoes.forEach(a => {
+        if (['onsite_conversion.messaging_conversation_started_7d','onsite_conversion.messaging_first_reply'].indexOf(a.action_type) >= 0) acoesObj.whatsapp += Number(a.value||0);
+        if (['lead','offsite_conversion.fb_pixel_lead','onsite_conversion.lead_grouped'].indexOf(a.action_type) >= 0) acoesObj.form += Number(a.value||0);
+        if (['purchase','offsite_conversion.fb_pixel_purchase','omni_purchase'].indexOf(a.action_type) >= 0) acoesObj.compra += Number(a.value||0);
       });
 
       (r.action_values || []).forEach(a => {
@@ -2045,6 +1957,7 @@ async function buscarInsightsCampanha(campanha) {
       cpa:         r2(cpa),
       roas:        r2(roas),
       cvr:         r2(cvr),
+      acoes:       acoesObj,
     };
 
   } catch(e) {
@@ -2079,325 +1992,11 @@ function setBtnLoading(id, loading, label) {
   el.textContent = label;
 }
 
-// ══════════════════════════════════════════════════════
-// ROI REAL — Sistema de Agendamento
-// Cruza dados de conversão com gastos de anúncios
-// ══════════════════════════════════════════════════════
-
-let roiDados = null; // cache dos dados de ROI
-
-/**
- * Busca dados de ROI do Sistema de Agendamento.
- * Endpoint: [URL_AGENDAMENTO]/exec?format=roi&dias=30
- */
-async function sincronizarROI() {
-  const url  = GAS_AGENDAMENTO_URL
-               || document.getElementById('int-roi-url')?.value?.trim()
-               || localStorage.getItem('roi_url') || '';
-  const dias = document.getElementById('int-roi-dias')?.value || '30';
-
-  if (!url) {
-    toast('Configure a URL do Sistema de Agendamento em Integrações', 'yellow');
-    navTo('integrations', null);
-    return;
-  }
-
-  localStorage.setItem('roi_url',  url);
-  localStorage.setItem('roi_dias', dias);
-
-  setBtnLoading('btn-roi-sync', true, '⏳ Buscando conversões...');
-  const statusEl = document.getElementById('roi-status');
-  const badgeEl  = document.getElementById('roi-badge');
-  if (statusEl) statusEl.textContent = 'Buscando dados...';
-
-  try {
-    // Monta endpoint com login admin interno
-    const adminEmail = (typeof GAS_ADMIN_EMAIL !== 'undefined')
-      ? GAS_ADMIN_EMAIL : 'admin@empresa.com';
-    const endpoint = url
-      + (url.includes('?') ? '&' : '?')
-      + 'format=roi'
-      + '&dias=' + dias
-      + '&email=' + encodeURIComponent(adminEmail);
-
-    console.log('[ROI] Buscando com admin:', adminEmail);
-
-    // fetchGAS aplica proxy CORS automaticamente
-    const texto = await fetchGAS(endpoint);
-    let dados;
-    try {
-      dados = JSON.parse(texto);
-    } catch(parseErr) {
-      if (texto.includes('<html') || texto.includes('login')) {
-        throw new Error('O Web App requer login. Reimplante com "Acesso: Qualquer pessoa"');
-      }
-      throw new Error('Resposta inválida: ' + texto.slice(0, 120));
-    }
-    if (dados.ok === false) throw new Error(dados.erro || 'Erro desconhecido');
-
-    roiDados = dados;
-    renderizarROI(dados);
-
-    if (statusEl) statusEl.textContent = `${dados.periodo.diasHistorico} dias · ${dados.resumo.totalLeads} leads · atualizado agora`;
-    if (badgeEl)  badgeEl.innerHTML = '<span class="badge badge-green">● Conectado</span>';
-
-    toast(`✅ ROI carregado · ${dados.resumo.totalConvertidos} conversões · R$ ${dados.resumo.totalReceita.toFixed(2)}`, 'green');
-
-  } catch(e) {
-    if (badgeEl) badgeEl.innerHTML = '<span class="badge badge-red">● Erro</span>';
-    if (statusEl) statusEl.textContent = 'Erro: ' + e.message;
-    toast('Erro ao buscar ROI: ' + e.message, 'red');
-  } finally {
-    setBtnLoading('btn-roi-sync', false, '📊 Buscar ROI Real Agora');
-  }
-}
-
-/**
- * Renderiza todos os painéis de ROI com os dados recebidos.
- */
-function renderizarROI(dados) {
-  const r   = dados.resumo || {};
-  const p   = dados.plataformas || {};
-  const meta   = p.meta   || {};
-  const google = p.google || {};
-
-  // Atualiza label do período
-  const periodoEl = document.getElementById('roi-periodo-label');
-  if (periodoEl) {
-    periodoEl.textContent = `${dados.periodo.de} → ${dados.periodo.ate} · ${dados.periodo.diasHistorico} dias · ${dados.sistema}`;
-  }
-
-  // Cards de resumo geral
-  setText('roi-total-leads', r.totalLeads || 0);
-  setText('roi-total-conv',  r.totalConvertidos || 0);
-  setText('roi-receita-total', moeda(r.totalReceita));
-  setText('roi-taxa-geral', `Taxa: ${(r.taxaConversaoGeral||0).toFixed(1)}%`);
-  setText('roi-ticket-medio', `Ticket: ${moeda(r.ticketMedio)}`);
-
-  // ROI calculado (cruzando com gastos do Meta/Google se disponíveis)
-  const gastoMeta   = (estadoApp.dadosAnalise?.resumo?.totalGastos || 0);
-  const receitaTotal = r.totalReceita || 0;
-  if (gastoMeta > 0 && receitaTotal > 0) {
-    const roiPct  = ((receitaTotal - gastoMeta) / gastoMeta * 100).toFixed(0);
-    const roasReal = (receitaTotal / gastoMeta).toFixed(2);
-    const cor = roiPct >= 0 ? 'var(--green)' : 'var(--red)';
-    const el = document.getElementById('roi-calculado');
-    if (el) { el.textContent = `${roiPct >= 0 ? '+' : ''}${roiPct}%`; el.style.color = cor; }
-    setText('roi-roas-real', `ROAS real: ${roasReal}x`);
-  } else {
-    setText('roi-calculado', 'Sem gasto Ad');
-    setText('roi-roas-real', 'Sincronize as campanhas primeiro');
-  }
-
-  // Painéis por plataforma
-  renderPainelPlataforma('meta',   meta,   gastoMeta * 0.6); // estimativa Meta = 60% do gasto total
-  renderPainelPlataforma('google', google, gastoMeta * 0.4); // estimativa Google = 40%
-
-  // Tabela por loja (une Meta + Google)
-  renderTabelaLojas(meta.lojas || {}, google.lojas || {});
-
-  // Gráfico funil
-  renderChartFunil(dados);
-
-  // Navega para a view de ROI automaticamente
-  navTo('roi', document.querySelector('.nav-item[onclick*="roi"]'));
-}
-
-function renderPainelPlataforma(plat, dados, gastoEstimado) {
-  const el = document.getElementById(`roi-${plat}-content`);
-  const sm = document.getElementById(`roi-${plat}-semaforo`);
-  if (!el) return;
-
-  const leads    = dados.leads    || 0;
-  const conv     = dados.convertidos || 0;
-  const receita  = dados.receita  || 0;
-  const taxa     = dados.taxaConversao || 0;
-  const ticket   = dados.ticketMedio  || 0;
-  const comp     = dados.compareceram || 0;
-  const taxaComp = dados.taxaComparecimento || 0;
-
-  // ROI da plataforma (se tiver gasto)
-  let roiHtml = '';
-  if (gastoEstimado > 0) {
-    const roas = gastoEstimado > 0 ? (receita / gastoEstimado).toFixed(2) : '—';
-    const roi  = gastoEstimado > 0 ? (((receita - gastoEstimado) / gastoEstimado) * 100).toFixed(0) : '—';
-    const cor  = parseFloat(roi) >= 0 ? 'var(--green)' : 'var(--red)';
-    roiHtml = `
-      <div style="background:var(--bg);border-radius:var(--radius);padding:12px;margin-top:10px;border:1px solid var(--border)">
-        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px">ROI ESTIMADO (gasto aproximado)</div>
-        <div style="display:flex;gap:16px">
-          <div><div style="font-size:11px;color:var(--muted)">Gasto estimado</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700">${moeda(gastoEstimado)}</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">Receita</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--green)">${moeda(receita)}</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">ROAS Real</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accentL)">${roas}x</div></div>
-          <div><div style="font-size:11px;color:var(--muted)">ROI</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:${cor}">${roi >= 0 ? '+' : ''}${roi}%</div></div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Semáforo da plataforma
-  const saude = taxa >= 30 ? 'green' : taxa >= 15 ? 'yellow' : 'red';
-  if (sm) sm.innerHTML = `<span class="badge badge-${saude}">${taxa.toFixed(1)}% conv.</span>`;
-
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-      <div class="card-sm" style="text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">LEADS</div>
-        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--blue)">${leads}</div>
-      </div>
-      <div class="card-sm" style="text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">COMPARECERAM</div>
-        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--yellow)">${comp}</div>
-        <div style="font-size:10px;color:var(--muted)">${taxaComp.toFixed(0)}%</div>
-      </div>
-      <div class="card-sm" style="text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">🟢 COMPRARAM</div>
-        <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green)">${conv}</div>
-        <div style="font-size:10px;color:var(--muted)">${taxa.toFixed(1)}% dos leads</div>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
-      <div>
-        <div style="font-size:11px;color:var(--muted)">Receita Total</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:var(--green)">${moeda(receita)}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;color:var(--muted)">Ticket Médio</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700">${moeda(ticket)}</div>
-      </div>
-    </div>
-    ${roiHtml}
-  `;
-}
-
-function renderTabelaLojas(lojasMetaObj, lojasGoogleObj) {
-  const el = document.getElementById('roi-lojas-content');
-  if (!el) return;
-
-  // Une lojas de ambas as plataformas
-  const todasLojas = new Set([...Object.keys(lojasMetaObj), ...Object.keys(lojasGoogleObj)]);
-
-  if (todasLojas.size === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhuma loja encontrada no período.</div>';
-    return;
-  }
-
-  el.innerHTML = `
-    <div style="overflow-x:auto">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Loja</th>
-            <th>Plataforma</th>
-            <th>Leads</th>
-            <th>Compareceram</th>
-            <th>🟢 Compraram</th>
-            <th>Taxa Conv.</th>
-            <th>Receita</th>
-            <th>Ticket Médio</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${[...todasLojas].sort().flatMap(loja => {
-            const rows = [];
-            const meta   = lojasMetaObj[loja]   || null;
-            const google = lojasGoogleObj[loja]  || null;
-            if (meta)   rows.push(renderLinhaLoja(loja, '📘 Meta', meta,   'blue'));
-            if (google) rows.push(renderLinhaLoja(loja, '🔍 Google', google, 'green'));
-            return rows;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function renderLinhaLoja(loja, plat, d, cor) {
-  const taxa = (d.taxaConversao || 0).toFixed(1);
-  const corTaxa = parseFloat(taxa) >= 30 ? 'var(--green)' : parseFloat(taxa) >= 15 ? 'var(--yellow)' : 'var(--red)';
-  return `
-    <tr>
-      <td style="font-weight:600">${loja}</td>
-      <td><span class="badge badge-${cor}">${plat}</span></td>
-      <td class="mono text-blue">${d.leads || 0}</td>
-      <td class="mono text-yellow">${d.compareceram || 0}</td>
-      <td class="mono" style="color:var(--green);font-weight:700">${d.convertidos || 0}</td>
-      <td class="mono" style="color:${corTaxa};font-weight:700">${taxa}%</td>
-      <td class="mono" style="color:var(--green)">${moeda(d.receita || 0)}</td>
-      <td class="mono">${moeda(d.ticketMedio || 0)}</td>
-    </tr>
-  `;
-}
-
-function renderChartFunil(dados) {
-  const ctx = document.getElementById('chart-funil');
-  if (!ctx) return;
-
-  const meta   = dados.plataformas?.meta   || {};
-  const google = dados.plataformas?.google || {};
-
-  if (window._chartFunil) window._chartFunil.destroy();
-
-  window._chartFunil = new Chart(ctx.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['Leads Gerados', 'Compareceram', '🟢 Compraram'],
-      datasets: [
-        {
-          label: '📘 Meta Ads',
-          data: [meta.leads||0, meta.compareceram||0, meta.convertidos||0],
-          backgroundColor: 'rgba(24,119,242,.6)',
-          borderColor: '#1877f2',
-          borderWidth: 1, borderRadius: 6,
-        },
-        {
-          label: '🔍 Google Ads',
-          data: [google.leads||0, google.compareceram||0, google.convertidos||0],
-          backgroundColor: 'rgba(52,211,153,.5)',
-          borderColor: '#34d399',
-          borderWidth: 1, borderRadius: 6,
-        }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color:'#6060a0', font:{ family:'IBM Plex Mono', size:11 }, boxWidth:12 } },
-        tooltip: {
-          backgroundColor: '#16161f', borderColor: '#1e1e34', borderWidth: 1,
-          titleColor: '#e2e2f0', bodyColor: '#6060a0',
-          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} registros` }
-        }
-      },
-      scales: {
-        x: { grid:{ color:'rgba(30,30,52,.5)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 } } },
-        y: { grid:{ color:'rgba(30,30,52,.5)' }, ticks:{ color:'#6060a0', font:{ family:'IBM Plex Mono', size:10 } } }
-      }
-    }
-  });
-}
-
 // Helper para setar texto com segurança
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
 }
-
-// Restaura configuração de ROI salva
-(function restaurarROI() {
-  // URL embutida — sempre configurado
-  localStorage.setItem('roi_url', GAS_AGENDAMENTO_URL);
-  const inp = document.getElementById('int-roi-url');
-  if (inp) inp.value = GAS_AGENDAMENTO_URL;
-  const dias = localStorage.getItem('roi_dias') || '30';
-  const dEl = document.getElementById('int-roi-dias');
-  if (dEl) dEl.value = dias;
-  const b = document.getElementById('roi-badge');
-  if (b) b.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
-  const s = document.getElementById('roi-status');
-  if (s) s.textContent = 'Sistema de Agendamento vinculado — clique Buscar ROI';
-})();
-
 
 // ══════════════════════════════════════════════════════
 // PARTICLE FIELD
@@ -2473,7 +2072,7 @@ function sparklineSVG(data, color) {
 }
 
 // ══════════════════════════════════════════════════════
-// FUNIL DE BUDGET
+// FUNIL DE CONVERSÃO (Power BI)
 // ══════════════════════════════════════════════════════
 var FUNIL_STAGES = [
   { id: 'topo',     label: 'Topo',     pct: 40, color: '#6366f1' },
@@ -2491,88 +2090,198 @@ var OBJETIVO_FUNIL_MAP = {
   OUTCOME_SALES: 'fundo', OUTCOME_APP_PROMOTION: 'fundo',
 };
 
+var OBJETIVO_LABELS = {
+  BRAND_AWARENESS: 'Awareness', REACH: 'Alcance', VIDEO_VIEWS: 'Views de Video',
+  OUTCOME_AWARENESS: 'Awareness', TRAFFIC: 'Trafego', LINK_CLICKS: 'Cliques no Link',
+  ENGAGEMENT: 'Engajamento', POST_ENGAGEMENT: 'Engajamento', OUTCOME_TRAFFIC: 'Trafego',
+  OUTCOME_ENGAGEMENT: 'Engajamento', CONVERSIONS: 'Conversoes', LEAD_GENERATION: 'Geracao de Leads',
+  MESSAGES: 'Mensagens/WhatsApp', APP_INSTALLS: 'Instalacoes de App', CATALOG_SALES: 'Catalogo',
+  OUTCOME_LEADS: 'Leads', OUTCOME_SALES: 'Vendas', OUTCOME_APP_PROMOTION: 'App',
+};
+
 function classificarEtapaFunil(c) {
   var nome = (c.nome || '').toLowerCase();
   if (nome.includes('retarg') || nome.includes('remarketing') || nome.includes('retencao') || nome.includes('fideliz')) return 'retencao';
   return OBJETIVO_FUNIL_MAP[c.objetivo] || 'fundo';
 }
 
+var funilState = { filtros: [] };
+
+function funil_selecionarTodos(sel) {
+  document.querySelectorAll('#funil-obj-filters input[type=checkbox]').forEach(function(cb) { cb.checked = sel; });
+  funil_aplicarFiltros();
+}
+
+function funil_toggleObjetivo() { funil_aplicarFiltros(); }
+
+function funil_aplicarFiltros() {
+  funilState.filtros = [];
+  document.querySelectorAll('#funil-obj-filters input[type=checkbox]:checked').forEach(function(cb) {
+    funilState.filtros.push(cb.value);
+  });
+  renderFunilDados();
+}
+
 function atualizarFunil() {
-  var sliderEl = document.getElementById('funil-slider');
-  if (!sliderEl) return;
-
   var camps = campanhas();
-  var temDados = camps.length > 0;
+  var badge = document.getElementById('funil-badge');
+  var planMode = document.getElementById('funil-planning-mode');
 
-  if (temDados) {
-    // MODO REAL — agrupa campanhas reais por etapa do funil
-    var etapas = { topo: [], meio: [], fundo: [], retencao: [] };
-    camps.forEach(function(c) { etapas[classificarEtapaFunil(c)].push(c); });
-
-    var totalOrc = camps.reduce(function(s, c) { return s + (c.orcamento || 0); }, 0);
-    document.getElementById('funil-total-lbl').textContent = 'R$ ' + (totalOrc || 0).toLocaleString('pt-BR', {maximumFractionDigits:0}) + '/dia (real)';
-
-    document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
-      var eCamps = etapas[s.id] || [];
-      var valor  = eCamps.reduce(function(sum, c) { return sum + (c.orcamento || 0); }, 0);
-      var gasto  = eCamps.reduce(function(sum, c) { return sum + (c.gastos || 0); }, 0);
-      var pct    = totalOrc > 0 ? Math.round((valor / totalOrc) * 100) : 0;
-      var nomes  = eCamps.map(function(c) { return c.nome; }).join(' · ') || 'Nenhuma campanha nesta etapa';
-      return '<div class="funnel-bar" style="flex-direction:column;align-items:stretch;gap:6px;background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center">' +
-          '<div style="display:flex;align-items:center;gap:10px">' +
-            '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
-            '<div><div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
-            '<div style="font-size:10px;color:var(--muted)">' + eCamps.length + ' campanha(s) · ' + pct + '% do budget</div></div>' +
-          '</div>' +
-          '<div style="text-align:right">' +
-            '<div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '/dia</div>' +
-            '<div style="font-size:10px;color:var(--muted)">Gasto 7d: R$ ' + gasto.toFixed(0) + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="font-size:10px;color:var(--muted);padding:6px 0 2px 20px;border-top:1px solid ' + s.color + '20;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + nomes + '</div>' +
-      '</div>';
-    }).join('');
-
-    document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
-      var eCamps = etapas[s.id] || [];
-      var valor  = eCamps.reduce(function(sum, c) { return sum + (c.orcamento || 0); }, 0);
-      var roas   = eCamps.length > 0 ? (eCamps.reduce(function(sum, c) { return sum + (c.roas || 0); }, 0) / eCamps.length) : 0;
-      var pct    = totalOrc > 0 ? Math.round((valor / totalOrc) * 100) : 0;
-      return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
-        '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
-        '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
-        '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + pct + '% · ROAS ' + roas.toFixed(1) + 'x</div>' +
-      '</div>';
-    }).join('');
-
-  } else {
-    // MODO PLANEJAMENTO — sem Meta conectado, usa o slider
-    var total = parseInt(sliderEl.value);
-    document.getElementById('funil-total-lbl').textContent = 'R$ ' + total.toLocaleString('pt-BR') + ' (planejamento)';
-
-    document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
-      var valor = (s.pct / 100) * total;
-      return '<div class="funnel-bar" style="background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
-        '<div style="display:flex;align-items:center;gap:10px">' +
-          '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
-          '<div><div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
-          '<div style="font-size:11px;color:var(--muted)">' + s.pct + '% recomendado</div></div>' +
-        '</div>' +
-        '<div style="text-align:right"><div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
-        '<div style="font-size:10px;color:var(--muted)">por dia</div></div>' +
-      '</div>';
-    }).join('');
-
-    document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
-      var valor = (s.pct / 100) * total;
-      return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
-        '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
-        '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
-        '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + s.pct + '% · R$ ' + (valor * 30).toFixed(0) + '/mes</div>' +
-      '</div>';
-    }).join('');
+  if (!camps.length) {
+    if (badge) badge.innerHTML = '<span class="badge badge-yellow">● Planejamento</span>';
+    if (planMode) planMode.style.display = 'block';
+    renderFunilPlanning();
+    document.getElementById('funil-visual').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px;margin-bottom:10px">📡</div><div style="font-size:13px">Conecte o Meta Ads para ver o funil real</div></div>';
+    document.getElementById('funil-metricas').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Aguardando conexao com Meta Ads</div>';
+    document.getElementById('funil-obj-filters').innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px">Conecte o Meta Ads para ver os objetivos das campanhas</div>';
+    return;
   }
+
+  if (badge) badge.innerHTML = '<span class="badge badge-green">● ' + camps.length + ' campanhas</span>';
+  if (planMode) planMode.style.display = 'none';
+  renderFunilCheckboxes(camps);
+  renderFunilDados();
+}
+
+function renderFunilCheckboxes(camps) {
+  var objetivos = {};
+  camps.forEach(function(c) {
+    var obj = c.objetivo || 'CONVERSIONS';
+    if (!objetivos[obj]) objetivos[obj] = 0;
+    objetivos[obj]++;
+  });
+  var keys = Object.keys(objetivos);
+  if (!funilState.filtros.length) funilState.filtros = keys.slice();
+  var container = document.getElementById('funil-obj-filters');
+  if (!container) return;
+  container.innerHTML = keys.map(function(obj) {
+    var checked = funilState.filtros.indexOf(obj) >= 0;
+    return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:12px;user-select:none">' +
+      '<input type="checkbox" ' + (checked ? 'checked' : '') + ' value="' + obj + '" onchange="funil_toggleObjetivo()" style="accent-color:var(--accent)">' +
+      '<span style="font-weight:500">' + (OBJETIVO_LABELS[obj] || obj.replace(/_/g,' ')) + '</span>' +
+      '<span style="font-size:10px;color:var(--muted);margin-left:2px">(' + objetivos[obj] + ')</span>' +
+    '</label>';
+  }).join('');
+  var fa = document.getElementById('funil-filter-actions');
+  if (fa) fa.style.display = 'flex';
+}
+
+function renderFunilDados() {
+  var camps = campanhas();
+  var filtrados = funilState.filtros.length
+    ? camps.filter(function(c){ return funilState.filtros.indexOf(c.objetivo || 'CONVERSIONS') >= 0; })
+    : camps;
+  if (!filtrados.length) filtrados = camps;
+
+  var totalAlcance = filtrados.reduce(function(s,c){ return s+(c.alcance||0); }, 0);
+  var totalImpr    = filtrados.reduce(function(s,c){ return s+(c.impressoes||0); }, 0);
+  var totalCliques = filtrados.reduce(function(s,c){ return s+(c.cliques||0); }, 0);
+  var totalConv    = filtrados.reduce(function(s,c){ return s+(c.conversoes||0); }, 0);
+  var totalGasto   = filtrados.reduce(function(s,c){ return s+(c.gastos||0); }, 0);
+  var totalValor   = filtrados.reduce(function(s,c){ return s+(c.valorConv||0); }, 0);
+  var totalOrc     = filtrados.reduce(function(s,c){ return s+(c.orcamento||0); }, 0);
+  var totalWpp     = filtrados.reduce(function(s,c){ return s+(c.acoes&&c.acoes.whatsapp||0); }, 0);
+  var totalForm    = filtrados.reduce(function(s,c){ return s+(c.acoes&&c.acoes.form||0); }, 0);
+  var totalCompra  = filtrados.reduce(function(s,c){ return s+(c.acoes&&c.acoes.compra||0); }, 0);
+  var totalOutros  = Math.max(0, totalConv - totalWpp - totalForm - totalCompra);
+
+  // Power BI funnel stages
+  var stages = [
+    { label: 'Topo — Alcance',     value: totalAlcance, color: '#6366f1', icon: '👁️', metric: 'CPM R$' + (totalImpr > 0 ? ((totalGasto/totalImpr)*1000).toFixed(2) : '—') },
+    { label: 'Meio — Cliques',     value: totalCliques, color: '#8b5cf6', icon: '🖱️', metric: 'CPC R$' + (totalCliques > 0 ? (totalGasto/totalCliques).toFixed(2) : '—') },
+    { label: 'Fundo — Conversoes', value: totalConv,    color: '#a855f7', icon: '🎯', metric: 'CPA R$' + (totalConv > 0 ? (totalGasto/totalConv).toFixed(2) : '—') },
+  ];
+  if (totalWpp > 0)    stages.push({ label: 'WhatsApp',    value: totalWpp,    color: '#25D366', icon: '💬', metric: 'conversas' });
+  if (totalForm > 0)   stages.push({ label: 'Formularios', value: totalForm,   color: '#0EA5E9', icon: '📝', metric: 'leads form' });
+  if (totalCompra > 0) stages.push({ label: 'Compras',     value: totalCompra, color: '#10b981', icon: '🛒', metric: 'R$'+totalValor.toFixed(0) });
+
+  // Render visual
+  var maxVal = Math.max.apply(null, stages.map(function(s){ return s.value; })) || 1;
+  document.getElementById('funil-visual').innerHTML = stages.map(function(s, i) {
+    var pct  = Math.round((s.value / maxVal) * 55) + 45;
+    var next = stages[i+1];
+    var conv = next && s.value > 0 ? ((next.value/s.value)*100).toFixed(1) : null;
+    return '<div style="text-align:center;margin-bottom:4px">' +
+      '<div style="margin:0 auto;width:' + pct + '%;min-width:180px;background:' + s.color + ';border-radius:8px;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;transition:width .5s">' +
+        '<span style="font-size:18px">' + s.icon + '</span>' +
+        '<div style="text-align:center">' +
+          '<div style="font-weight:700;font-size:17px;color:#fff;font-family:\'IBM Plex Mono\',monospace">' + (s.value >= 1000 ? (s.value/1000).toFixed(1)+'k' : s.value.toLocaleString('pt-BR')) + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.85)">' + s.label + '</div>' +
+        '</div>' +
+        '<div style="font-size:10px;color:rgba(255,255,255,.75);font-family:\'IBM Plex Mono\',monospace;text-align:right">' + s.metric + '</div>' +
+      '</div>' +
+      (conv ? '<div style="font-size:10px;color:var(--muted);margin:3px 0;font-family:\'IBM Plex Mono\',monospace">↓ conv. ' + conv + '%</div>' : '') +
+    '</div>';
+  }).join('');
+
+  // Render metrics
+  var roas = totalGasto > 0 ? totalValor/totalGasto : 0;
+  var ctrM = totalImpr  > 0 ? (totalCliques/totalImpr)*100 : 0;
+  var metricas = [
+    { label:'Alcance Total',   val: totalAlcance.toLocaleString('pt-BR'), cor:'#6366f1', sub:'pessoas unicas atingidas' },
+    { label:'Impressoes',      val: totalImpr.toLocaleString('pt-BR'),    cor:'#8b5cf6', sub:'exibicoes do anuncio' },
+    { label:'CPM',             val: 'R$ '+(totalImpr > 0 ? ((totalGasto/totalImpr)*1000).toFixed(2) : '0'), cor:'#a855f7', sub:'custo por 1.000 impressoes' },
+    { label:'Cliques no Link', val: totalCliques.toLocaleString('pt-BR'), cor:'#8b5cf6', sub:'CTR: '+ctrM.toFixed(2)+'%' },
+    { label:'CPC',             val: 'R$ '+(totalCliques > 0 ? (totalGasto/totalCliques).toFixed(2) : '0'), cor:'#6366f1', sub:'custo por clique' },
+    { label:'Conversoes',      val: totalConv.toLocaleString('pt-BR'),    cor:'#10b981', sub:'CPA: R$ '+(totalConv > 0 ? (totalGasto/totalConv).toFixed(2) : '—') },
+    { label:'Gasto Total',     val: 'R$ '+totalGasto.toFixed(2),          cor:'#f59e0b', sub:'Budget: R$ '+totalOrc.toFixed(0)+'/dia' },
+    { label:'ROAS',            val: roas.toFixed(2)+'x',                  cor: roas>=3 ? '#10b981' : roas>=1.5 ? '#f59e0b' : '#ef4444', sub: roas>=3 ? 'Acima da meta (3x)' : 'Abaixo da meta' },
+  ];
+  document.getElementById('funil-metricas').innerHTML = metricas.map(function(m) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:6px;border-left:3px solid ' + m.cor + '">' +
+      '<div><div style="font-size:12px;font-weight:600">' + m.label + '</div><div style="font-size:10px;color:var(--muted)">' + m.sub + '</div></div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:' + m.cor + ';font-size:14px">' + m.val + '</div>' +
+    '</div>';
+  }).join('');
+
+  // Lead channels
+  var setText2 = function(id, v) { var el = document.getElementById(id); if(el) el.textContent = v > 0 ? Math.round(v).toLocaleString('pt-BR') : '—'; };
+  setText2('funil-ch-wpp', totalWpp);
+  setText2('funil-ch-form', totalForm);
+  setText2('funil-ch-compra', totalCompra);
+  setText2('funil-ch-outros', totalOutros);
+
+  // Budget summary by funnel stage
+  var etapas = { topo:[], meio:[], fundo:[], retencao:[] };
+  filtrados.forEach(function(c){ etapas[classificarEtapaFunil(c)].push(c); });
+  document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
+    var eCamps = etapas[s.id]||[];
+    var valor  = eCamps.reduce(function(sum,c){ return sum+(c.orcamento||0); }, 0);
+    var roasE  = eCamps.length ? (eCamps.reduce(function(sum,c){ return sum+(c.roas||0); },0)/eCamps.length) : 0;
+    var pct    = totalOrc > 0 ? Math.round((valor/totalOrc)*100) : 0;
+    return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
+      '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
+      '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + pct + '% · ROAS ' + roasE.toFixed(1) + 'x</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderFunilPlanning() {
+  var slider = document.getElementById('funil-slider');
+  if (!slider) return;
+  var total = parseInt(slider.value);
+  document.getElementById('funil-total-lbl').textContent = 'R$ ' + total.toLocaleString('pt-BR');
+  document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
+    var valor = (s.pct/100)*total;
+    return '<div class="funnel-bar" style="background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
+        '<div><div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + s.pct + '% recomendado</div></div>' +
+      '</div>' +
+      '<div style="text-align:right"><div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+      '<div style="font-size:10px;color:var(--muted)">por dia</div></div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
+    var valor = (s.pct/100)*total;
+    return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
+      '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
+      '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + s.pct + '% · R$ ' + (valor*30).toFixed(0) + '/mes</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════
@@ -2671,29 +2380,38 @@ function copiarUTM() {
 }
 
 // ══════════════════════════════════════════════════════
-// LOCALIDADES — breakdown por região da Meta Ads API
+// LOCALIDADES — cidades + comportamento da Meta Ads API
 // ══════════════════════════════════════════════════════
 var localidadesState = { carregando: false };
+var locTab = 'cidades';
+
+function locSetTab(tab) {
+  locTab = tab;
+  ['cidades','comportamento'].forEach(function(t) {
+    var btn = document.getElementById('loc-tab-' + t);
+    if (btn) { btn.style.borderBottom = '2px solid ' + (t===tab ? 'var(--accent)' : 'transparent'); btn.style.color = t===tab ? 'var(--text)' : 'var(--muted)'; }
+    var panel = document.getElementById('loc-panel-' + t);
+    if (panel) panel.style.display = t===tab ? 'block' : 'none';
+  });
+  if (tab === 'comportamento' && metaState.conectado) buscarComportamento();
+}
 
 async function buscarLocalidades() {
   var badge = document.getElementById('loc-badge');
-
   if (!metaState.conectado || !metaState.token || !metaState.account) {
     if (badge) badge.innerHTML = '<span class="badge badge-red">● Desconectado</span>';
     return;
   }
   if (localidadesState.carregando) return;
   localidadesState.carregando = true;
-
   if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando...</span>';
 
   try {
     var resp = await fetch(
       'https://graph.facebook.com/' + metaState.apiVersion + '/' + metaState.account + '/insights' +
       '?fields=spend,impressions,clicks,reach,actions' +
-      '&breakdowns=region' +
-      '&date_preset=last_30d' +
-      '&limit=100' +
+      '&breakdowns=city' +
+      '&date_preset=last_30d&limit=100' +
       '&access_token=' + metaState.token
     );
     var data = await resp.json();
@@ -2704,69 +2422,164 @@ async function buscarLocalidades() {
       'onsite_conversion.messaging_conversation_started_7d'];
 
     var rows = (data.data || []).map(function(r) {
-      var conv = 0;
-      (r.actions || []).forEach(function(a) {
-        if (CONV_TYPES.indexOf(a.action_type) >= 0) conv += Number(a.value || 0);
-      });
-      var imp = Number(r.impressions || 0);
-      var cli = Number(r.clicks || 0);
-      var gas = Number(r.spend || 0);
-      return {
-        regiao:     r.region || 'Desconhecido',
-        gasto:      gas,
-        impressoes: imp,
-        cliques:    cli,
-        alcance:    Number(r.reach || 0),
-        conversoes: conv,
-        ctr:        imp > 0 ? (cli / imp) * 100 : 0,
-        cpc:        cli > 0 ? gas / cli : 0,
-      };
-    }).sort(function(a, b) { return b.gasto - a.gasto; });
+      var conv=0;
+      (r.actions||[]).forEach(function(a){ if(CONV_TYPES.indexOf(a.action_type)>=0) conv+=Number(a.value||0); });
+      var imp=Number(r.impressions||0), cli=Number(r.clicks||0), gas=Number(r.spend||0);
+      return { cidade: r.city||'Desconhecida', gasto:gas, impressoes:imp, cliques:cli, alcance:Number(r.reach||0), conversoes:conv, ctr:imp>0?(cli/imp)*100:0 };
+    }).sort(function(a,b){ return b.gasto-a.gasto; });
 
-    var totalGasto = rows.reduce(function(s, r) { return s + r.gasto; }, 0);
+    var totalGasto = rows.reduce(function(s,r){ return s+r.gasto; }, 0);
     var tbody = document.getElementById('loc-table-body');
-
-    if (!rows.length) {
-      if (tbody) tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado de localidade encontrado para este período</div>';
-      if (badge) badge.innerHTML = '<span class="badge badge-yellow">● Sem dados</span>';
-      return;
-    }
-
-    if (tbody) {
-      tbody.innerHTML = rows.slice(0, 25).map(function(r, i) {
-        var pct = totalGasto > 0 ? (r.gasto / totalGasto * 100) : 0;
-        var cor = i < 3 ? 'var(--green)' : i < 8 ? 'var(--accentL)' : 'var(--text)';
-        var ctrCor = r.ctr >= 2 ? 'var(--green)' : r.ctr >= 1 ? 'var(--yellow)' : 'var(--red)';
+    if (tbody && rows.length) {
+      tbody.innerHTML = rows.slice(0,30).map(function(r,i) {
+        var pct = totalGasto>0 ? (r.gasto/totalGasto*100) : 0;
+        var cor = i<3 ? 'var(--green)' : i<8 ? 'var(--accentL)' : 'var(--text)';
+        var ctrCor = r.ctr>=2 ? 'var(--green)' : r.ctr>=1 ? 'var(--yellow)' : 'var(--red)';
         return '<div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
-          '<div style="font-weight:700;color:' + cor + ';font-family:\'IBM Plex Mono\',monospace">' + (i+1) + '</div>' +
-          '<div>' +
-            '<div style="font-weight:500">' + r.regiao + '</div>' +
-            '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden">' +
-              '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + cor + ';border-radius:2px"></div>' +
-            '</div>' +
-            '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + pct.toFixed(1) + '% do gasto total</div>' +
-          '</div>' +
-          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--yellow);font-weight:600">R$ ' + r.gasto.toFixed(2) + '</div>' +
-          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">' + r.impressoes.toLocaleString('pt-BR') + '</div>' +
-          '<div style="font-family:\'IBM Plex Mono\',monospace">' + r.cliques.toLocaleString('pt-BR') + '</div>' +
-          '<div style="font-family:\'IBM Plex Mono\',monospace;color:' + ctrCor + '">' + r.ctr.toFixed(2) + '%</div>' +
-          '<div style="font-family:\'IBM Plex Mono\',monospace;color:' + (r.conversoes > 0 ? 'var(--green)' : 'var(--muted)') + '">' + (r.conversoes > 0 ? r.conversoes.toFixed(0) : '—') + '</div>' +
+          '<div style="font-weight:700;color:'+cor+';font-family:\'IBM Plex Mono\',monospace">'+(i+1)+'</div>' +
+          '<div><div style="font-weight:500">'+r.cidade+'</div>' +
+            '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+cor+';border-radius:2px"></div></div>' +
+            '<div style="font-size:10px;color:var(--muted);margin-top:2px">'+pct.toFixed(1)+'% do gasto</div></div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--yellow);font-weight:600">R$ '+r.gasto.toFixed(2)+'</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">'+r.impressoes.toLocaleString('pt-BR')+'</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace">'+r.cliques.toLocaleString('pt-BR')+'</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:'+ctrCor+'">'+r.ctr.toFixed(2)+'%</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:'+(r.conversoes>0?'var(--green)':'var(--muted)')+'">'+( r.conversoes>0 ? Math.round(r.conversoes).toLocaleString('pt-BR') : '—')+'</div>' +
         '</div>';
       }).join('');
+    } else if (tbody) {
+      tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado de cidade encontrado</div>';
     }
-
-    if (badge) badge.innerHTML = '<span class="badge badge-green">● ' + rows.length + ' regiões</span>';
-    toast('Localidades carregadas: ' + rows.length + ' regiões encontradas', 'green');
+    if (badge) badge.innerHTML = '<span class="badge badge-green">● '+rows.length+' cidades</span>';
+    toast('Localidades: '+rows.length+' cidades encontradas', 'green');
 
   } catch(e) {
     if (badge) badge.innerHTML = '<span class="badge badge-red">● Erro</span>';
     var c = document.getElementById('loc-table-body');
-    if (c) c.innerHTML = '<div style="padding:24px;color:var(--red);font-size:13px">Erro ao buscar localidades: ' + e.message + '</div>';
-    toast('Erro localidades: ' + e.message, 'red');
+    if (c) c.innerHTML = '<div style="padding:24px;color:var(--red);font-size:13px">Erro: '+e.message+'</div>';
+    toast('Erro localidades: '+e.message, 'red');
   } finally {
     localidadesState.carregando = false;
   }
 }
+
+async function buscarComportamento() {
+  if (!metaState.conectado) return;
+  try {
+    var [agResp, devResp, placResp] = await Promise.all([
+      fetch('https://graph.facebook.com/'+metaState.apiVersion+'/'+metaState.account+'/insights?fields=spend,impressions,clicks,reach&breakdowns=age,gender&date_preset=last_30d&limit=200&access_token='+metaState.token),
+      fetch('https://graph.facebook.com/'+metaState.apiVersion+'/'+metaState.account+'/insights?fields=spend,impressions,clicks&breakdowns=device_platform&date_preset=last_30d&limit=50&access_token='+metaState.token),
+      fetch('https://graph.facebook.com/'+metaState.apiVersion+'/'+metaState.account+'/insights?fields=spend,impressions,clicks&breakdowns=publisher_platform,platform_position&date_preset=last_30d&limit=100&access_token='+metaState.token),
+    ]);
+    var [agData, devData, placData] = await Promise.all([agResp.json(), devResp.json(), placResp.json()]);
+    renderIdadeGenero(agData.data||[]);
+    renderDispositivos(devData.data||[]);
+    renderPosicionamentos(placData.data||[]);
+  } catch(e) {
+    var el = document.getElementById('loc-idade-genero');
+    if (el) el.innerHTML = '<div style="color:var(--red);padding:12px;font-size:13px">Erro ao carregar comportamento: '+e.message+'</div>';
+  }
+}
+
+function renderIdadeGenero(rows) {
+  var el = document.getElementById('loc-idade-genero');
+  if (!el || !rows.length) { if(el) el.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Sem dados de idade/genero</div>'; return; }
+  var totalGasto = rows.reduce(function(s,r){return s+Number(r.spend||0);},0);
+  var porIdade = {};
+  rows.forEach(function(r) {
+    var k = r.age||'?';
+    if (!porIdade[k]) porIdade[k] = { m:0, f:0, total:0 };
+    var gas = Number(r.spend||0);
+    if (r.gender==='male') porIdade[k].m += gas;
+    else if (r.gender==='female') porIdade[k].f += gas;
+    porIdade[k].total += gas;
+  });
+  var idades = Object.keys(porIdade).sort();
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Faixa Etaria</th><th>Masculino</th><th>Feminino</th><th>Total Gasto</th><th>% do Total</th></tr></thead><tbody>' +
+    idades.map(function(id) {
+      var d = porIdade[id];
+      var pct = totalGasto > 0 ? (d.total/totalGasto*100).toFixed(1) : 0;
+      return '<tr><td style="font-weight:600">'+id+'</td>' +
+        '<td class="mono" style="color:#60a5fa">R$ '+d.m.toFixed(2)+'</td>' +
+        '<td class="mono" style="color:#f472b6">R$ '+d.f.toFixed(2)+'</td>' +
+        '<td class="mono" style="color:var(--yellow);font-weight:700">R$ '+d.total.toFixed(2)+'</td>' +
+        '<td class="mono">'+pct+'%</td></tr>';
+    }).join('') +
+  '</tbody></table></div>';
+}
+
+function renderDispositivos(rows) {
+  var el = document.getElementById('loc-dispositivos');
+  if (!el || !rows.length) { if(el) el.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Sem dados de dispositivo</div>'; return; }
+  var total = rows.reduce(function(s,r){return s+Number(r.spend||0);},0);
+  var DEVICE_ICONS = { mobile_app:'📱', desktop:'🖥️', mobile_web:'🌐', connected_tv:'📺', unknown:'❓' };
+  el.innerHTML = rows.sort(function(a,b){return Number(b.spend||0)-Number(a.spend||0);}).map(function(r) {
+    var gas = Number(r.spend||0);
+    var pct = total > 0 ? (gas/total*100) : 0;
+    var icon = DEVICE_ICONS[r.device_platform] || '📱';
+    return '<div style="flex:1 1 160px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center">' +
+      '<div style="font-size:28px;margin-bottom:6px">'+icon+'</div>' +
+      '<div style="font-weight:600;font-size:12px;margin-bottom:4px">'+(r.device_platform||'?').replace(/_/g,' ').toUpperCase()+'</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:16px;color:var(--accentL)">'+pct.toFixed(1)+'%</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:2px">R$ '+gas.toFixed(2)+'</div>' +
+      '<div style="height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden"><div style="height:100%;width:'+pct.toFixed(1)+'%;background:var(--accent);border-radius:2px"></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderPosicionamentos(rows) {
+  var el = document.getElementById('loc-posicionamentos');
+  if (!el || !rows.length) { if(el) el.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Sem dados de posicionamento</div>'; return; }
+  var total = rows.reduce(function(s,r){return s+Number(r.spend||0);},0);
+  el.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Plataforma</th><th>Posicao</th><th>Impressoes</th><th>Cliques</th><th>Gasto</th><th>% Total</th></tr></thead><tbody>' +
+    rows.sort(function(a,b){return Number(b.spend||0)-Number(a.spend||0);}).slice(0,15).map(function(r) {
+      var gas = Number(r.spend||0);
+      var pct = total>0 ? (gas/total*100).toFixed(1) : 0;
+      var PLAT_ICONS = {facebook:'📘',instagram:'📷',messenger:'💬',audience_network:'🌐'};
+      var icon = PLAT_ICONS[r.publisher_platform]||'📢';
+      return '<tr><td>'+icon+' '+(r.publisher_platform||'?').charAt(0).toUpperCase()+(r.publisher_platform||'?').slice(1)+'</td>' +
+        '<td style="color:var(--muted)">'+(r.platform_position||'?').replace(/_/g,' ')+'</td>' +
+        '<td class="mono">'+Number(r.impressions||0).toLocaleString('pt-BR')+'</td>' +
+        '<td class="mono">'+Number(r.clicks||0).toLocaleString('pt-BR')+'</td>' +
+        '<td class="mono" style="color:var(--yellow)">R$ '+gas.toFixed(2)+'</td>' +
+        '<td class="mono">'+pct+'%</td></tr>';
+    }).join('') +
+  '</tbody></table></div>';
+}
+
+// ══════════════════════════════════════════════════════
+// CRM E FERRAMENTAS
+// ══════════════════════════════════════════════════════
+var CRM_FIELDS = ['kommo_domain','kommo_token','kondado_key','outro_nome','outro_token','outro_webhook'];
+var CRM_FIELD_MAP = { kommo_domain:'crm-kommo-domain', kommo_token:'crm-kommo-token', kondado_key:'crm-kondado-key', outro_nome:'crm-outro-nome', outro_token:'crm-outro-token', outro_webhook:'crm-outro-webhook' };
+
+function saveCrmField(key, val) {
+  if (val) { localStorage.setItem('crm_'+key, val); } else { localStorage.removeItem('crm_'+key); }
+  var kommoOk   = localStorage.getItem('crm_kommo_domain') && localStorage.getItem('crm_kommo_token');
+  var kondadoOk = localStorage.getItem('crm_kondado_key');
+  var kb = document.getElementById('crm-kommo-badge');
+  var kdb = document.getElementById('crm-kondado-badge');
+  if (kb) kb.innerHTML = kommoOk ? '<span class="badge badge-green">● Configurado</span>' : '<span class="badge badge-red">● Nao configurado</span>';
+  if (kdb) kdb.innerHTML = kondadoOk ? '<span class="badge badge-green">● Configurado</span>' : '<span class="badge badge-red">● Nao configurado</span>';
+  if (kommoOk || kondadoOk) toast('Credenciais CRM salvas no navegador', 'green');
+}
+
+(function restaurarCRM() {
+  CRM_FIELDS.forEach(function(key) {
+    var val = localStorage.getItem('crm_'+key);
+    var elId = CRM_FIELD_MAP[key];
+    if (val && elId) {
+      var el = document.getElementById(elId);
+      if (el) el.value = val;
+    }
+  });
+  var kommoOk   = localStorage.getItem('crm_kommo_domain') && localStorage.getItem('crm_kommo_token');
+  var kondadoOk = localStorage.getItem('crm_kondado_key');
+  var kb = document.getElementById('crm-kommo-badge');
+  var kdb = document.getElementById('crm-kondado-badge');
+  if (kb && kommoOk) kb.innerHTML = '<span class="badge badge-green">● Configurado</span>';
+  if (kdb && kondadoOk) kdb.innerHTML = '<span class="badge badge-green">● Configurado</span>';
+})();
 
 // Inicializa UTM builder e Funil (script está no final do body, DOM já pronto)
 setUtmPlatform('meta');
@@ -2954,18 +2767,6 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 renderDashboard();
 renderCampaignsTable();
-
-// Auto-busca ROI ao carregar (só quando aberto pelo abrir.bat)
-(async function autoCarregarROI() {
-  // Só executa automaticamente se aberto via file:// (abrir.bat)
-  if (window.location.protocol !== 'file:') return;
-  try {
-    await new Promise(r => setTimeout(r, 1500)); // aguarda page load
-    await sincronizarROI();
-  } catch(e) {
-    console.warn('[ROI auto-load]', e.message);
-  }
-})();
 
 // Restaura credenciais salvas e atualiza badge de status
 (function restaurarSessao() {
