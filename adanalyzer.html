@@ -1051,18 +1051,45 @@ function trocarWorkspace(val) {
 function renderDashboard() {
   const camps = campanhas();
 
-  if (camps.length === 0) {
+  // Banner GA4 (quando GA4 conectado com campanhas)
+  var ga4Banner = document.getElementById('dash-ga4-banner');
+  if (!ga4Banner) {
+    var bannerEl = document.createElement('div');
+    bannerEl.id = 'dash-ga4-banner';
+    bannerEl.style.marginBottom = '16px';
+    var metricsEl = document.getElementById('dash-metrics');
+    metricsEl.parentNode.insertBefore(bannerEl, metricsEl);
+    ga4Banner = bannerEl;
+  }
+  if (ga4State.conectado && ga4State.campanhas.length) {
+    var ga4Tot = ga4State.campanhas.reduce(function(s,c){ return { s: s.s+(c.sessoes||0), u: s.u+(c.alcance||0), c: s.c+(c.conversoes||0), r: s.r+(c.receita||0) }; }, {s:0,u:0,c:0,r:0});
+    ga4Banner.innerHTML = '<div class="card" style="border-color:rgba(234,88,12,.3);margin-bottom:0"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+      '<div style="font-size:20px">📊</div>' +
+      '<div style="font-weight:600;font-size:13px">Google Analytics 4 <span style="font-weight:400;color:var(--muted);font-size:12px">· últimos 30 dias · ' + ga4State.campanhas.length + ' campanhas</span></div>' +
+      '<div style="margin-left:auto;display:flex;gap:16px;font-family:\'IBM Plex Mono\',monospace;font-size:12px">' +
+      '<span>Sessões <strong style="color:var(--blue)">' + ga4Tot.s.toLocaleString('pt-BR') + '</strong></span>' +
+      '<span>Usuários <strong style="color:var(--accentL)">' + ga4Tot.u.toLocaleString('pt-BR') + '</strong></span>' +
+      '<span>Conv. <strong style="color:var(--green)">' + ga4Tot.c.toLocaleString('pt-BR') + '</strong></span>' +
+      (ga4Tot.r > 0 ? '<span>Receita <strong style="color:var(--yellow)">R$ ' + ga4Tot.r.toFixed(2) + '</strong></span>' : '') +
+      '<button class="btn btn-ghost" style="font-size:11px;padding:3px 10px" onclick="buscarCampanhasGA4()">↻</button>' +
+      '</div></div></div>';
+  } else {
+    ga4Banner.innerHTML = '';
+  }
+
+  if (camps.length === 0 && !ga4State.campanhas.length) {
     document.getElementById('dash-metrics').innerHTML = `
       <div class="card" style="grid-column:1/-1;text-align:center;padding:48px 24px;border-color:rgba(91,94,244,.3)">
         <div style="font-size:48px;margin-bottom:16px">📡</div>
         <div style="font-weight:700;font-size:16px;margin-bottom:8px">Nenhuma campanha carregada</div>
-        <div style="color:var(--muted);font-size:13px;margin-bottom:24px">Conecte o Meta Ads para ver seus dados reais de performance</div>
-        <button class="btn btn-primary" style="margin:0 auto" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">
-          🔗 Conectar Meta Ads
-        </button>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:24px">Conecte o Meta Ads ou o Google Analytics 4 para ver dados reais</div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="btn btn-primary" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">📘 Conectar Meta Ads</button>
+          <button class="btn btn-ghost" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">📊 Conectar GA4</button>
+        </div>
       </div>`;
     document.getElementById('health-list').innerHTML = '';
-    document.getElementById('alerts-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Conecte o Meta Ads para ver alertas automáticos</div>';
+    document.getElementById('alerts-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Conecte Meta Ads ou GA4 para ver alertas</div>';
     document.getElementById('alert-count').textContent = '0';
     return;
   }
@@ -1350,7 +1377,29 @@ function renderCampaignsTable() {
     `;
   }).join('') || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.</td></tr>';
 
-  document.getElementById('campaigns-tbody').innerHTML = rows;
+  // Campanhas GA4
+  var ga4Rows = '';
+  if (ga4State.campanhas && ga4State.campanhas.length) {
+    ga4Rows = '<tr><td colspan="10" style="padding:12px 16px;background:rgba(234,88,12,.06);border-top:2px solid rgba(234,88,12,.3);font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(234,88,12,.9)">📊 GOOGLE ANALYTICS 4 — ' + ga4State.campanhas.length + ' campanhas · últimos 30 dias</td></tr>';
+    ga4Rows += ga4State.campanhas.slice(0,30).map(function(c) {
+      var srcBadge = c.fonte === 'Meta Ads' ? 'blue' : c.fonte === 'Google Ads' ? 'green' : 'yellow';
+      return '<tr style="opacity:.92">' +
+        '<td><div style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+c.nome+'">'+c.nome+'</div>' +
+          '<div style="font-size:10px;color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+c.sourcemedium+'</div></td>' +
+        '<td><span class="badge badge-'+srcBadge+'" style="font-size:10px">'+c.fonte+'</span> <span class="badge" style="font-size:9px;background:rgba(234,88,12,.15);color:rgba(234,88,12,.9)">GA4</span></td>' +
+        '<td><span class="badge badge-green" style="font-size:10px">ATIVO</span></td>' +
+        '<td class="mono" style="color:var(--muted);font-size:12px">—</td>' +
+        '<td style="font-size:11px;color:var(--muted)">—</td>' +
+        '<td class="mono" style="color:'+(c.receita>0?'var(--yellow)':'var(--muted)')+';font-size:12px">'+(c.receita>0?'R$ '+c.receita.toFixed(2):'—')+'</td>' +
+        '<td class="mono" style="font-size:12px;color:var(--blue)"><strong>'+c.sessoes.toLocaleString('pt-BR')+'</strong><br><span style="font-size:10px;color:var(--muted)">sessões</span></td>' +
+        '<td class="mono" style="font-size:12px"><span style="color:var(--green)">'+(c.conversoes||0).toFixed(0)+'</span><span style="font-size:10px;color:var(--muted)"> conv.</span></td>' +
+        '<td class="mono" style="font-size:12px;color:var(--muted)">—</td>' +
+        '<td><span class="badge badge-blue" style="font-size:10px">GA4</span></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  document.getElementById('campaigns-tbody').innerHTML = rows + ga4Rows;
 }
 
 function atualizarObjetivo(campId, objetivo) {
@@ -2425,6 +2474,7 @@ var ga4State = {
   clientId: localStorage.getItem('ga4_client_id') || '',
   conectado: false,
   tokenClient: null,
+  campanhas: [],
 };
 
 (function restaurarGA4() {
@@ -2466,11 +2516,12 @@ function conectarGA4() {
     scope: 'https://www.googleapis.com/auth/analytics.readonly',
     callback: function(resp) {
       if (resp.error) { toast('Erro no login Google: ' + resp.error, 'red'); return; }
-      ga4State.token    = resp.access_token;
+      ga4State.token     = resp.access_token;
       ga4State.conectado = true;
       localStorage.setItem('ga4_token', resp.access_token);
       atualizarBadgeGA4(true);
-      toast('GA4 conectado! Acesse Localidades para ver cidades', 'green');
+      toast('GA4 conectado! Sincronizando campanhas...', 'green');
+      buscarCampanhasGA4();
     },
   });
   ga4State.tokenClient.requestAccessToken();
@@ -2480,11 +2531,110 @@ function desconectarGA4() {
   if (ga4State.token && typeof google !== 'undefined') {
     google.accounts.oauth2.revoke(ga4State.token);
   }
-  ga4State.token     = '';
-  ga4State.conectado = false;
+  ga4State.token      = '';
+  ga4State.conectado  = false;
+  ga4State.campanhas  = [];
   localStorage.removeItem('ga4_token');
   atualizarBadgeGA4(false);
+  renderDashboard();
+  renderCampaignsTable();
   toast('GA4 desconectado', 'blue');
+}
+
+async function buscarCampanhasGA4() {
+  if (!ga4State.conectado || !ga4State.token || !ga4State.propertyId) return;
+
+  try {
+    var resp = await fetch(
+      'https://analyticsdata.googleapis.com/v1beta/properties/' + ga4State.propertyId + ':runReport',
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + ga4State.token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dimensions: [
+            { name: 'sessionCampaignName' },
+            { name: 'sessionSource' },
+            { name: 'sessionMedium' },
+            { name: 'sessionDefaultChannelGroup' },
+          ],
+          metrics: [
+            { name: 'sessions' },
+            { name: 'totalUsers' },
+            { name: 'conversions' },
+            { name: 'totalRevenue' },
+            { name: 'engagedSessions' },
+            { name: 'bounceRate' },
+          ],
+          dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+          dimensionFilter: {
+            andGroup: { expressions: [
+              { notExpression: { filter: { fieldName: 'sessionCampaignName', stringFilter: { value: '(not set)', matchType: 'EXACT' } } } },
+              { notExpression: { filter: { fieldName: 'sessionCampaignName', stringFilter: { value: '(direct)', matchType: 'EXACT' } } } },
+            ]}
+          },
+          orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+          limit: 100,
+        }),
+      }
+    );
+    var data = await resp.json();
+    if (data.error) {
+      if (data.error.status === 'UNAUTHENTICATED') {
+        ga4State.token = ''; ga4State.conectado = false;
+        localStorage.removeItem('ga4_token');
+        atualizarBadgeGA4(false);
+        toast('Token GA4 expirado — faça login novamente em Integrações', 'yellow');
+      }
+      throw new Error(data.error.message);
+    }
+
+    var SOURCE_LABEL = {
+      facebook: 'Meta Ads', instagram: 'Meta Ads',
+      google: 'Google Ads', bing: 'Bing Ads', tiktok: 'TikTok Ads',
+    };
+
+    ga4State.campanhas = (data.rows || []).map(function(r) {
+      var dims = r.dimensionValues || [];
+      var mets = r.metricValues   || [];
+      var nome  = (dims[0]||{}).value || '(sem nome)';
+      var src   = ((dims[1]||{}).value || '').toLowerCase();
+      var med   = (dims[2]||{}).value || '';
+      var canal = (dims[3]||{}).value || '';
+      var sessoes  = Number((mets[0]||{}).value || 0);
+      var usuarios = Number((mets[1]||{}).value || 0);
+      var conv     = Number((mets[2]||{}).value || 0);
+      var receita  = Number((mets[3]||{}).value || 0);
+      var engajadas= Number((mets[4]||{}).value || 0);
+      var fonte = SOURCE_LABEL[src] || (canal || (src + '/' + med));
+      return {
+        id: 'ga4_' + nome + '_' + src,
+        nome: nome,
+        fonte: fonte,
+        sourcemedium: src + ' / ' + med,
+        gastos: 0,
+        conversoes: conv,
+        valorConv: receita,
+        roas: 0,
+        cpa: 0,
+        ctr: sessoes > 0 ? (engajadas / sessoes * 100) : 0,
+        impressoes: 0,
+        cliques: sessoes,
+        alcance: usuarios,
+        status: 'ACTIVE',
+        objetivo: src === 'google' ? 'CONVERSIONS' : 'TRAFFIC',
+        acoes: { whatsapp: 0, form: conv, compra: receita > 0 ? conv : 0 },
+        sessoes: sessoes,
+        receita: receita,
+        origem: 'ga4',
+      };
+    });
+
+    renderCampaignsTable();
+    renderDashboard();
+    toast('GA4: ' + ga4State.campanhas.length + ' campanhas encontradas', 'green');
+  } catch(e) {
+    toast('Erro GA4 campanhas: ' + e.message, 'red');
+  }
 }
 
 async function buscarCidadesGA4() {
