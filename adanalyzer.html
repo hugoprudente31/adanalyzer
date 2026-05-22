@@ -235,6 +235,9 @@ select.inp{cursor:pointer}
   <div class="nav-item" onclick="navTo('utm',this)">
     <span>🔗</span> UTM Builder
   </div>
+  <div class="nav-item" onclick="navTo('localidades',this)">
+    <span>📍</span> Localidades
+  </div>
 
   <div class="nav-section">CONTAS</div>
   <div class="nav-item" onclick="navTo('integrations',this)">
@@ -941,6 +944,43 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+<!-- ══════════════════════════════════ VIEW: LOCALIDADES -->
+<div class="view" id="view-localidades">
+  <div class="row-between" style="margin-bottom:20px">
+    <div>
+      <div class="page-title">Localidades</div>
+      <div class="page-sub">De onde vêm as pessoas que veem e clicam nos seus anúncios · últimos 30 dias · Meta Ads</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="loc-badge"><span class="badge badge-red">● Desconectado</span></div>
+      <button class="btn btn-ghost" onclick="buscarLocalidades()">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
+      <div>#</div>
+      <div>REGIÃO / ESTADO</div>
+      <div>GASTO</div>
+      <div>IMPRESSÕES</div>
+      <div>CLIQUES</div>
+      <div>CTR</div>
+      <div>CONVERSÕES</div>
+    </div>
+    <div id="loc-table-body">
+      <div style="padding:48px;text-align:center;color:var(--muted)">
+        <div style="font-size:40px;margin-bottom:14px">📍</div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver localidades</div>
+        <div style="font-size:12px">Veja de quais estados e regiões do Brasil vêm os acessos aos seus anúncios</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:11px;color:var(--muted);margin-top:10px">
+    Fonte: Meta Ads API · breakdown por região · últimos 30 dias · atualizado automaticamente ao sincronizar
+  </div>
+</div>
+
 </main>
 </div>
 
@@ -955,42 +995,7 @@ select.inp{cursor:pointer}
 // DADOS DE CAMPANHAS (simulados / substituir pela API real)
 // ══════════════════════════════════════════════════════
 const WORKSPACES = [
-  {
-    nome: 'Agência Principal',
-    campanhas: [
-      { id:'c1', nome:'Black Friday — Conversões', fonte:'Meta Ads', status:'ACTIVE',
-        orcamento:600, gastos:2100, cliques:4200, impressoes:98000, conversoes:48,
-        valorConv:9600, ctr:4.29, cpc:0.50, cpa:43.75, roas:4.57, cvr:1.14 },
-      { id:'c2', nome:'Retargeting — Carrinho Abandonado', fonte:'Meta Ads', status:'ACTIVE',
-        orcamento:200, gastos:1380, cliques:1100, impressoes:22000, conversoes:8,
-        valorConv:3200, ctr:5.0, cpc:1.25, cpa:172.5, roas:2.32, cvr:0.73 },
-      { id:'c3', nome:'Search — Marca + Produtos', fonte:'Google Ads', status:'ACTIVE',
-        orcamento:150, gastos:290, cliques:580, impressoes:7200, conversoes:5,
-        valorConv:1100, ctr:8.06, cpc:0.50, cpa:58, roas:3.79, cvr:0.86 },
-      { id:'c4', nome:'Performance Max — E-commerce', fonte:'Google Ads', status:'PAUSED',
-        orcamento:80, gastos:70, cliques:140, impressoes:3800, conversoes:1,
-        valorConv:300, ctr:3.68, cpc:0.50, cpa:70, roas:4.26, cvr:0.71 },
-    ]
-  },
-  {
-    nome: 'E-commerce X',
-    campanhas: [
-      { id:'e1', nome:'Prospecting — Lookalike', fonte:'Meta Ads', status:'ACTIVE',
-        orcamento:800, gastos:3200, cliques:8400, impressoes:210000, conversoes:62,
-        valorConv:18600, ctr:4.0, cpc:0.38, cpa:51.6, roas:5.81, cvr:0.74 },
-      { id:'e2', nome:'Google Shopping', fonte:'Google Ads', status:'ACTIVE',
-        orcamento:400, gastos:980, cliques:2300, impressoes:45000, conversoes:28,
-        valorConv:5600, ctr:5.11, cpc:0.43, cpa:35, roas:5.71, cvr:1.22 },
-    ]
-  },
-  {
-    nome: 'Clínica Y',
-    campanhas: [
-      { id:'y1', nome:'Leads — Procedimentos', fonte:'Meta Ads', status:'ACTIVE',
-        orcamento:300, gastos:1050, cliques:910, impressoes:31000, conversoes:12,
-        valorConv:4800, ctr:2.93, cpc:1.15, cpa:87.5, roas:4.57, cvr:1.32 },
-    ]
-  }
+  { nome: 'Meta Ads', campanhas: [] }
 ];
 
 let wsIdx = 0;
@@ -1011,8 +1016,9 @@ function navTo(id, el) {
   if (id === 'dashboard') renderDashboard();
   if (id === 'analyze')   renderAnalyze();
   if (id === 'campaigns') renderCampaignsTable();
-  if (id === 'funil')     atualizarFunil();
-  if (id === 'utm')       setUtmPlatform(utmState ? utmState.platform : 'meta');
+  if (id === 'funil')       atualizarFunil();
+  if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta');
+  if (id === 'localidades') buscarLocalidades();
 }
 
 function trocarWorkspace(val) {
@@ -1028,6 +1034,23 @@ function trocarWorkspace(val) {
 // ══════════════════════════════════════════════════════
 function renderDashboard() {
   const camps = campanhas();
+
+  if (camps.length === 0) {
+    document.getElementById('dash-metrics').innerHTML = `
+      <div class="card" style="grid-column:1/-1;text-align:center;padding:48px 24px;border-color:rgba(91,94,244,.3)">
+        <div style="font-size:48px;margin-bottom:16px">📡</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:8px">Nenhuma campanha carregada</div>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:24px">Conecte o Meta Ads para ver seus dados reais de performance</div>
+        <button class="btn btn-primary" style="margin:0 auto" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">
+          🔗 Conectar Meta Ads
+        </button>
+      </div>`;
+    document.getElementById('health-list').innerHTML = '';
+    document.getElementById('alerts-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Conecte o Meta Ads para ver alertas automáticos</div>';
+    document.getElementById('alert-count').textContent = '0';
+    return;
+  }
+
   const totalGasto = camps.reduce((s,c) => s + c.gastos, 0);
   const totalConv  = camps.reduce((s,c) => s + c.conversoes, 0);
   const totalValor = camps.reduce((s,c) => s + c.valorConv, 0);
@@ -1855,7 +1878,7 @@ async function sincronizarMetaAds() {
     // ── Passo 1: busca campanhas via GET (nunca POST para leitura) ──
     const campResp = await fetch(
       `https://graph.facebook.com/${metaState.apiVersion}/${metaState.account}/campaigns` +
-      `?fields=id,name,status,daily_budget,lifetime_budget` +
+      `?fields=id,name,status,daily_budget,lifetime_budget,objective` +
       `&limit=100` +
       `&access_token=${metaState.token}`
     );
@@ -1888,6 +1911,8 @@ async function sincronizarMetaAds() {
     wsIdx = 0;
     renderDashboard();
     renderCampaignsTable();
+    buscarLocalidades();
+    if (document.getElementById('view-funil').classList.contains('active')) atualizarFunil();
 
     const ativas = campanhasComInsights.filter(c => c.status === 'ACTIVE').length;
     toast(`✅ ${campanhasComInsights.length} campanhas carregadas · ${ativas} ativas`, 'green');
@@ -2005,6 +2030,7 @@ async function buscarInsightsCampanha(campanha) {
       nome:        campanha.name,
       fonte:       'Meta Ads',
       status:      campanha.status,
+      objetivo:    campanha.objective || '',
       periodo:     campanha._periodo || '7 dias',
       tipoConv:    melhorTipoConv || 'N/A',
       orcamento:   campanha.daily_budget ? Number(campanha.daily_budget)/100 : 0,
@@ -2040,21 +2066,8 @@ function simularSync() {
   if (metaState.conectado) {
     sincronizarMetaAds();
   } else {
-    // Sem integração real: simula com dados demo
-    const btn    = document.getElementById('btn-sync');
-    const status = document.getElementById('sync-status');
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Sincronizando...';
-    status.textContent = '⟳ Buscando dados...';
-    status.style.color = 'var(--yellow)';
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.innerHTML = '↻ Sincronizar';
-      status.textContent = '● Sincronizado';
-      status.style.color = 'var(--green)';
-      toast('Dados demo atualizados · Configure a integração Meta para dados reais', 'blue');
-      renderDashboard();
-    }, 1800);
+    toast('Configure o Meta Ads em Integrações para buscar dados reais', 'yellow');
+    navTo('integrations', document.querySelector('.nav-item[onclick*="integrations"]'));
   }
 }
 
@@ -2469,37 +2482,97 @@ var FUNIL_STAGES = [
   { id: 'retencao', label: 'Retencao', pct: 10, color: '#c026d3' },
 ];
 
+var OBJETIVO_FUNIL_MAP = {
+  BRAND_AWARENESS: 'topo', REACH: 'topo', VIDEO_VIEWS: 'topo', OUTCOME_AWARENESS: 'topo',
+  TRAFFIC: 'meio', LINK_CLICKS: 'meio', ENGAGEMENT: 'meio', POST_ENGAGEMENT: 'meio',
+  PAGE_LIKES: 'meio', EVENT_RESPONSES: 'meio', OUTCOME_TRAFFIC: 'meio', OUTCOME_ENGAGEMENT: 'meio',
+  CONVERSIONS: 'fundo', LEAD_GENERATION: 'fundo', MESSAGES: 'fundo', APP_INSTALLS: 'fundo',
+  CATALOG_SALES: 'fundo', STORE_TRAFFIC: 'fundo', OUTCOME_LEADS: 'fundo',
+  OUTCOME_SALES: 'fundo', OUTCOME_APP_PROMOTION: 'fundo',
+};
+
+function classificarEtapaFunil(c) {
+  var nome = (c.nome || '').toLowerCase();
+  if (nome.includes('retarg') || nome.includes('remarketing') || nome.includes('retencao') || nome.includes('fideliz')) return 'retencao';
+  return OBJETIVO_FUNIL_MAP[c.objetivo] || 'fundo';
+}
+
 function atualizarFunil() {
-  const sliderEl = document.getElementById('funil-slider');
+  var sliderEl = document.getElementById('funil-slider');
   if (!sliderEl) return;
-  const total = parseInt(sliderEl.value);
-  document.getElementById('funil-total-lbl').textContent = 'R$ ' + total.toLocaleString('pt-BR');
 
-  document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
-    const valor = (s.pct / 100) * total;
-    return '<div class="funnel-bar" style="background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
-      '<div style="display:flex;align-items:center;gap:10px">' +
-        '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
-        '<div>' +
-          '<div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
-          '<div style="font-size:11px;color:var(--muted)">' + s.pct + '% do budget</div>' +
+  var camps = campanhas();
+  var temDados = camps.length > 0;
+
+  if (temDados) {
+    // MODO REAL — agrupa campanhas reais por etapa do funil
+    var etapas = { topo: [], meio: [], fundo: [], retencao: [] };
+    camps.forEach(function(c) { etapas[classificarEtapaFunil(c)].push(c); });
+
+    var totalOrc = camps.reduce(function(s, c) { return s + (c.orcamento || 0); }, 0);
+    document.getElementById('funil-total-lbl').textContent = 'R$ ' + (totalOrc || 0).toLocaleString('pt-BR', {maximumFractionDigits:0}) + '/dia (real)';
+
+    document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
+      var eCamps = etapas[s.id] || [];
+      var valor  = eCamps.reduce(function(sum, c) { return sum + (c.orcamento || 0); }, 0);
+      var gasto  = eCamps.reduce(function(sum, c) { return sum + (c.gastos || 0); }, 0);
+      var pct    = totalOrc > 0 ? Math.round((valor / totalOrc) * 100) : 0;
+      var nomes  = eCamps.map(function(c) { return c.nome; }).join(' · ') || 'Nenhuma campanha nesta etapa';
+      return '<div class="funnel-bar" style="flex-direction:column;align-items:stretch;gap:6px;background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
+            '<div><div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">' + eCamps.length + ' campanha(s) · ' + pct + '% do budget</div></div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '/dia</div>' +
+            '<div style="font-size:10px;color:var(--muted)">Gasto 7d: R$ ' + gasto.toFixed(0) + '</div>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<div style="text-align:right">' +
-        '<div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
-        '<div style="font-size:10px;color:var(--muted)">por dia</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+        '<div style="font-size:10px;color:var(--muted);padding:6px 0 2px 20px;border-top:1px solid ' + s.color + '20;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + nomes + '</div>' +
+      '</div>';
+    }).join('');
 
-  document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
-    const valor = (s.pct / 100) * total;
-    return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
-      '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
-      '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
-      '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + s.pct + '% · R$ ' + (valor * 30).toFixed(0) + '/mes</div>' +
-    '</div>';
-  }).join('');
+    document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
+      var eCamps = etapas[s.id] || [];
+      var valor  = eCamps.reduce(function(sum, c) { return sum + (c.orcamento || 0); }, 0);
+      var roas   = eCamps.length > 0 ? (eCamps.reduce(function(sum, c) { return sum + (c.roas || 0); }, 0) / eCamps.length) : 0;
+      var pct    = totalOrc > 0 ? Math.round((valor / totalOrc) * 100) : 0;
+      return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
+        '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + pct + '% · ROAS ' + roas.toFixed(1) + 'x</div>' +
+      '</div>';
+    }).join('');
+
+  } else {
+    // MODO PLANEJAMENTO — sem Meta conectado, usa o slider
+    var total = parseInt(sliderEl.value);
+    document.getElementById('funil-total-lbl').textContent = 'R$ ' + total.toLocaleString('pt-BR') + ' (planejamento)';
+
+    document.getElementById('funil-bars').innerHTML = FUNIL_STAGES.map(function(s) {
+      var valor = (s.pct / 100) * total;
+      return '<div class="funnel-bar" style="background:' + s.color + '18;border:1px solid ' + s.color + '40">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<div style="width:10px;height:10px;border-radius:50%;background:' + s.color + ';flex-shrink:0"></div>' +
+          '<div><div style="font-weight:600;font-size:12px">' + s.label + '</div>' +
+          '<div style="font-size:11px;color:var(--muted)">' + s.pct + '% recomendado</div></div>' +
+        '</div>' +
+        '<div style="text-align:right"><div style="font-weight:700;color:' + s.color + ';font-size:15px;font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+        '<div style="font-size:10px;color:var(--muted)">por dia</div></div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('funil-summary').innerHTML = FUNIL_STAGES.map(function(s) {
+      var valor = (s.pct / 100) * total;
+      return '<div class="card" style="text-align:center;border-color:' + s.color + '40">' +
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:' + s.color + ';margin-bottom:4px">' + s.label.toUpperCase() + '</div>' +
+        '<div style="font-size:20px;font-weight:700;color:' + s.color + ';font-family:\'IBM Plex Mono\',monospace">R$ ' + valor.toFixed(0) + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + s.pct + '% · R$ ' + (valor * 30).toFixed(0) + '/mes</div>' +
+      '</div>';
+    }).join('');
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2594,6 +2667,104 @@ function copiarUTM() {
     });
   } else {
     toast('Selecione e copie manualmente', 'yellow');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// LOCALIDADES — breakdown por região da Meta Ads API
+// ══════════════════════════════════════════════════════
+var localidadesState = { carregando: false };
+
+async function buscarLocalidades() {
+  var badge = document.getElementById('loc-badge');
+
+  if (!metaState.conectado || !metaState.token || !metaState.account) {
+    if (badge) badge.innerHTML = '<span class="badge badge-red">● Desconectado</span>';
+    return;
+  }
+  if (localidadesState.carregando) return;
+  localidadesState.carregando = true;
+
+  if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando...</span>';
+
+  try {
+    var resp = await fetch(
+      'https://graph.facebook.com/' + metaState.apiVersion + '/' + metaState.account + '/insights' +
+      '?fields=spend,impressions,clicks,reach,actions' +
+      '&breakdowns=region' +
+      '&date_preset=last_30d' +
+      '&limit=100' +
+      '&access_token=' + metaState.token
+    );
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    var CONV_TYPES = ['purchase','lead','complete_registration','contact','schedule',
+      'offsite_conversion.fb_pixel_lead','offsite_conversion.fb_pixel_purchase',
+      'onsite_conversion.messaging_conversation_started_7d'];
+
+    var rows = (data.data || []).map(function(r) {
+      var conv = 0;
+      (r.actions || []).forEach(function(a) {
+        if (CONV_TYPES.indexOf(a.action_type) >= 0) conv += Number(a.value || 0);
+      });
+      var imp = Number(r.impressions || 0);
+      var cli = Number(r.clicks || 0);
+      var gas = Number(r.spend || 0);
+      return {
+        regiao:     r.region || 'Desconhecido',
+        gasto:      gas,
+        impressoes: imp,
+        cliques:    cli,
+        alcance:    Number(r.reach || 0),
+        conversoes: conv,
+        ctr:        imp > 0 ? (cli / imp) * 100 : 0,
+        cpc:        cli > 0 ? gas / cli : 0,
+      };
+    }).sort(function(a, b) { return b.gasto - a.gasto; });
+
+    var totalGasto = rows.reduce(function(s, r) { return s + r.gasto; }, 0);
+    var tbody = document.getElementById('loc-table-body');
+
+    if (!rows.length) {
+      if (tbody) tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado de localidade encontrado para este período</div>';
+      if (badge) badge.innerHTML = '<span class="badge badge-yellow">● Sem dados</span>';
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = rows.slice(0, 25).map(function(r, i) {
+        var pct = totalGasto > 0 ? (r.gasto / totalGasto * 100) : 0;
+        var cor = i < 3 ? 'var(--green)' : i < 8 ? 'var(--accentL)' : 'var(--text)';
+        var ctrCor = r.ctr >= 2 ? 'var(--green)' : r.ctr >= 1 ? 'var(--yellow)' : 'var(--red)';
+        return '<div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
+          '<div style="font-weight:700;color:' + cor + ';font-family:\'IBM Plex Mono\',monospace">' + (i+1) + '</div>' +
+          '<div>' +
+            '<div style="font-weight:500">' + r.regiao + '</div>' +
+            '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden">' +
+              '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + cor + ';border-radius:2px"></div>' +
+            '</div>' +
+            '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + pct.toFixed(1) + '% do gasto total</div>' +
+          '</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--yellow);font-weight:600">R$ ' + r.gasto.toFixed(2) + '</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">' + r.impressoes.toLocaleString('pt-BR') + '</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace">' + r.cliques.toLocaleString('pt-BR') + '</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:' + ctrCor + '">' + r.ctr.toFixed(2) + '%</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;color:' + (r.conversoes > 0 ? 'var(--green)' : 'var(--muted)') + '">' + (r.conversoes > 0 ? r.conversoes.toFixed(0) : '—') + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    if (badge) badge.innerHTML = '<span class="badge badge-green">● ' + rows.length + ' regiões</span>';
+    toast('Localidades carregadas: ' + rows.length + ' regiões encontradas', 'green');
+
+  } catch(e) {
+    if (badge) badge.innerHTML = '<span class="badge badge-red">● Erro</span>';
+    var c = document.getElementById('loc-table-body');
+    if (c) c.innerHTML = '<div style="padding:24px;color:var(--red);font-size:13px">Erro ao buscar localidades: ' + e.message + '</div>';
+    toast('Erro localidades: ' + e.message, 'red');
+  } finally {
+    localidadesState.carregando = false;
   }
 }
 
