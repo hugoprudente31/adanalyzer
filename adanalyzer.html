@@ -6,6 +6,7 @@
 <title>AdAnalyzer — Plataforma de Otimização</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 :root {
   --bg:       #080810;
@@ -499,33 +500,39 @@ select.inp{cursor:pointer}
       </div>
     </div>
 
-    <!-- Google Ads -->
-    <div class="card">
+    <!-- Google Analytics 4 -->
+    <div class="card" style="border-color:rgba(234,88,12,.25)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔍</div>
+        <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(234,88,12,.12);display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
         <div>
-          <div style="font-weight:600">Google Ads</div>
-          <div class="text-sm text-muted">Não configurado</div>
+          <div style="font-weight:600">Google Analytics 4</div>
+          <div id="ga4-status" class="text-sm text-muted">Dados de cidade por UTM</div>
         </div>
-        <div style="margin-left:auto"><span class="badge badge-red">Desconectado</span></div>
+        <div style="margin-left:auto" id="ga4-badge"><span class="badge badge-red">Desconectado</span></div>
       </div>
       <div class="stack">
         <div>
-          <label>Developer Token</label>
-          <input class="inp inp-mono" type="password" placeholder="xxxxxxxxxxxxxxxxxxxxxx"/>
+          <label>Google Client ID</label>
+          <input class="inp inp-mono" id="int-ga4-client-id" placeholder="000000000000-xxxxxxxx.apps.googleusercontent.com"/>
         </div>
         <div>
-          <label>Customer ID</label>
-          <input class="inp inp-mono" placeholder="1234567890"/>
+          <label>GA4 Property ID</label>
+          <input class="inp inp-mono" id="int-ga4-property" placeholder="123456789"/>
         </div>
-        <div>
-          <label>Refresh Token</label>
-          <input class="inp inp-mono" type="password" placeholder="1//xxxxxxxxxxxxx"/>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary flex-1" id="btn-conectar-ga4" onclick="conectarGA4()">🔑 Login com Google</button>
+          <button class="btn btn-ghost" onclick="desconectarGA4()" id="btn-desconectar-ga4" style="display:none">Sair</button>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center">Conectar Google Ads</button>
         <div class="divider"></div>
-        <div style="font-size:11px;color:var(--muted)">
-          💡 Gere o Refresh Token via OAuth Playground com scope <span class="font-mono">https://www.googleapis.com/auth/adwords</span>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          💡 <strong>Como configurar:</strong><br>
+          1. <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accentL)">console.cloud.google.com</a> → Criar projeto<br>
+          2. Ativar <strong>Google Analytics Data API</strong><br>
+          3. Credenciais → OAuth 2.0 → Tipo: <em>Aplicativo da Web</em><br>
+          4. Adicionar <em>Origem JS autorizada</em>: URL do seu site (Railway)<br>
+          5. Copie o <strong>Client ID</strong> e cole acima<br>
+          6. No GA4 → Admin → adicione o e-mail do Google como Leitor<br>
+          7. O <strong>Property ID</strong> está em Admin → Propriedade → Detalhes
         </div>
       </div>
     </div>
@@ -934,25 +941,30 @@ select.inp{cursor:pointer}
     <button id="loc-tab-comportamento" onclick="locSetTab('comportamento')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit">👥 Comportamento</button>
   </div>
 
-  <!-- Tab: Regiões -->
+  <!-- Tab: Cidades -->
   <div id="loc-panel-cidades">
-    <!-- Seletor de granularidade -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <span style="font-size:12px;color:var(--muted)">Granularidade:</span>
-      <button id="loc-btn-region" class="btn btn-primary" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('region')">🗺️ Estados</button>
-      <button id="loc-btn-zip" class="btn btn-ghost" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('zip')">📮 CEP</button>
-      <button id="loc-btn-country" class="btn btn-ghost" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('country')">🌎 País</button>
-      <span style="font-size:10px;color:var(--muted);margin-left:4px" id="loc-granularidade-info">Meta API não suporta cidade — use Estado ou CEP</span>
+    <!-- Fonte de dados -->
+    <div id="loc-fonte-info" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+      <span id="loc-fonte-icon" style="font-size:18px">📊</span>
+      <div>
+        <div id="loc-fonte-titulo" style="font-size:12px;font-weight:600">Fonte de dados</div>
+        <div id="loc-fonte-desc" style="font-size:11px;color:var(--muted)">Conecte GA4 para ver cidades · ou Meta para ver estados</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px" id="loc-fallback-btns">
+        <button id="loc-btn-region" class="btn btn-ghost" style="font-size:11px;padding:3px 10px" onclick="locSetGranularidade('region')">🗺️ Estados</button>
+        <button id="loc-btn-country" class="btn btn-ghost" style="font-size:11px;padding:3px 10px" onclick="locSetGranularidade('country')">🌎 País</button>
+      </div>
     </div>
     <div class="card">
-      <div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
-        <div>#</div><div id="loc-col-header">ESTADO/REGIÃO</div><div>GASTO</div><div>IMPRESSÕES</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
+      <div style="display:grid;grid-template-columns:28px 1fr 90px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
+        <div>#</div><div id="loc-col-header">CIDADE/REGIÃO</div><div id="loc-col-metric1">SESSÕES</div><div id="loc-col-metric2">USUÁRIOS</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
       </div>
       <div id="loc-table-body">
         <div style="padding:48px;text-align:center;color:var(--muted)">
           <div style="font-size:40px;margin-bottom:14px">📍</div>
-          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver regiões</div>
-          <div style="font-size:12px">A Meta API retorna dados por Estado ou CEP — cidade não é suportada</div>
+          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte GA4 para ver cidades reais</div>
+          <div style="font-size:12px;line-height:1.7">GA4 retorna cidade exata via UTM · Meta API só retorna Estado<br>
+          <span style="color:var(--accentL)">Integrações → Google Analytics 4 → Login com Google</span></div>
         </div>
       </div>
     </div>
@@ -2404,39 +2416,256 @@ function locSetTab(tab) {
   if (tab === 'comportamento' && metaState.conectado) buscarComportamento();
 }
 
-var localidadesGranularidade = 'region'; // 'region' | 'zip' | 'country'
+// ══════════════════════════════════════════════════════
+// GOOGLE ANALYTICS 4
+// ══════════════════════════════════════════════════════
+var ga4State = {
+  token: localStorage.getItem('ga4_token') || '',
+  propertyId: localStorage.getItem('ga4_property') || '',
+  clientId: localStorage.getItem('ga4_client_id') || '',
+  conectado: false,
+  tokenClient: null,
+};
+
+(function restaurarGA4() {
+  var cid = localStorage.getItem('ga4_client_id');
+  var pid = localStorage.getItem('ga4_property');
+  if (cid) { var el = document.getElementById('int-ga4-client-id'); if(el) el.value = cid; }
+  if (pid) { var el2 = document.getElementById('int-ga4-property'); if(el2) el2.value = pid; }
+  if (cid && pid && ga4State.token) {
+    ga4State.conectado = true;
+    atualizarBadgeGA4(true);
+  }
+})();
+
+function atualizarBadgeGA4(ok) {
+  var badge = document.getElementById('ga4-badge');
+  var status = document.getElementById('ga4-status');
+  var btnSair = document.getElementById('btn-desconectar-ga4');
+  if (badge) badge.innerHTML = ok ? '<span class="badge badge-green">● Conectado</span>' : '<span class="badge badge-red">● Desconectado</span>';
+  if (status) status.textContent = ok ? 'GA4 Property: ' + (ga4State.propertyId || '—') : 'Dados de cidade por UTM';
+  if (btnSair) btnSair.style.display = ok ? 'block' : 'none';
+}
+
+function conectarGA4() {
+  var cid = document.getElementById('int-ga4-client-id').value.trim();
+  var pid = document.getElementById('int-ga4-property').value.trim();
+  if (!cid) { toast('Cole o Google Client ID', 'red'); return; }
+  if (!pid) { toast('Cole o GA4 Property ID', 'red'); return; }
+  ga4State.clientId   = cid;
+  ga4State.propertyId = pid;
+  localStorage.setItem('ga4_client_id', cid);
+  localStorage.setItem('ga4_property',  pid);
+
+  if (typeof google === 'undefined' || !google.accounts) {
+    toast('Google Identity Services ainda carregando — aguarde e tente novamente', 'yellow');
+    return;
+  }
+  ga4State.tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: cid,
+    scope: 'https://www.googleapis.com/auth/analytics.readonly',
+    callback: function(resp) {
+      if (resp.error) { toast('Erro no login Google: ' + resp.error, 'red'); return; }
+      ga4State.token    = resp.access_token;
+      ga4State.conectado = true;
+      localStorage.setItem('ga4_token', resp.access_token);
+      atualizarBadgeGA4(true);
+      toast('GA4 conectado! Acesse Localidades para ver cidades', 'green');
+    },
+  });
+  ga4State.tokenClient.requestAccessToken();
+}
+
+function desconectarGA4() {
+  if (ga4State.token && typeof google !== 'undefined') {
+    google.accounts.oauth2.revoke(ga4State.token);
+  }
+  ga4State.token     = '';
+  ga4State.conectado = false;
+  localStorage.removeItem('ga4_token');
+  atualizarBadgeGA4(false);
+  toast('GA4 desconectado', 'blue');
+}
+
+async function buscarCidadesGA4() {
+  if (!ga4State.conectado || !ga4State.token || !ga4State.propertyId) return false;
+  try {
+    var resp = await fetch(
+      'https://analyticsdata.googleapis.com/v1beta/properties/' + ga4State.propertyId + ':runReport',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + ga4State.token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dimensions: [{ name: 'city' }, { name: 'region' }],
+          metrics: [
+            { name: 'sessions' },
+            { name: 'totalUsers' },
+            { name: 'conversions' },
+          ],
+          dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+          dimensionFilter: {
+            orGroup: {
+              expressions: [
+                { filter: { fieldName: 'sessionSource', stringFilter: { value: 'facebook',  matchType: 'CONTAINS' } } },
+                { filter: { fieldName: 'sessionSource', stringFilter: { value: 'instagram', matchType: 'CONTAINS' } } },
+                { filter: { fieldName: 'sessionMedium', stringFilter: { value: 'cpc',       matchType: 'EXACT'    } } },
+              ]
+            }
+          },
+          orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+          limit: 100,
+        }),
+      }
+    );
+    var data = await resp.json();
+    if (data.error) {
+      if (data.error.status === 'UNAUTHENTICATED') {
+        ga4State.token     = '';
+        ga4State.conectado = false;
+        localStorage.removeItem('ga4_token');
+        atualizarBadgeGA4(false);
+        toast('Token GA4 expirado — faça login novamente em Integrações', 'yellow');
+      }
+      throw new Error(data.error.message);
+    }
+
+    var rows = (data.rows || []).map(function(r) {
+      var dims = r.dimensionValues || [];
+      var mets = r.metricValues   || [];
+      return {
+        local:     (dims[0]||{}).value || '(não definido)',
+        estado:    (dims[1]||{}).value || '',
+        sessoes:   Number((mets[0]||{}).value || 0),
+        usuarios:  Number((mets[1]||{}).value || 0),
+        conversoes:Number((mets[2]||{}).value || 0),
+      };
+    }).filter(function(r){ return r.local !== '(not set)' && r.local !== '(não definido)'; });
+
+    renderTabelaGA4(rows);
+    return true;
+  } catch(e) {
+    toast('Erro GA4: ' + e.message, 'red');
+    return false;
+  }
+}
+
+function renderTabelaGA4(rows) {
+  var col = document.getElementById('loc-col-header');
+  var c1  = document.getElementById('loc-col-metric1');
+  var c2  = document.getElementById('loc-col-metric2');
+  if (col) col.textContent = 'CIDADE';
+  if (c1)  c1.textContent  = 'SESSÕES';
+  if (c2)  c2.textContent  = 'USUÁRIOS';
+
+  var fonte = document.getElementById('loc-fonte-titulo');
+  var desc  = document.getElementById('loc-fonte-desc');
+  var icon  = document.getElementById('loc-fonte-icon');
+  var btns  = document.getElementById('loc-fallback-btns');
+  if (fonte) fonte.textContent = 'Google Analytics 4 — Cidades reais (Meta Ads via UTM)';
+  if (desc)  desc.textContent  = 'Dados filtrados por utm_source=facebook/instagram · últimos 30 dias';
+  if (icon)  icon.textContent  = '📊';
+  if (btns)  btns.style.display = 'none';
+
+  var badge = document.getElementById('loc-badge');
+  if (badge) badge.innerHTML = '<span class="badge badge-green">● GA4 · ' + rows.length + ' cidades</span>';
+
+  var maxS = Math.max.apply(null, rows.map(function(r){ return r.sessoes; })) || 1;
+  var tbody = document.getElementById('loc-table-body');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhuma cidade encontrada via GA4 nos últimos 30 dias</div>';
+    return;
+  }
+  tbody.innerHTML = rows.slice(0, 60).map(function(r, i) {
+    var pct    = (r.sessoes / maxS * 100).toFixed(1);
+    var cor    = i < 3 ? 'var(--green)' : i < 8 ? 'var(--accentL)' : 'var(--text)';
+    var local  = r.local + (r.estado && r.estado !== r.local ? ' <span style="color:var(--muted);font-size:10px">· ' + r.estado + '</span>' : '');
+    return '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
+      '<div style="font-weight:700;color:'+cor+';font-family:\'IBM Plex Mono\',monospace">'+(i+1)+'</div>' +
+      '<div><div style="font-weight:500">'+local+'</div>' +
+        '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:2px"></div></div>' +
+      '</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--blue)">'+r.sessoes.toLocaleString('pt-BR')+'</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">'+r.usuarios.toLocaleString('pt-BR')+'</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">—</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted)">—</div>' +
+      '<div style="font-family:\'IBM Plex Mono\',monospace;color:'+(r.conversoes>0?'var(--green)':'var(--muted)')+'">'+( r.conversoes>0 ? r.conversoes.toLocaleString('pt-BR') : '—')+'</div>' +
+    '</div>';
+  }).join('');
+  toast('GA4: ' + rows.length + ' cidades carregadas', 'green');
+}
+
+// ══════════════════════════════════════════════════════
+// LOCALIDADES — Meta Ads fallback (region/country)
+// ══════════════════════════════════════════════════════
+var localidadesGranularidade = 'region'; // 'region' | 'country'
 
 var LOC_LABELS = {
-  region:  { col: 'ESTADO/REGIÃO', field: 'region',  badge: 'estados',  info: 'Agrupado por estado brasileiro' },
-  zip:     { col: 'CEP',           field: 'zip',     badge: 'CEPs',     info: 'Agrupado por CEP (mais granular)' },
-  country: { col: 'PAÍS',          field: 'country', badge: 'países',   info: 'Agrupado por país' },
+  region:  { col: 'ESTADO/REGIÃO', field: 'region',  badge: 'estados', info: 'Agrupado por estado — Meta API não suporta cidade' },
+  country: { col: 'PAÍS',          field: 'country', badge: 'países',  info: 'Agrupado por país' },
 };
 
 function locSetGranularidade(g) {
   localidadesGranularidade = g;
-  ['region','zip','country'].forEach(function(k) {
+  ['region','country'].forEach(function(k) {
     var btn = document.getElementById('loc-btn-'+k);
-    if (btn) btn.className = k===g ? 'btn btn-primary' : 'btn btn-ghost';
-    if (btn) btn.style.fontSize='11px'; if(btn) btn.style.padding='4px 12px';
+    if (!btn) return;
+    btn.className = k === g ? 'btn btn-primary' : 'btn btn-ghost';
+    btn.style.fontSize = '11px';
+    btn.style.padding  = '3px 10px';
   });
-  var info = document.getElementById('loc-granularidade-info');
-  if (info) info.textContent = LOC_LABELS[g] ? LOC_LABELS[g].info : '';
-  var col = document.getElementById('loc-col-header');
-  if (col) col.textContent = (LOC_LABELS[g]||{}).col || 'LOCAL';
   buscarLocalidades();
 }
 
 async function buscarLocalidades() {
   var badge = document.getElementById('loc-badge');
+
+  // Tenta GA4 primeiro (tem cidade real)
+  if (ga4State.conectado && ga4State.token && ga4State.propertyId) {
+    if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando GA4...</span>';
+    var ok = await buscarCidadesGA4();
+    if (ok) { buscarComportamento(); return; }
+  }
+
+  // Fallback: Meta Ads por region/country
   if (!metaState.conectado || !metaState.token || !metaState.account) {
     if (badge) badge.innerHTML = '<span class="badge badge-red">● Desconectado</span>';
+    // Mostrar botões de fallback
+    var btns = document.getElementById('loc-fallback-btns');
+    if (btns) btns.style.display = 'flex';
+    var fonte = document.getElementById('loc-fonte-titulo');
+    var desc  = document.getElementById('loc-fonte-desc');
+    var icon  = document.getElementById('loc-fonte-icon');
+    if (fonte) fonte.textContent = 'Nenhuma fonte conectada';
+    if (desc)  desc.textContent  = 'Conecte GA4 para cidades · ou Meta Ads para estados';
+    if (icon)  icon.textContent  = '🔌';
     return;
   }
+
   if (localidadesState.carregando) return;
   localidadesState.carregando = true;
-  if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando...</span>';
+  if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando Meta...</span>';
 
   var cfg = LOC_LABELS[localidadesGranularidade] || LOC_LABELS.region;
+
+  // Atualizar info da fonte
+  var fonte = document.getElementById('loc-fonte-titulo');
+  var desc  = document.getElementById('loc-fonte-desc');
+  var icon  = document.getElementById('loc-fonte-icon');
+  var btns  = document.getElementById('loc-fallback-btns');
+  var col   = document.getElementById('loc-col-header');
+  var c1    = document.getElementById('loc-col-metric1');
+  var c2    = document.getElementById('loc-col-metric2');
+  if (fonte) fonte.textContent = 'Meta Ads — ' + cfg.col + ' (GA4 não conectado)';
+  if (desc)  desc.textContent  = 'Conecte GA4 em Integrações para ver cidades reais · últimos 30 dias';
+  if (icon)  icon.textContent  = '📘';
+  if (btns)  btns.style.display = 'flex';
+  if (col)   col.textContent  = cfg.col;
+  if (c1)    c1.textContent   = 'GASTO';
+  if (c2)    c2.textContent   = 'IMPRESSÕES';
 
   try {
     var resp = await fetch(
@@ -2457,7 +2686,7 @@ async function buscarLocalidades() {
       var conv=0;
       (r.actions||[]).forEach(function(a){ if(CONV_TYPES.indexOf(a.action_type)>=0) conv+=Number(a.value||0); });
       var imp=Number(r.impressions||0), cli=Number(r.clicks||0), gas=Number(r.spend||0);
-      var local = r[cfg.field] || r.region || r.zip || r.country || 'Desconhecido';
+      var local = r[cfg.field] || r.region || r.country || 'Desconhecido';
       return { local: local, gasto:gas, impressoes:imp, cliques:cli, alcance:Number(r.reach||0), conversoes:conv, ctr:imp>0?(cli/imp)*100:0 };
     }).sort(function(a,b){ return b.gasto-a.gasto; });
 
@@ -2465,10 +2694,10 @@ async function buscarLocalidades() {
     var tbody = document.getElementById('loc-table-body');
     if (tbody && rows.length) {
       tbody.innerHTML = rows.slice(0,50).map(function(r,i) {
-        var pct = totalGasto>0 ? (r.gasto/totalGasto*100) : 0;
-        var cor = i<3 ? 'var(--green)' : i<8 ? 'var(--accentL)' : 'var(--text)';
+        var pct    = totalGasto>0 ? (r.gasto/totalGasto*100) : 0;
+        var cor    = i<3 ? 'var(--green)' : i<8 ? 'var(--accentL)' : 'var(--text)';
         var ctrCor = r.ctr>=2 ? 'var(--green)' : r.ctr>=1 ? 'var(--yellow)' : 'var(--red)';
-        return '<div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
+        return '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
           '<div style="font-weight:700;color:'+cor+';font-family:\'IBM Plex Mono\',monospace">'+(i+1)+'</div>' +
           '<div><div style="font-weight:500">'+r.local+'</div>' +
             '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+cor+';border-radius:2px"></div></div>' +
@@ -2483,8 +2712,8 @@ async function buscarLocalidades() {
     } else if (tbody) {
       tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado geográfico encontrado</div>';
     }
-    if (badge) badge.innerHTML = '<span class="badge badge-green">● '+rows.length+' '+cfg.badge+'</span>';
-    toast('Localidades: '+rows.length+' '+cfg.badge+' encontrados', 'green');
+    if (badge) badge.innerHTML = '<span class="badge badge-green">● Meta · '+rows.length+' '+cfg.badge+'</span>';
+    toast('Meta Ads: '+rows.length+' '+cfg.badge+' encontrados', 'green');
 
   } catch(e) {
     if (badge) badge.innerHTML = '<span class="badge badge-red">● Erro</span>';
@@ -2493,6 +2722,7 @@ async function buscarLocalidades() {
     toast('Erro localidades: '+e.message, 'red');
   } finally {
     localidadesState.carregando = false;
+    buscarComportamento();
   }
 }
 
