@@ -272,8 +272,7 @@ select.inp{cursor:pointer}
     </div>
     <div class="row">
       <button class="btn btn-ghost" onclick="simularSync()" id="btn-sync">↻ Meta</button>
-      <button class="btn btn-ghost" onclick="syncGASDashboard()" id="btn-sync-gas" style="color:var(--green);border-color:rgba(0,214,143,.3)">⚡ GAS</button>
-      <div id="meta-sync-info" style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace"></div>
+<div id="meta-sync-info" style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace"></div>
       <button class="btn btn-primary" onclick="navTo('analyze',null)">🤖 Analisar com IA</button>
     </div>
   </div>
@@ -563,40 +562,6 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-  <!-- GAS Sync Card -->
-  <div class="card" style="margin-top:16px;border-color:rgba(0,214,143,.25)">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(0,214,143,.12);display:flex;align-items:center;justify-content:center;font-size:20px">⚡</div>
-      <div>
-        <div style="font-weight:600">Google Apps Script — Sync</div>
-        <div id="gas-status" class="text-sm text-muted">Não configurado</div>
-      </div>
-      <div style="margin-left:auto" id="gas-badge"><span class="badge badge-red">Desconectado</span></div>
-    </div>
-    <div class="stack">
-      <div>
-        <label>URL do Web App GAS</label>
-        <input class="inp inp-mono" id="int-gas-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
-      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary flex-1" id="btn-conectar-gas" onclick="conectarGAS()">Sincronizar Agora</button>
-        <button class="btn btn-ghost" onclick="testarGAS()">Testar URL</button>
-      </div>
-      <div class="divider"></div>
-      <div id="gas-last-sync" style="display:none" class="card-sm">
-        <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px">ÚLTIMA SINCRONIZAÇÃO</div>
-        <div id="gas-sync-details" style="font-size:12px;color:var(--text)"></div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.6">
-        💡 <strong>Como configurar:</strong><br>
-        1. No GAS: <span class="font-mono" style="color:var(--green)">Implantar → Gerenciar implantações</span><br>
-        2. Copie a <span class="font-mono">URL do Web App</span><br>
-        3. Cole aqui e clique <strong>Sincronizar Agora</strong><br><br>
-        O GAS buscará dados do Meta + Google Ads no servidor do Google e retornará o ROI consolidado para cá.
-      </div>
-    </div>
-  </div>
 </div>
 
   <!-- ROI Real card -->
@@ -2420,143 +2385,6 @@ function setText(id, val) {
   if (s) s.textContent = 'Sistema de Agendamento vinculado — clique Buscar ROI';
 })();
 
-// ══════════════════════════════════════════════════════
-// INTEGRAÇÃO GOOGLE APPS SCRIPT — Sync de ROI
-// ══════════════════════════════════════════════════════
-
-/**
- * Conecta e sincroniza dados do GAS Web App.
- * A URL deve apontar para o endpoint: ?format=json
- */
-async function conectarGAS() {
-  const url = document.getElementById('int-gas-url').value.trim();
-  if (!url) { toast('Cole a URL do Web App GAS', 'red'); return; }
-  if (!url.includes('script.google.com')) {
-    toast('URL inválida — deve ser do script.google.com', 'yellow');
-    return;
-  }
-
-  localStorage.setItem('gas_url', url);
-  setBtnLoading('btn-conectar-gas', true, '⏳ Sincronizando...');
-
-  try {
-    await sincronizarGAS(url);
-  } finally {
-    setBtnLoading('btn-conectar-gas', false, 'Sincronizar Agora');
-  }
-}
-
-async function testarGAS() {
-  const ADMIN_EMAIL_FALLBACK = (typeof GAS_ADMIN_EMAIL !== 'undefined') ? GAS_ADMIN_EMAIL : 'admin@empresa.com';
-  const url = (typeof GAS_AGENDAMENTO_URL !== 'undefined' ? GAS_AGENDAMENTO_URL : '') || document.getElementById('int-gas-url')?.value?.trim() || localStorage.getItem('gas_url') || '';
-  if (!url) { toast('URL não configurada', 'yellow'); return; }
-
-  toast('Testando conexão com o GAS...', 'blue');
-  try {
-    const gasUrl = url + (url.includes('?') ? '&' : '?') + 'format=json';
-    const texto = await fetchGAS(gasUrl);
-    let d;
-    try { d = JSON.parse(texto); } catch(e) {
-      throw new Error(texto.includes('login') ? 'Requer login: reimplante com "Acesso: Qualquer pessoa"' : 'Resposta inválida');
-    }
-    if (d.erro) throw new Error(d.erro);
-    toast(`✅ GAS respondeu · ${d.campanhas?.length || 0} campanhas · v${d.versao || '?'}`, 'green');
-  } catch(e) {
-    toast('Erro ao conectar: ' + e.message, 'red');
-  }
-}
-
-/**
- * Busca dados do GAS e injeta no AdAnalyzer.
- * Mescla campanhas GAS com campanhas já carregadas do Meta direto.
- */
-async function sincronizarGAS(url) {
-  url = url || localStorage.getItem('gas_url');
-  if (!url) return;
-
-  try {
-    // Endpoint com autenticação admin silenciosa
-    const endpoint = url
-      + (url.includes('?') ? '&' : '?')
-      + `format=json&email=${encodeURIComponent((typeof GAS_ADMIN_EMAIL !== "undefined") ? GAS_ADMIN_EMAIL : "admin@empresa.com")}`;
-
-    const texto = await fetchGAS(endpoint);
-    let dados;
-    try { dados = JSON.parse(texto); }
-    catch(e) { throw new Error('GAS bloqueado por login. No GAS do Agendamento: Implantar → Gerenciar → Quem tem acesso: Qualquer pessoa'); }
-    if (dados.erro) throw new Error(dados.erro);
-
-    const campanhasGAS = dados.campanhas || [];
-    if (campanhasGAS.length === 0) {
-      toast('GAS retornou 0 campanhas — verifique as credenciais no Código.gs', 'yellow');
-      return;
-    }
-
-    // Injeta campanhas do GAS como workspace separado
-    const wsGAS = {
-      nome: '⚡ GAS — Meta + Google',
-      campanhas: campanhasGAS.map(c => ({
-        id:          c.id || 'gas-' + Math.random(),
-        nome:        c.nome,
-        fonte:       c.fonte || 'GAS Sync',
-        status:      c.status || 'ACTIVE',
-        orcamento:   c.orcamentoDiario || 0,
-        gastos:      c.gastos       || 0,
-        cliques:     c.cliques      || 0,
-        impressoes:  c.impressoes   || 0,
-        conversoes:  c.conversoes   || 0,
-        valorConv:   c.valorConversao || 0,
-        ctr:         c.ctr          || 0,
-        cpc:         c.cpc          || 0,
-        cpa:         c.cpa          || 0,
-        roas:        c.roas         || 0,
-        cvr:         c.cvr          || 0,
-      }))
-    };
-
-    // Adiciona ou atualiza workspace GAS
-    const idxExistente = WORKSPACES.findIndex(w => w.nome.includes('GAS'));
-    if (idxExistente >= 0) {
-      WORKSPACES[idxExistente] = wsGAS;
-    } else {
-      WORKSPACES.push(wsGAS);
-      // Adiciona opção no select de workspace
-      const sel = document.getElementById('workspace-select');
-      const opt = document.createElement('option');
-      opt.value = WORKSPACES.length - 1;
-      opt.textContent = wsGAS.nome;
-      sel.insertBefore(opt, sel.lastElementChild);
-    }
-
-    // Atualiza UI
-    const ts = new Date(dados.geradoEm || Date.now()).toLocaleString('pt-BR');
-    document.getElementById('gas-badge').innerHTML   = '<span class="badge badge-green">● Sincronizado</span>';
-    document.getElementById('gas-status').textContent = `${campanhasGAS.length} campanhas · ${ts}`;
-
-    const det = document.getElementById('gas-sync-details');
-    const res = dados.resumo || {};
-    det.innerHTML = `
-      ${campanhasGAS.length} campanhas · Gasto: <strong style="color:var(--yellow)">R$ ${(res.totalGastos||0).toFixed(2)}</strong>
-      · ROAS: <strong style="color:${res.roasMedio>=3?'var(--green)':'var(--red)'}">${(res.roasMedio||0).toFixed(2)}x</strong>
-      · CPA: <strong>R$ ${(res.cpaMedio||0).toFixed(2)}</strong>
-      · Conversões: <strong style="color:var(--blue)">${res.totalConversoes||0}</strong>
-    `;
-    document.getElementById('gas-last-sync').style.display = 'block';
-
-    // Muda para o workspace GAS automaticamente
-    wsIdx = WORKSPACES.findIndex(w => w.nome.includes('GAS'));
-    document.getElementById('workspace-select').value = wsIdx;
-    renderDashboard();
-    renderCampaignsTable();
-
-    toast(`✅ GAS sincronizado · ${campanhasGAS.length} campanhas · ROAS ${(res.roasMedio||0).toFixed(2)}x`, 'green');
-
-  } catch(e) {
-    document.getElementById('gas-badge').innerHTML = '<span class="badge badge-red">● Erro</span>';
-    toast('Erro GAS: ' + e.message, 'red');
-    throw e;
-  }
-}
 
 // ══════════════════════════════════════════════════════
 // PARTICLE FIELD
@@ -2769,13 +2597,9 @@ function copiarUTM() {
   }
 }
 
-// Inicializa UTM builder com Meta selecionado
-(function() {
-  window.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('utm-btn-meta')) setUtmPlatform('meta');
-    atualizarFunil();
-  });
-})();
+// Inicializa UTM builder e Funil (script está no final do body, DOM já pronto)
+setUtmPlatform('meta');
+atualizarFunil();
 
 // ══════════════════════════════════════════════════════
 // ANALISES RAPIDAS COM IA
@@ -2877,19 +2701,6 @@ async function rodarAnaliseRapida(tipo) {
   }
 }
 
-// ══════════════════════════════════════════════════════
-// Restaura URL do GAS e agenda auto-sync
-(function restaurarGAS() {
-  const url = GAS_AGENDAMENTO_URL || localStorage.getItem('gas_url');
-  if (!url) return;
-  localStorage.setItem('gas_url', url);
-  const inp = document.getElementById('int-gas-url');
-  if (inp) inp.value = url;
-  const badge  = document.getElementById('gas-badge');
-  const status = document.getElementById('gas-status');
-  if (badge)  badge.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
-  if (status) status.textContent = 'Clique em Sincronizar para buscar dados';
-})();
 
 // ══════════════════════════════════════════════════════
 // INTEGRAÇÃO CLAUDE IA
@@ -2969,22 +2780,6 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // INIT
 // ══════════════════════════════════════════════════════
 
-async function syncGASDashboard() {
-  const btn = document.getElementById('btn-sync-gas');
-  const url = GAS_AGENDAMENTO_URL || localStorage.getItem('gas_url');
-  if (!url) {
-    toast('URL do Sistema de Agendamento não configurada', 'yellow');
-    return;
-  }
-  btn.disabled = true;
-  btn.innerHTML = '⏳ GAS...';
-  try {
-    await sincronizarGAS(url);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '⚡ GAS';
-  }
-}
 
 renderDashboard();
 renderCampaignsTable();
