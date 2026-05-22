@@ -930,21 +930,29 @@ select.inp{cursor:pointer}
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px">
-    <button id="loc-tab-cidades" onclick="locSetTab('cidades')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500">📍 Cidades</button>
+    <button id="loc-tab-cidades" onclick="locSetTab('cidades')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500">📍 Regiões</button>
     <button id="loc-tab-comportamento" onclick="locSetTab('comportamento')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit">👥 Comportamento</button>
   </div>
 
-  <!-- Tab: Cidades -->
+  <!-- Tab: Regiões -->
   <div id="loc-panel-cidades">
+    <!-- Seletor de granularidade -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:12px;color:var(--muted)">Granularidade:</span>
+      <button id="loc-btn-region" class="btn btn-primary" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('region')">🗺️ Estados</button>
+      <button id="loc-btn-zip" class="btn btn-ghost" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('zip')">📮 CEP</button>
+      <button id="loc-btn-country" class="btn btn-ghost" style="font-size:11px;padding:4px 12px" onclick="locSetGranularidade('country')">🌎 País</button>
+      <span style="font-size:10px;color:var(--muted);margin-left:4px" id="loc-granularidade-info">Meta API não suporta cidade — use Estado ou CEP</span>
+    </div>
     <div class="card">
       <div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
-        <div>#</div><div>CIDADE</div><div>GASTO</div><div>IMPRESSÕES</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
+        <div>#</div><div id="loc-col-header">ESTADO/REGIÃO</div><div>GASTO</div><div>IMPRESSÕES</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
       </div>
       <div id="loc-table-body">
         <div style="padding:48px;text-align:center;color:var(--muted)">
           <div style="font-size:40px;margin-bottom:14px">📍</div>
-          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver cidades</div>
-          <div style="font-size:12px">Veja de quais cidades do Brasil vêm os cliques nos seus anúncios</div>
+          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte o Meta Ads para ver regiões</div>
+          <div style="font-size:12px">A Meta API retorna dados por Estado ou CEP — cidade não é suportada</div>
         </div>
       </div>
     </div>
@@ -2396,6 +2404,28 @@ function locSetTab(tab) {
   if (tab === 'comportamento' && metaState.conectado) buscarComportamento();
 }
 
+var localidadesGranularidade = 'region'; // 'region' | 'zip' | 'country'
+
+var LOC_LABELS = {
+  region:  { col: 'ESTADO/REGIÃO', field: 'region',  badge: 'estados',  info: 'Agrupado por estado brasileiro' },
+  zip:     { col: 'CEP',           field: 'zip',     badge: 'CEPs',     info: 'Agrupado por CEP (mais granular)' },
+  country: { col: 'PAÍS',          field: 'country', badge: 'países',   info: 'Agrupado por país' },
+};
+
+function locSetGranularidade(g) {
+  localidadesGranularidade = g;
+  ['region','zip','country'].forEach(function(k) {
+    var btn = document.getElementById('loc-btn-'+k);
+    if (btn) btn.className = k===g ? 'btn btn-primary' : 'btn btn-ghost';
+    if (btn) btn.style.fontSize='11px'; if(btn) btn.style.padding='4px 12px';
+  });
+  var info = document.getElementById('loc-granularidade-info');
+  if (info) info.textContent = LOC_LABELS[g] ? LOC_LABELS[g].info : '';
+  var col = document.getElementById('loc-col-header');
+  if (col) col.textContent = (LOC_LABELS[g]||{}).col || 'LOCAL';
+  buscarLocalidades();
+}
+
 async function buscarLocalidades() {
   var badge = document.getElementById('loc-badge');
   if (!metaState.conectado || !metaState.token || !metaState.account) {
@@ -2406,12 +2436,14 @@ async function buscarLocalidades() {
   localidadesState.carregando = true;
   if (badge) badge.innerHTML = '<span class="badge badge-green" style="opacity:.7">● Buscando...</span>';
 
+  var cfg = LOC_LABELS[localidadesGranularidade] || LOC_LABELS.region;
+
   try {
     var resp = await fetch(
       'https://graph.facebook.com/' + metaState.apiVersion + '/' + metaState.account + '/insights' +
       '?fields=spend,impressions,clicks,reach,actions' +
-      '&breakdowns=city' +
-      '&date_preset=last_30d&limit=100' +
+      '&breakdowns=' + cfg.field +
+      '&date_preset=last_30d&limit=200' +
       '&access_token=' + metaState.token
     );
     var data = await resp.json();
@@ -2425,19 +2457,20 @@ async function buscarLocalidades() {
       var conv=0;
       (r.actions||[]).forEach(function(a){ if(CONV_TYPES.indexOf(a.action_type)>=0) conv+=Number(a.value||0); });
       var imp=Number(r.impressions||0), cli=Number(r.clicks||0), gas=Number(r.spend||0);
-      return { cidade: r.city||'Desconhecida', gasto:gas, impressoes:imp, cliques:cli, alcance:Number(r.reach||0), conversoes:conv, ctr:imp>0?(cli/imp)*100:0 };
+      var local = r[cfg.field] || r.region || r.zip || r.country || 'Desconhecido';
+      return { local: local, gasto:gas, impressoes:imp, cliques:cli, alcance:Number(r.reach||0), conversoes:conv, ctr:imp>0?(cli/imp)*100:0 };
     }).sort(function(a,b){ return b.gasto-a.gasto; });
 
     var totalGasto = rows.reduce(function(s,r){ return s+r.gasto; }, 0);
     var tbody = document.getElementById('loc-table-body');
     if (tbody && rows.length) {
-      tbody.innerHTML = rows.slice(0,30).map(function(r,i) {
+      tbody.innerHTML = rows.slice(0,50).map(function(r,i) {
         var pct = totalGasto>0 ? (r.gasto/totalGasto*100) : 0;
         var cor = i<3 ? 'var(--green)' : i<8 ? 'var(--accentL)' : 'var(--text)';
         var ctrCor = r.ctr>=2 ? 'var(--green)' : r.ctr>=1 ? 'var(--yellow)' : 'var(--red)';
         return '<div style="display:grid;grid-template-columns:28px 1fr 100px 90px 70px 60px 70px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
           '<div style="font-weight:700;color:'+cor+';font-family:\'IBM Plex Mono\',monospace">'+(i+1)+'</div>' +
-          '<div><div style="font-weight:500">'+r.cidade+'</div>' +
+          '<div><div style="font-weight:500">'+r.local+'</div>' +
             '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+cor+';border-radius:2px"></div></div>' +
             '<div style="font-size:10px;color:var(--muted);margin-top:2px">'+pct.toFixed(1)+'% do gasto</div></div>' +
           '<div style="font-family:\'IBM Plex Mono\',monospace;color:var(--yellow);font-weight:600">R$ '+r.gasto.toFixed(2)+'</div>' +
@@ -2448,10 +2481,10 @@ async function buscarLocalidades() {
         '</div>';
       }).join('');
     } else if (tbody) {
-      tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado de cidade encontrado</div>';
+      tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Nenhum dado geográfico encontrado</div>';
     }
-    if (badge) badge.innerHTML = '<span class="badge badge-green">● '+rows.length+' cidades</span>';
-    toast('Localidades: '+rows.length+' cidades encontradas', 'green');
+    if (badge) badge.innerHTML = '<span class="badge badge-green">● '+rows.length+' '+cfg.badge+'</span>';
+    toast('Localidades: '+rows.length+' '+cfg.badge+' encontrados', 'green');
 
   } catch(e) {
     if (badge) badge.innerHTML = '<span class="badge badge-red">● Erro</span>';
