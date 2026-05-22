@@ -511,6 +511,76 @@ select.inp{cursor:pointer}
       </button>
     </div>
   </div>
+
+  <!-- Guia IA — sempre visível -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+    <div class="card">
+      <div class="section-title">🤖 Como usar a Análise com IA</div>
+      <div style="display:grid;gap:8px;margin-top:10px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">1</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Conecte o Meta Ads</strong> em Integrações. As campanhas aparecem automaticamente no seletor.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">2</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Configure o Claude IA</strong> em Integrações. Insira a API Key da Anthropic para habilitar análises.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">3</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Defina CPA e ROAS meta</strong> para que a IA julgue o desempenho real frente às metas do negócio.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">4</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Use o Contexto Adicional</strong> para dar informações de mercado: datas comemorativas, orçamento total, promoções em andamento.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:24px;height:24px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">✓</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--green)">Clique "Analisar com Claude IA"</strong> para receber um diagnóstico completo com recomendações de ação prioritizadas.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">💡 Exemplos de Insights Gerados pela IA</div>
+      <div style="display:grid;gap:6px;margin-top:10px">
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--green)">
+          <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">Escala Imediata</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">"Campanha 'Óculos Progressivos' com ROAS 4,2x e budget 87% usado. Recomendo aumentar 25% — projeção de +R$1.200/semana com margem preservada."</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+          <div style="font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:4px">Otimização de Criativo</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">"CTR caiu de 1,8% para 0,9% nos últimos 7 dias. Frequência em 3,4x indica saturação. Troque o criativo com urgência."</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--red)">
+          <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px">Alerta de Perda</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">"CPA R$140 vs. meta R$60 — campanha destruindo margem. Pause e revise o público-alvo antes de reativar."</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--purple)">
+          <div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:4px">Plano de Ação 7 dias</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">"Seg: pausa campanha B. Ter: lança criativo A/B. Qui: analisa CTR. Sex: escala o vencedor 20%."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompts prontos para copiar -->
+  <div class="card" style="margin-top:12px">
+    <div class="section-title">📋 Contextos Prontos — Cole no Campo "Contexto Adicional"</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);cursor:pointer" onclick="document.getElementById('ai-context').value='Ótica localizada em shopping. Público principal: 35–55 anos. Ticket médio: R$480. Mês de aniversário da loja com 15% de desconto. Orçamento total: R$5.000/mês. Prioridade: volume de agendamentos de consulta.'">
+        <div style="font-size:11px;font-weight:700;color:var(--accentL);margin-bottom:6px">🏪 Ótica em Shopping</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5">Ticket R$480, promoção ativa, foco em agendamentos. Clique para usar.</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);cursor:pointer" onclick="document.getElementById('ai-context').value='Ótica de rua em bairro residencial. Público: 25–45 anos, classe B/C. Ticket médio: R$320. Foco em lentes de contato e armações populares. Concorrência alta. Orçamento: R$2.000/mês.'">
+        <div style="font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:6px">🏘️ Ótica de Bairro</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5">Ticket R$320, público popular, orçamento enxuto. Clique para usar.</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);cursor:pointer" onclick="document.getElementById('ai-context').value='Ótica premium. Público: 40–65 anos, classe A/B. Ticket médio: R$850. Foco em lentes premium Varilux e armações de grife. Diferencial: atendimento personalizado e ótico na loja. Orçamento: R$8.000/mês. Meta: 30 consultas/mês.'">
+        <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px">💎 Ótica Premium</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5">Ticket R$850, público A/B, meta 30 consultas/mês. Clique para usar.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════ VIEW: CAMPAIGNS -->
@@ -581,6 +651,97 @@ select.inp{cursor:pointer}
       </thead>
       <tbody id="campaigns-tbody"></tbody>
     </table>
+  </div>
+
+  <!-- Guia de Campanha — sempre visível -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+    <div class="card">
+      <div class="section-title">📐 Como funciona o Score de Saúde</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.9;margin-top:8px">
+        O score é calculado automaticamente com base em 4 fatores:<br>
+        <div style="margin-top:8px;display:grid;gap:6px">
+          <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;justify-content:space-between">
+            <span style="color:var(--text);font-weight:500">ROAS ≥ 3x</span><span style="color:var(--green);font-family:'IBM Plex Mono',monospace">+40 pts</span>
+          </div>
+          <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;justify-content:space-between">
+            <span style="color:var(--text);font-weight:500">CTR ≥ 1,5%</span><span style="color:var(--blue);font-family:'IBM Plex Mono',monospace">+25 pts</span>
+          </div>
+          <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;justify-content:space-between">
+            <span style="color:var(--text);font-weight:500">Conversões &gt; 5</span><span style="color:var(--yellow);font-family:'IBM Plex Mono',monospace">+20 pts</span>
+          </div>
+          <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;justify-content:space-between">
+            <span style="color:var(--text);font-weight:500">Budget &lt; 90% gasto</span><span style="color:var(--purple);font-family:'IBM Plex Mono',monospace">+15 pts</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <span class="badge badge-green">70–100 Escalar</span>
+          <span class="badge badge-yellow">45–69 Otimizar</span>
+          <span class="badge badge-red">0–44 Pausar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🎯 Quando usar cada objetivo</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px;display:grid;gap:8px">
+        <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--green)">
+          <div style="font-weight:600;color:var(--green);font-size:11px;margin-bottom:3px">🛒 Compra / E-commerce</div>
+          Use quando o pixel do Meta rastreia compras. O ROAS é calculado automaticamente como Receita ÷ Gasto.
+        </div>
+        <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+          <div style="font-weight:600;color:var(--yellow);font-size:11px;margin-bottom:3px">💬 Lead / WhatsApp</div>
+          Use para campanhas de geração de leads. Defina o valor de cada lead (ex: R$ 30). CPL = Gasto ÷ Leads.
+        </div>
+        <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--blue)">
+          <div style="font-weight:600;color:var(--blue);font-size:11px;margin-bottom:3px">📅 Agendamento (Óticas)</div>
+          Use para campanhas de consultas. O valor é integrado ao sistema de agendamento da ótica.
+        </div>
+        <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--purple)">
+          <div style="font-weight:600;color:var(--purple);font-size:11px;margin-bottom:3px">👁 Engajamento / Alcance</div>
+          Use para topo de funil. Informe ticket médio e taxa de conversão estimada para projetar ROI.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benchmarks da Indústria -->
+  <div class="card" style="margin-top:12px">
+    <div class="section-title">📊 Benchmarks de Campanhas — Setor Óticas Brasil</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px">
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">CTR MÉDIO</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--blue)">1,2–1,8%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">abaixo: trocar criativo</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">CPM TÍPICO</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--yellow)">R$15–35</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">acima: público muito restrito</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">CPA LEAD</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green)">R$30–80</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">acima: landing page ruim</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">ROAS ALVO</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green)">2,5–4,0x</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">abaixo de 2x: pausar</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">FREQ. IDEAL</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--purple)">1,5–2,5x</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">acima de 3x: saturação</div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);text-align:center">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">TICKET MÉDIO</div>
+        <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text)">R$350–650</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">óculos + lentes</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:12px 14px;background:rgba(91,94,244,.07);border-radius:var(--radius);border-left:3px solid var(--accent);font-size:12px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--accentL)">💡 Regra de ouro para óticas:</strong> Uma campanha saudável converte 1 a cada 60 cliques (taxa 1,6%). Com ticket médio de R$ 500 e CTR de 1,5%, um budget de R$ 1.000 deve gerar ~6 agendamentos e R$ 3.000 em receita = ROAS 3x.
+    </div>
   </div>
 </div>
 
@@ -895,10 +1056,80 @@ select.inp{cursor:pointer}
         <div>CAMPANHA</div><div>STATUS</div><div>ENVIADOS</div><div>ABERTOS</div><div>CLIQUES</div><div>DESCAD.</div>
       </div>
       <div id="ec-email-list">
-        <div style="padding:48px;text-align:center;color:var(--muted)">
-          <div style="font-size:40px;margin-bottom:14px">📧</div>
-          <div style="font-weight:600;margin-bottom:8px">Conecte o Builderall para ver campanhas de e-mail</div>
+        <div style="padding:24px 20px;text-align:center;color:var(--muted);border-bottom:1px solid var(--border)">
+          <div style="font-size:32px;margin-bottom:10px">📧</div>
+          <div style="font-weight:600;margin-bottom:6px;color:var(--text)">Conecte o Builderall para ver campanhas de e-mail</div>
           <div style="font-size:12px">Vá em <span style="color:var(--accentL)">Integrações → Builderall</span> e insira sua API Key</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guia de e-mail marketing para óticas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div class="card">
+        <div class="section-title">📧 Sequência de E-mails para Óticas</div>
+        <div style="display:grid;gap:6px;margin-top:10px">
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;gap:10px;align-items:flex-start">
+            <div style="min-width:28px;height:28px;border-radius:50%;background:rgba(91,94,244,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accentL)">D0</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Boas-vindas + Agendamento</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Assunto: "Bem-vindo(a)! Agende sua consulta gratuita 👓"<br>Abertura esperada: 45–55%</div>
+            </div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;gap:10px;align-items:flex-start">
+            <div style="min-width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--yellow)">D3</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Educação + Urgência</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Assunto: "Sua visão pode estar mudando — saiba quando trocar as lentes"<br>Abertura esperada: 28–35%</div>
+            </div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;gap:10px;align-items:flex-start">
+            <div style="min-width:28px;height:28px;border-radius:50%;background:rgba(0,214,143,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green)">D7</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Oferta Especial</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Assunto: "Só esta semana: 10% OFF em lentes + consulta grátis 🎁"<br>Abertura esperada: 22–30%</div>
+            </div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);display:flex;gap:10px;align-items:flex-start">
+            <div style="min-width:28px;height:28px;border-radius:50%;background:rgba(244,63,94,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--red)">D14</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Última Chamada</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Assunto: "Última chance: sua consulta gratuita expira amanhã"<br>Abertura esperada: 35–45% (urgência)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📊 Benchmarks de E-mail Marketing — Saúde & Óticas</div>
+        <div style="display:grid;gap:6px;margin-top:10px">
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa de Abertura</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--green)">22–35%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa de Clique (CTR)</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--blue)">2,5–4,0%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa de Conversão (lead→venda)</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--yellow)">8–15%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Descadastro máximo aceitável</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--red)">0,3%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Melhor horário de envio</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--purple)">Ter 10h / Qui 14h</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Frequência ideal</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--text)">1–2x/semana</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 12px;background:rgba(91,94,244,.07);border-radius:var(--radius);font-size:11px;color:var(--muted);line-height:1.6;border-left:3px solid var(--accent)">
+          <strong style="color:var(--accentL)">Dica:</strong> Assuntos com o nome do cliente têm +26% de abertura. Use personalização no Builderall com a tag <code style="font-family:'IBM Plex Mono',monospace;color:var(--text)">{{nome}}</code>.
         </div>
       </div>
     </div>
@@ -929,10 +1160,69 @@ select.inp{cursor:pointer}
         <div>CONTATO</div><div>ORIGEM</div><div>STATUS</div><div>VALOR</div><div>DATA</div>
       </div>
       <div id="ec-crm-list">
-        <div style="padding:48px;text-align:center;color:var(--muted)">
-          <div style="font-size:40px;margin-bottom:14px">👥</div>
-          <div style="font-weight:600;margin-bottom:8px">Conecte o Builderall CRM para ver seus leads</div>
+        <div style="padding:24px 20px;text-align:center;color:var(--muted);border-bottom:1px solid var(--border)">
+          <div style="font-size:32px;margin-bottom:10px">👥</div>
+          <div style="font-weight:600;margin-bottom:6px;color:var(--text)">Conecte o Builderall CRM para ver seus leads</div>
           <div style="font-size:12px">Vá em <span style="color:var(--accentL)">Integrações → Builderall</span> e insira sua API Key</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guia de CRM -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div class="card">
+        <div class="section-title">🏆 Pipeline de Vendas — Óticas</div>
+        <div style="display:grid;gap:6px;margin-top:10px">
+          <div style="padding:10px 14px;background:rgba(56,189,248,.08);border-radius:var(--radius);border-left:3px solid var(--blue)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;font-weight:600;color:var(--blue)">1. Lead Captado (Anúncio)</div>
+              <span class="badge badge-blue">100%</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Lead clicou no anúncio e preencheu o formulário. Responder em &lt; 5 minutos aumenta conversão em 9x.</div>
+          </div>
+          <div style="padding:10px 14px;background:rgba(91,94,244,.08);border-radius:var(--radius);border-left:3px solid var(--accent)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;font-weight:600;color:var(--accentL)">2. Contato Realizado</div>
+              <span class="badge badge-purple">45–60%</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Ligação ou WhatsApp feito. Não responder: 40–55% dos leads se perdem aqui.</div>
+          </div>
+          <div style="padding:10px 14px;background:rgba(245,158,11,.08);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;font-weight:600;color:var(--yellow)">3. Consulta Agendada</div>
+              <span class="badge badge-yellow">25–40%</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Lead confirmou agendamento. Envie lembrete 24h e 2h antes para reduzir faltas.</div>
+          </div>
+          <div style="padding:10px 14px;background:rgba(0,214,143,.08);border-radius:var(--radius);border-left:3px solid var(--green)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;font-weight:600;color:var(--green)">4. Venda Realizada</div>
+              <span class="badge badge-green">15–25%</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Consulta realizada e compra efetuada. Ticket médio R$350–650. ROI real = Receita ÷ Gasto ads.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">⚡ Ações de Alto Impacto no CRM</div>
+        <div style="display:grid;gap:8px;margin-top:10px">
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">🔥 Resposta em 5 minutos</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">Leads respondidos em &lt; 5 min convertem 9x mais. Configure um bot de WhatsApp para o primeiro contato automático.</div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">📅 Confirmação de Consulta</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">Envie lembretes automáticos 24h e 2h antes. Reduz no-shows em 30% e aumenta o comparecimento.</div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">🔄 Follow-up Leads Frios</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">Leads não convertidos em 7 dias: reative com e-mail de urgência. 15–20% convertem nessa segunda tentativa.</div>
+          </div>
+          <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">💎 Upsell Pós-Consulta</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">Clientes que compraram: ofereça upgrade de lentes por e-mail após 3 dias. Ticket pode subir 40%.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -944,16 +1234,80 @@ select.inp{cursor:pointer}
       <div class="card">
         <div class="section-title">🔀 Funil Anúncio → Lead → Venda</div>
         <div id="ec-funil-visual" style="padding:8px 0">
-          <div style="padding:40px;text-align:center;color:var(--muted)">
+          <div style="padding:24px;text-align:center;color:var(--muted)">
             <div style="font-size:36px;margin-bottom:10px">🔀</div>
-            <div style="font-size:13px">Conecte Meta Ads + Builderall CRM para ver o funil completo</div>
+            <div style="font-size:13px;margin-bottom:6px;color:var(--text);font-weight:500">Conecte Meta Ads + Builderall CRM para ver o funil completo</div>
+            <div style="font-size:11px">Os dados reais das suas campanhas e leads serão exibidos aqui automaticamente.</div>
           </div>
         </div>
       </div>
       <div class="card">
         <div class="section-title">📊 Origem dos Leads</div>
-        <div id="ec-leads-origem" style="padding:16px 0">
-          <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados do CRM...</div>
+        <div id="ec-leads-origem" style="padding:8px 0">
+          <div style="padding:10px;text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Aguardando dados do CRM...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guia de funil sempre visível -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div class="card">
+        <div class="section-title">🎯 Otimização de Funil — Onde os Leads se Perdem</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-top:10px">
+          <div style="display:grid;gap:8px">
+            <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+              <div style="color:var(--red);font-weight:600;font-size:11px">Perda no Clique → Lead (LP ruim)</div>
+              <div style="font-size:11px;margin-top:3px">Se CTR é bom mas leads baixos: problema na landing page. Teste velocidade e CTA. Meta: &gt;5% conversão na LP.</div>
+            </div>
+            <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+              <div style="color:var(--yellow);font-weight:600;font-size:11px">Perda no Lead → Contato (resposta lenta)</div>
+              <div style="font-size:11px;margin-top:3px">Se leads chegam mas não agendam: equipe está demorando para ligar. Implante atendimento em &lt; 5 min.</div>
+            </div>
+            <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+              <div style="color:var(--blue);font-weight:600;font-size:11px">Perda no Agendado → Compareceu</div>
+              <div style="font-size:11px;margin-top:3px">No-show alto: envie confirmação no dia anterior + lembrete 2h antes. Taxa de comparecimento ideal: &gt; 70%.</div>
+            </div>
+            <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+              <div style="color:var(--green);font-weight:600;font-size:11px">Perda na Consulta → Venda</div>
+              <div style="font-size:11px;margin-top:3px">Conversão abaixo de 50%: treino de vendas. Ofereça financiamento e planos. Clientes que comparam: envie proposta por e-mail em 1h.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📈 Métricas do Funil que Você Deve Monitorar</div>
+        <div style="display:grid;gap:6px;margin-top:10px">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Custo por Lead (CPL)</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&lt; R$50</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa Lead → Agendamento</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&gt; 40%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa Comparecimento</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&gt; 70%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Taxa Consulta → Venda</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&gt; 50%</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">Custo por Venda (CPA real)</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&lt; R$150</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--radius)">
+            <div style="font-size:12px;color:var(--text)">ROAS total (ads ÷ receita)</div>
+            <div style="font-size:11px;color:var(--muted)">bom</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green)">&gt; 3,0x</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1913,18 +2267,43 @@ function renderDashboard() {
   }
 
   if (camps.length === 0 && !ga4State.campanhas.length) {
-    document.getElementById('dash-metrics').innerHTML = `
-      <div class="card" style="grid-column:1/-1;text-align:center;padding:48px 24px;border-color:rgba(91,94,244,.3)">
-        <div style="font-size:48px;margin-bottom:16px">📡</div>
-        <div style="font-weight:700;font-size:16px;margin-bottom:8px">Nenhuma campanha carregada</div>
-        <div style="color:var(--muted);font-size:13px;margin-bottom:24px">Conecte o Meta Ads ou o Google Analytics 4 para ver dados reais</div>
-        <div style="display:flex;gap:10px;justify-content:center">
-          <button class="btn btn-primary" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">📘 Conectar Meta Ads</button>
-          <button class="btn btn-ghost" onclick="navTo('integrations', document.querySelector('[onclick*=integrations]'))">📊 Conectar GA4</button>
-        </div>
-      </div>`;
-    document.getElementById('health-list').innerHTML = '';
-    document.getElementById('alerts-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Conecte Meta Ads ou GA4 para ver alertas</div>';
+    // KPIs de referência (metas, não dados reais)
+    document.getElementById('dash-metrics').innerHTML =
+      metricCard('META ROAS', '3,0x', 'Benchmark óticas: 2,0–4,0x', 'green', '📈') +
+      metricCard('META CPA', 'R$ 50', 'Benchmark óticas: R$ 30–80', 'yellow', '🎯') +
+      metricCard('META CTR', '1,5%', 'Benchmark óticas: 1,0–2,0%', 'blue', '🖱️') +
+      metricCard('META CPM', 'R$ 25', 'Benchmark óticas: R$ 15–40', 'text', '📡');
+
+    // Setup progress no lugar do health-list
+    document.getElementById('health-list').innerHTML =
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:\'IBM Plex Mono\',monospace">PROGRESSO DE CONFIGURAÇÃO</div>' +
+      [
+        { label:'Conectar Meta Ads', sub:'Access Token + Ad Account ID', ok: metaState.conectado, link:'integrations' },
+        { label:'Conectar GA4', sub:'Client ID + Property ID (cidades reais)', ok: ga4State.conectado, link:'integrations' },
+        { label:'Configurar Claude IA', sub:'API Key da Anthropic para análises', ok: !!localStorage.getItem('claude_api_key'), link:'integrations' },
+        { label:'Definir objetivos de campanha', sub:'Compra / Lead / Agendamento por campanha', ok: false, link:'campaigns' },
+        { label:'Configurar UTM nos links', sub:'Rastreamento de origem dos cliques', ok: false, link:'utm' },
+      ].map(function(s) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+          '<div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:' + (s.ok?'rgba(0,214,143,.15)':'var(--bg3)') + ';border:1px solid ' + (s.ok?'var(--green)':'var(--border)') + '">' + (s.ok?'✓':'○') + '</div>' +
+          '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;color:' + (s.ok?'var(--text)':'var(--muted)') + '">' + s.label + '</div><div style="font-size:10px;color:var(--muted)">' + s.sub + '</div></div>' +
+          (s.ok ? '<span class="badge badge-green" style="font-size:10px">Feito</span>' : '<button class="btn btn-ghost" style="font-size:10px;padding:3px 8px" onclick="navTo(\''+s.link+'\',null)">Configurar</button>') +
+        '</div>';
+      }).join('');
+
+    // Alertas como guia
+    document.getElementById('alerts-list').innerHTML =
+      '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">' +
+        '<span style="font-size:18px">💡</span>' +
+        '<div><div style="font-weight:500;font-size:13px">Configure o Meta Ads para alertas automáticos</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">Os alertas monitoram automaticamente: CPA alto · ROAS baixo · Budget esgotando · CTR caindo · Zero conversões</div></div>' +
+        '<button class="btn btn-primary" style="font-size:11px;padding:4px 12px;white-space:nowrap" onclick="navTo(\'integrations\',null)">Conectar</button>' +
+      '</div>' +
+      '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">' +
+        '<span style="font-size:18px">📋</span>' +
+        '<div><div style="font-weight:500;font-size:13px">Alertas que serão ativados</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">ROAS &lt; 2x · CPA &gt; meta em 20% · Budget &gt; 90% · CTR caiu 30% · Zero conv. 24h · Criativo saturado</div></div>' +
+      '</div>';
     document.getElementById('alert-count').textContent = '0';
     renderDiagnostico([]);
     renderComportamentoDashboard();
@@ -2465,7 +2844,18 @@ function salvarObjetivosCampanhas() {
 // ══════════════════════════════════════════════════════
 function renderAnalyze() {
   const sel = document.getElementById('camp-select');
-  sel.innerHTML = campanhas().map(c =>
+  const camps = campanhas();
+  if (camps.length === 0) {
+    sel.innerHTML = '<option disabled selected style="color:var(--muted)">— Conecte o Meta Ads para ver campanhas —</option>';
+    document.getElementById('quick-actions').innerHTML =
+      '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">' +
+        '<div style="font-size:24px;margin-bottom:8px">🤖</div>' +
+        '<div style="font-weight:600;color:var(--text);margin-bottom:4px">IA pronta para analisar</div>' +
+        'Conecte o Meta Ads em <span style="color:var(--accentL);cursor:pointer" onclick="navTo(\'integrations\')">Integrações</span> para carregar suas campanhas.' +
+      '</div>';
+    return;
+  }
+  sel.innerHTML = camps.map(c =>
     `<option value="${c.id}">${c.fonte === 'Meta Ads' ? '📘' : '🔍'} ${c.nome}</option>`
   ).join('');
   // seleciona todas por padrão
