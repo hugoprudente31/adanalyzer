@@ -304,6 +304,112 @@ select.inp{cursor:pointer}
     <div class="section-title">⚡ Alertas Ativos <span class="badge badge-red" id="alert-count">0</span></div>
     <div id="alerts-list"></div>
   </div>
+
+  <!-- Diagnóstico Rápido + Comportamento -->
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="section-title">🔍 Diagnóstico Rápido</div>
+      <div id="dash-diagnostico">
+        <div style="padding:24px;text-align:center;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:10px">📡</div>
+          <div style="font-size:13px">Conecte o Meta Ads para ver o diagnóstico automático das campanhas</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">👤 Comportamento do Público</div>
+      <div id="dash-comportamento">
+        <div style="padding:24px;text-align:center;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:10px">📊</div>
+          <div style="font-size:13px;margin-bottom:8px">Conecte o Meta Ads para ver faixa etária, gênero, dispositivos e posicionamentos</div>
+          <div style="font-size:11px;line-height:1.7;color:var(--muted)">
+            💡 <strong style="color:var(--text)">Por que isso importa:</strong><br>
+            Saber quem realmente converte permite segmentar com precisão,<br>
+            reduzir CPA e escalar com segurança
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benchmarks + Próximas Ações -->
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="section-title">📊 Benchmarks do Setor — Óticas</div>
+      <table class="tbl">
+        <thead><tr><th>Métrica</th><th>Referência</th><th>Meta Ideal</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:500">CTR (Click-Through Rate)</td>
+            <td class="mono" style="color:var(--muted)">1,0 – 2,0%</td>
+            <td class="mono" style="color:var(--green)">≥ 1,5%</td>
+            <td id="bench-ctr"><span class="badge badge-blue">Aguardando dados</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">CPA (Custo por Aquisição)</td>
+            <td class="mono" style="color:var(--muted)">R$ 30 – 80</td>
+            <td class="mono" style="color:var(--green)">≤ R$ 50</td>
+            <td id="bench-cpa"><span class="badge badge-blue">Aguardando dados</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">ROAS (Retorno sobre anúncio)</td>
+            <td class="mono" style="color:var(--muted)">2,0 – 4,0x</td>
+            <td class="mono" style="color:var(--green)">≥ 3,0x</td>
+            <td id="bench-roas"><span class="badge badge-blue">Aguardando dados</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">CPM (Custo por mil impr.)</td>
+            <td class="mono" style="color:var(--muted)">R$ 15 – 40</td>
+            <td class="mono" style="color:var(--green)">≤ R$ 25</td>
+            <td id="bench-cpm"><span class="badge badge-blue">Aguardando dados</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">Taxa de abertura e-mail</td>
+            <td class="mono" style="color:var(--muted)">20 – 25%</td>
+            <td class="mono" style="color:var(--green)">≥ 25%</td>
+            <td><span class="badge badge-blue">E-mail CRM</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">CVR (Taxa de conversão)</td>
+            <td class="mono" style="color:var(--muted)">1,0 – 3,0%</td>
+            <td class="mono" style="color:var(--green)">≥ 1,5%</td>
+            <td id="bench-cvr"><span class="badge badge-blue">Aguardando dados</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-title">🚀 Próximas Ações Recomendadas</div>
+      <div id="dash-proximas-acoes">
+        <div style="padding:16px 0">
+          <div class="action-item" style="margin-bottom:8px">
+            <div class="action-icon" style="background:rgba(91,94,244,.15)">📘</div>
+            <div class="action-body">
+              <div class="action-title">Conecte o Meta Ads</div>
+              <div class="action-desc">Acesse Integrações → Meta Ads e insira seu Access Token e Ad Account ID para ver recomendações baseadas em dados reais</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="navTo('integrations',null)">Conectar</button>
+          </div>
+          <div class="action-item" style="margin-bottom:8px">
+            <div class="action-icon" style="background:rgba(234,88,12,.12)">📊</div>
+            <div class="action-body">
+              <div class="action-title">Conecte o Google Analytics 4</div>
+              <div class="action-desc">Veja cidades reais dos seus clientes, sessões, conversões e ROAS do Google Ads com paridade total</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="navTo('integrations',null)">Conectar</button>
+          </div>
+          <div class="action-item">
+            <div class="action-icon" style="background:rgba(0,214,143,.12)">🎯</div>
+            <div class="action-body">
+              <div class="action-title">Configure os objetivos de campanha</div>
+              <div class="action-desc">Em Campanhas, defina se cada campanha é de Compra, Lead ou Agendamento para calcular o ROI real</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="navTo('campaigns',null)">Configurar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════ VIEW: ANALYZE -->
@@ -393,6 +499,16 @@ select.inp{cursor:pointer}
         <div style="font-weight:600;font-size:12px;margin-bottom:4px">Plano de Escala</div>
         <div style="font-size:11px;color:var(--muted)">Cria plano de escala de budget com projeção de resultados</div>
       </button>
+      <button class="quick-prompt" onclick="rodarAnaliseRapida('comportamento')">
+        <div style="font-size:18px;margin-bottom:6px">👥</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px">Comportamento do Público</div>
+        <div style="font-size:11px;color:var(--muted)">Analisa faixa etária, gênero, dispositivos e horários de maior engajamento</div>
+      </button>
+      <button class="quick-prompt" onclick="rodarAnaliseRapida('planoConteudo')">
+        <div style="font-size:18px;margin-bottom:6px">📅</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px">Plano de Conteúdo 30 dias</div>
+        <div style="font-size:11px;color:var(--muted)">Sugere calendário de criativos e temas baseado nos dados das campanhas</div>
+      </button>
     </div>
   </div>
 </div>
@@ -460,6 +576,7 @@ select.inp{cursor:pointer}
           <th>Métrica</th>
           <th>CTR</th>
           <th>Saúde</th>
+          <th>💡 Recomendação</th>
         </tr>
       </thead>
       <tbody id="campaigns-tbody"></tbody>
@@ -936,29 +1053,145 @@ select.inp{cursor:pointer}
 
 <!-- ══════════════════════════════════ VIEW: REPORTS -->
 <div class="view" id="view-reports">
-  <div class="page-title">Relatórios</div>
-  <div class="page-sub">Histórico de análises e relatórios gerados pela IA</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table class="tbl">
-      <thead><tr><th>Data</th><th>Workspace</th><th>Campanhas</th><th>Score</th><th>Gerado por</th><th>Ação</th></tr></thead>
-      <tbody>
-        <tr>
-          <td class="mono">16/05 12:31</td><td>Agência Principal</td><td>4 campanhas</td>
-          <td><span class="badge badge-green">72/100</span></td><td>Claude IA</td>
-          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
-        </tr>
-        <tr>
-          <td class="mono">15/05 09:15</td><td>E-commerce X</td><td>6 campanhas</td>
-          <td><span class="badge badge-yellow">58/100</span></td><td>Claude IA</td>
-          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
-        </tr>
-        <tr>
-          <td class="mono">14/05 18:00</td><td>Clínica Y</td><td>2 campanhas</td>
-          <td><span class="badge badge-red">41/100</span></td><td>Automático</td>
-          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Ver</button></td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="row-between" style="margin-bottom:20px">
+    <div>
+      <div class="page-title">Relatório Executivo</div>
+      <div class="page-sub">Resumo completo · Meta Ads vs Google Ads · comparativo de performance</div>
+    </div>
+    <div class="row">
+      <select class="inp" style="width:150px" id="reports-periodo" onchange="renderReports()">
+        <option value="7">Últimos 7 dias</option>
+        <option value="14">Últimos 14 dias</option>
+        <option value="30" selected>Últimos 30 dias</option>
+        <option value="90">Últimos 90 dias</option>
+      </select>
+      <button class="btn btn-ghost" onclick="renderReports()">↻ Atualizar</button>
+      <button class="btn btn-primary" onclick="exportarRelatorio()">📄 Exportar PDF</button>
+    </div>
+  </div>
+
+  <!-- Resumo Executivo -->
+  <div class="grid-4" style="margin-bottom:16px" id="reports-summary">
+    <div class="card" style="text-align:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">TOTAL INVESTIDO</div>
+      <div style="font-size:24px;font-weight:700;color:var(--yellow);font-family:'IBM Plex Mono',monospace" id="rep-total-gasto">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="rep-periodo-label">Selecione período</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">CONVERSÕES TOTAIS</div>
+      <div style="font-size:24px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="rep-total-conv">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="rep-conv-valor">Valor: —</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">ROAS MÉDIO</div>
+      <div style="font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace" id="rep-roas-medio" style="color:var(--green)">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="rep-roas-status">Meta: 3,0x</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">CPA MÉDIO</div>
+      <div style="font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace" id="rep-cpa-medio" style="color:var(--green)">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="rep-cpa-status">Meta: R$ 50</div>
+    </div>
+  </div>
+
+  <!-- Comparativo Meta vs GA4 -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title">📊 Comparativo de Canais — Meta Ads vs Google Ads (GA4)</div>
+    <div id="rep-canais-empty" style="padding:32px;text-align:center;color:var(--muted)">
+      <div style="font-size:36px;margin-bottom:12px">📊</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">Conecte Meta Ads e GA4 para ver o comparativo</div>
+      <div style="font-size:12px;line-height:1.8">
+        Com os dois conectados, você verá:<br>
+        Sessões · Conversões · Custo · ROAS · CPA por canal<br>
+        <span style="color:var(--accentL)">Integrações → Meta Ads + Google Analytics 4</span>
+      </div>
+    </div>
+    <div id="rep-canais-table" style="display:none;overflow-x:auto">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Canal</th>
+            <th>Sessões / Alcance</th>
+            <th>Cliques</th>
+            <th>Conversões</th>
+            <th>Custo</th>
+            <th>ROAS</th>
+            <th>CPA</th>
+            <th>CTR</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rep-canais-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top 5 ROAS + Pior CPA lado a lado -->
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="section-title">🏆 Top 5 Campanhas — Melhor ROAS</div>
+      <div id="rep-top-roas">
+        <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Conecte Meta Ads para ver ranking</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">⚠️ Top 5 Campanhas — Pior CPA</div>
+      <div id="rep-top-cpa">
+        <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Conecte Meta Ads para ver ranking</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distribuição de gastos + O que melhorar -->
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="section-title">💰 Distribuição de Gastos por Canal</div>
+      <div id="rep-distribuicao">
+        <div style="padding:24px;text-align:center;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:10px">💰</div>
+          <div style="font-size:12px;line-height:1.8">
+            Após conectar Meta Ads e GA4, você verá<br>
+            a distribuição percentual do investimento<br>
+            por canal (Meta vs Google vs outros)<br><br>
+            <strong style="color:var(--text)">Benchmark recomendado:</strong><br>
+            <span style="color:var(--accentL)">60-70% Meta Ads + 30-40% Google Ads</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">💡 O que Melhorar</div>
+      <div id="rep-melhorias">
+        <div class="stack">
+          <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--accent)">
+            <div style="font-weight:600;font-size:12px;margin-bottom:4px">Configure objetivos de campanha</div>
+            <div style="font-size:11px;color:var(--muted)">Acesse Campanhas e defina se cada uma é de Compra, Lead ou Agendamento. Isso ativa o cálculo de ROI real.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+            <div style="font-weight:600;font-size:12px;margin-bottom:4px">Use UTMs em todos os links</div>
+            <div style="font-size:11px;color:var(--muted)">Sem UTM, o GA4 não consegue atribuir sessões a campanhas específicas. Use o UTM Builder para gerar links rastreados.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--green)">
+            <div style="font-weight:600;font-size:12px;margin-bottom:4px">Ative a análise de IA semanal</div>
+            <div style="font-size:11px;color:var(--muted)">Configure um alerta semanal e rode a Análise com IA toda segunda-feira para identificar oportunidades antes da semana começar.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--blue)">
+            <div style="font-weight:600;font-size:12px;margin-bottom:4px">Distribua budget no funil</div>
+            <div style="font-size:11px;color:var(--muted)">Reserve 40% para topo (alcance/awareness), 30% para meio (tráfego) e 30% para fundo (conversão). Ajuste conforme o ROAS de cada etapa.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histórico de análises -->
+  <div class="card">
+    <div class="section-title">📋 Histórico de Análises com IA</div>
+    <div id="rep-historico">
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+        Rode análises com IA em Analisar com IA para ver o histórico aqui
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1054,6 +1287,66 @@ select.inp{cursor:pointer}
     <div class="section-title">📊 Resumo de Alocação por Etapa do Funil</div>
     <div class="grid-4" id="funil-summary"></div>
   </div>
+
+  <!-- BENCHMARKS + OPORTUNIDADES -->
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="section-title">📐 Benchmarks do Funil — Óticas</div>
+      <div class="stack" style="margin-top:4px">
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:12px 14px;border-left:3px solid #6366f1">
+          <div style="font-weight:600;font-size:12px;margin-bottom:6px;color:#6366f1">TOPO — Awareness / Alcance</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace">
+            <div>CPM ideal: <span style="color:var(--text)">R$ 15–25</span></div>
+            <div>CTR mínimo: <span style="color:var(--text)">0,8%</span></div>
+            <div>Freq. ideal: <span style="color:var(--text)">2–3x/sem</span></div>
+            <div>Budget: <span style="color:var(--text)">35–45% do total</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:12px 14px;border-left:3px solid #8b5cf6">
+          <div style="font-weight:600;font-size:12px;margin-bottom:6px;color:#8b5cf6">MEIO — Tráfego / Engajamento</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace">
+            <div>CTR ideal: <span style="color:var(--text)">1,5–3%</span></div>
+            <div>CPC ideal: <span style="color:var(--text)">R$ 0,80–2,50</span></div>
+            <div>CVR mínimo: <span style="color:var(--text)">1,0%</span></div>
+            <div>Budget: <span style="color:var(--text)">25–35% do total</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:12px 14px;border-left:3px solid #a855f7">
+          <div style="font-weight:600;font-size:12px;margin-bottom:6px;color:#a855f7">FUNDO — Conversão / Lead</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace">
+            <div>CPA máximo: <span style="color:var(--text)">R$ 50–80</span></div>
+            <div>ROAS mínimo: <span style="color:var(--text)">2,5x</span></div>
+            <div>CVR ideal: <span style="color:var(--text)">&gt;2%</span></div>
+            <div>Budget: <span style="color:var(--text)">25–35% do total</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:12px 14px;border-left:3px solid #c026d3">
+          <div style="font-weight:600;font-size:12px;margin-bottom:6px;color:#c026d3">RETENÇÃO — Remarketing</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace">
+            <div>ROAS esperado: <span style="color:var(--text)">&gt;4x</span></div>
+            <div>CPA: <span style="color:var(--text)">30–50% menor</span></div>
+            <div>Audiência: <span style="color:var(--text)">visitantes 30–90d</span></div>
+            <div>Budget: <span style="color:var(--text)">5–15% do total</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🎯 Oportunidades Identificadas</div>
+      <div id="funil-oportunidades">
+        <div style="padding:24px;text-align:center;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:10px">🔍</div>
+          <div style="font-size:13px;margin-bottom:8px">Conecte o Meta Ads para identificar gargalos do funil automaticamente</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.8">
+            Exemplo de insights que serão gerados:<br>
+            <span style="color:var(--yellow)">• "CTR baixo no topo — teste novos criativos"</span><br>
+            <span style="color:var(--red)">• "CVR crítico no fundo — revise a landing page"</span><br>
+            <span style="color:var(--green)">• "Remarketing com ROAS 5x — escale orçamento"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════ VIEW: UTM BUILDER -->
@@ -1139,11 +1432,57 @@ select.inp{cursor:pointer}
         <div>#</div><div id="loc-col-header">CIDADE/REGIÃO</div><div id="loc-col-metric1">SESSÕES</div><div id="loc-col-metric2">USUÁRIOS</div><div>CLIQUES</div><div>CTR</div><div>CONV.</div>
       </div>
       <div id="loc-table-body">
-        <div style="padding:48px;text-align:center;color:var(--muted)">
-          <div style="font-size:40px;margin-bottom:14px">📍</div>
-          <div style="font-weight:600;font-size:14px;margin-bottom:8px">Conecte GA4 para ver cidades reais</div>
-          <div style="font-size:12px;line-height:1.7">GA4 retorna cidade exata via UTM · Meta API só retorna Estado<br>
-          <span style="color:var(--accentL)">Integrações → Google Analytics 4 → Login com Google</span></div>
+        <div style="padding:24px">
+          <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:40px;margin-bottom:10px">📍</div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">Conecte GA4 para ver cidades reais</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7">GA4 retorna cidade exata via UTM · Meta API só retorna Estado<br>
+            <span style="color:var(--accentL)">Integrações → Google Analytics 4 → Login com Google</span></div>
+          </div>
+          <!-- Potencial geográfico para óticas -->
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px">🗺️ Estados com maior potencial para óticas no Brasil</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🟢 São Paulo</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,8–2,2%<br>CPA referência: R$ 35–55<br>Maior mercado consumidor</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🟢 Rio de Janeiro</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,6–2,0%<br>CPA referência: R$ 40–65<br>Alta densidade urbana</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🟡 Minas Gerais</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,4–1,8%<br>CPA referência: R$ 30–50<br>Custo por clique menor</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🟡 Paraná</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,5–1,9%<br>CPA referência: R$ 32–52<br>Bom engajamento regional</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🟡 Santa Catarina</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,6–2,0%<br>CPA referência: R$ 33–53<br>Alta renda per capita</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:4px">🔵 Nordeste</div>
+              <div style="font-size:11px;color:var(--muted)">CTR médio: 1,2–1,6%<br>CPA referência: R$ 25–45<br>Mercado em crescimento</div>
+            </div>
+          </div>
+          <!-- Dicas de segmentação geográfica -->
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">💡 Dicas de segmentação geográfica no Meta Ads</div>
+          <div class="stack">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:12px 14px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:3px">Segmente por raio em torno de lojas físicas</div>
+              <div style="font-size:11px;color:var(--muted)">Use a opção "Localização" no Meta Ads e defina raios de 5–15 km ao redor de cada unidade. Óticas com loja física têm CTR 40% maior com segmentação geográfica precisa.</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:var(--radius);padding:12px 14px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:3px">Exclua regiões com CPA muito alto</div>
+              <div style="font-size:11px;color:var(--muted)">Após 30 dias de dados, identifique estados ou cidades com CPA acima de 2x a meta e exclua-os da segmentação ou reduza o lance para essas regiões.</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--radius);padding:12px 14px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:3px">Crie campanhas específicas por cidade</div>
+              <div style="font-size:11px;color:var(--muted)">Para cidades com alta concentração de conversões, crie campanhas dedicadas com criativos e mensagens locais. Isso pode reduzir o CPA em até 25%.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1211,6 +1550,7 @@ function navTo(id, el) {
   if (id === 'dashboard') renderDashboard();
   if (id === 'analyze')   renderAnalyze();
   if (id === 'campaigns') renderCampaignsTable();
+  if (id === 'reports')   renderReports();
   if (id === 'funil')       atualizarFunil();
   if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta');
   if (id === 'localidades') buscarLocalidades();
@@ -1271,6 +1611,8 @@ function renderDashboard() {
     document.getElementById('health-list').innerHTML = '';
     document.getElementById('alerts-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Conecte Meta Ads ou GA4 para ver alertas</div>';
     document.getElementById('alert-count').textContent = '0';
+    renderDiagnostico([]);
+    renderComportamentoDashboard();
     return;
   }
 
@@ -1340,6 +1682,12 @@ function renderDashboard() {
   // Gráfico ROAS evolução
   renderChartRoas(camps);
 
+  // Cards adicionais
+  renderDiagnostico(camps);
+  renderComportamentoDashboard();
+  renderBenchmarksDash(camps);
+  renderProximasAcoesDash(camps);
+
   document.getElementById('dash-subtitle').textContent = workspace().nome + ' · últimos 7 dias · ' + camps.filter(c=>c.status==='ACTIVE').length + ' campanhas ativas';
 }
 
@@ -1404,6 +1752,173 @@ function renderChartRoas(camps) {
       }
     }
   });
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD — DIAGNÓSTICO, BENCHMARKS, COMPORTAMENTO
+// ══════════════════════════════════════════════════════
+function renderDiagnostico(camps) {
+  var el = document.getElementById('dash-diagnostico');
+  if (!el) return;
+  if (!camps || camps.length === 0) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">📡</div><div style="font-size:13px">Conecte o Meta Ads para ver o diagnóstico automático</div></div>';
+    return;
+  }
+
+  var insights = [];
+  var totalGasto  = camps.reduce(function(s,c){ return s+(c.gastos||0); },0);
+  var roasMedio   = camps.reduce(function(s,c){ return s+(c.valorConv||0); },0) / (totalGasto || 1);
+  var cpaMedio    = camps.reduce(function(s,c){ return s+(c.cpa||0); },0) / camps.length;
+  var ctrMedio    = camps.reduce(function(s,c){ return s+(c.ctr||0); },0) / camps.length;
+
+  // Insight 1: campanha com CPA mais alto
+  var pioresCPA = camps.filter(function(c){ return c.cpa > 0; }).sort(function(a,b){ return b.cpa - a.cpa; });
+  if (pioresCPA.length > 0 && pioresCPA[0].cpa > cpaMedio * 1.4) {
+    var c = pioresCPA[0];
+    var pct = ((c.cpa / cpaMedio - 1) * 100).toFixed(0);
+    insights.push({ icon:'⚠️', cor:'var(--red)', texto: '"'+c.nome.split('—')[0].trim().substring(0,35)+'" tem CPA '+pct+'% acima da média — considere pausar ou reduzir budget' });
+  }
+
+  // Insight 2: CTR caindo / baixo
+  var ctrBad = camps.filter(function(c){ return c.ctr < 1.0; });
+  if (ctrBad.length > 0) {
+    insights.push({ icon:'🎨', cor:'var(--yellow)', texto: ctrBad.length + ' campanha(s) com CTR abaixo de 1% — criativos podem estar saturados, teste novos formatos' });
+  }
+
+  // Insight 3: ROAS abaixo de 2x
+  var roasBad = camps.filter(function(c){ return c.roas > 0 && c.roas < 2; });
+  if (roasBad.length > 0) {
+    insights.push({ icon:'🔴', cor:'var(--red)', texto: roasBad.length + ' campanha(s) com ROAS abaixo de 2x — possível prejuízo. Prioridade máxima de otimização' });
+  }
+
+  // Insight 4: campanhas prontas para escalar
+  var escalavel = camps.filter(function(c){ return c.roas >= 3 && c.ctr >= 1.5 && c.gastos > 0; });
+  if (escalavel.length > 0) {
+    insights.push({ icon:'🚀', cor:'var(--green)', texto: escalavel.length + ' campanha(s) com ROAS ≥3x e CTR ≥1,5% — pronta(s) para escalar o orçamento em 20%/semana' });
+  }
+
+  // Insight 5: ROAS médio geral
+  if (roasMedio > 0) {
+    var roasStatus = roasMedio >= 3 ? 'acima da meta (3x) — bom sinal' : roasMedio >= 1.5 ? 'entre 1,5x e 3x — há margem para otimização' : 'abaixo de 1,5x — atenção urgente necessária';
+    insights.push({ icon: roasMedio >= 3 ? '✅' : '📉', cor: roasMedio >= 3 ? 'var(--green)' : 'var(--yellow)', texto: 'ROAS médio geral: '+roasMedio.toFixed(2)+'x — '+roasStatus });
+  }
+
+  if (insights.length === 0) {
+    insights.push({ icon:'✅', cor:'var(--green)', texto:'Todas as campanhas estão dentro dos parâmetros. Continue monitorando diariamente.' });
+  }
+
+  el.innerHTML = '<div class="stack">' + insights.slice(0,4).map(function(ins) {
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid '+ins.cor+'">' +
+      '<span style="font-size:16px;flex-shrink:0">'+ins.icon+'</span>' +
+      '<div style="font-size:12px;line-height:1.6;color:var(--text)">'+ins.texto+'</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderComportamentoDashboard() {
+  var el = document.getElementById('dash-comportamento');
+  if (!el) return;
+  if (!metaState.conectado) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">📊</div><div style="font-size:13px;margin-bottom:8px">Conecte o Meta Ads para ver o comportamento do público</div><div style="font-size:11px;line-height:1.7">Faixa etária · Gênero · Dispositivos · Posicionamentos · Horário de engajamento</div></div>';
+    return;
+  }
+  el.innerHTML = '<div style="padding:10px 0">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Dados baseados nos últimos 30 dias · Meta Ads API</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' +
+      '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center">' +
+        '<div style="font-size:20px;margin-bottom:4px">👥</div>' +
+        '<div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em">GÊNERO</div>' +
+        '<div style="font-size:12px;margin-top:4px;font-family:\'IBM Plex Mono\',monospace">Acesse<br><span style="color:var(--accentL)">Localidades → Comportamento</span></div>' +
+      '</div>' +
+      '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center">' +
+        '<div style="font-size:20px;margin-bottom:4px">📱</div>' +
+        '<div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em">DISPOSITIVO</div>' +
+        '<div style="font-size:12px;margin-top:4px;font-family:\'IBM Plex Mono\',monospace">Acesse<br><span style="color:var(--accentL)">Localidades → Comportamento</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px">' +
+      '<div style="font-size:11px;font-weight:600;margin-bottom:6px">⏰ Melhores horários (estimado)</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">' +
+        ['07h','12h','18h','21h'].map(function(h,i) {
+          var pct = [40,55,85,70][i];
+          var cor = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--accentL)' : 'var(--yellow)';
+          return '<div style="text-align:center"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:'+cor+';font-weight:700">'+h+'</div>' +
+            '<div style="height:32px;background:var(--border);border-radius:3px;margin:4px 0;overflow:hidden;display:flex;align-items:flex-end"><div style="width:100%;height:'+pct+'%;background:'+cor+';border-radius:3px"></div></div>' +
+            '<div style="font-size:10px;color:var(--muted)">'+pct+'%</div></div>';
+        }).join('') +
+      '</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:6px">Estimado · baseado em benchmarks do setor</div>' +
+    '</div>' +
+    '<button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px" onclick="navTo(\'localidades\',null);locSetTab(\'comportamento\')">Ver análise completa de comportamento →</button>' +
+  '</div>';
+}
+
+function renderBenchmarksDash(camps) {
+  if (!camps || camps.length === 0) return;
+  var ctrMedio  = camps.reduce(function(s,c){ return s+(c.ctr||0); },0) / camps.length;
+  var totalG    = camps.reduce(function(s,c){ return s+(c.gastos||0); },0);
+  var totalV    = camps.reduce(function(s,c){ return s+(c.valorConv||0); },0);
+  var totalC    = camps.reduce(function(s,c){ return s+(c.conversoes||0); },0);
+  var roasMed   = totalG > 0 ? totalV / totalG : 0;
+  var cpaMed    = totalC > 0 ? totalG / totalC : 0;
+  var cvrMed    = camps.reduce(function(s,c){ return s+(c.cvr||0); },0) / camps.length;
+
+  // CPM médio
+  var totalImpr = camps.reduce(function(s,c){ return s+(c.impressoes||0); },0);
+  var cpmMed    = totalImpr > 0 ? (totalG / totalImpr * 1000) : 0;
+
+  function bench(id, valor, minBom, maxBom, inversed) {
+    var el = document.getElementById(id);
+    if (!el || valor <= 0) return;
+    var ok = inversed ? valor <= maxBom : (valor >= minBom && valor <= maxBom);
+    var sup = inversed ? valor <= minBom : valor >= maxBom;
+    var badge = ok ? 'badge-green' : sup ? 'badge-green' : 'badge-red';
+    var label = ok ? 'Dentro da meta' : sup ? (inversed ? 'Excelente' : 'Acima da meta') : (inversed ? 'Atenção' : 'Abaixo da meta');
+    el.innerHTML = '<span class="badge '+badge+'" style="font-size:10px">'+label+'</span>';
+  }
+
+  bench('bench-ctr',  ctrMedio,  1.5,  2.0,  false);
+  bench('bench-cpa',  cpaMed,    30,   50,   true);
+  bench('bench-roas', roasMed,   3.0,  4.0,  false);
+  bench('bench-cpm',  cpmMed,    15,   25,   true);
+  bench('bench-cvr',  cvrMed,    1.5,  3.0,  false);
+}
+
+function renderProximasAcoesDash(camps) {
+  var el = document.getElementById('dash-proximas-acoes');
+  if (!el || !camps || camps.length === 0) return;
+
+  var acoes = [];
+  var totalG  = camps.reduce(function(s,c){ return s+(c.gastos||0); },0);
+  var totalV  = camps.reduce(function(s,c){ return s+(c.valorConv||0); },0);
+  var roasM   = totalG > 0 ? totalV / totalG : 0;
+
+  var pioresROAS = camps.filter(function(c){ return c.roas > 0 && c.roas < 1.5; });
+  var escalavel  = camps.filter(function(c){ return c.roas >= 3 && c.ctr >= 1.5; });
+  var ctrBad     = camps.filter(function(c){ return c.ctr < 1.0; });
+  var cpaBad     = camps.filter(function(c){ return c.cpa > 80 && c.cpa > 0; });
+
+  if (escalavel.length > 0) acoes.push({ icon:'🚀', cor:'rgba(0,214,143,.15)', titulo:'Escalar: '+escalavel[0].nome.split('—')[0].trim().substring(0,30), desc:'ROAS '+escalavel[0].roas.toFixed(2)+'x — aumente o orçamento 20% esta semana', urgencia:'Oportunidade', ucor:'green' });
+  if (pioresROAS.length > 0) acoes.push({ icon:'⏸', cor:'rgba(244,63,94,.12)', titulo:'Pausar ou cortar: '+pioresROAS[0].nome.split('—')[0].trim().substring(0,30), desc:'ROAS '+pioresROAS[0].roas.toFixed(2)+'x — possível prejuízo, reduza 30% ou pause', urgencia:'Urgente', ucor:'red' });
+  if (ctrBad.length > 0) acoes.push({ icon:'🎨', cor:'rgba(56,189,248,.1)', titulo:'Renovar criativos: '+ctrBad[0].nome.split('—')[0].trim().substring(0,30), desc:'CTR '+ctrBad[0].ctr.toFixed(2)+'% — abaixo de 1%, sinal de saturação do criativo', urgencia:'Médio', ucor:'blue' });
+  if (cpaBad.length > 0) acoes.push({ icon:'📉', cor:'rgba(245,158,11,.1)', titulo:'Revisar segmentação: '+cpaBad[0].nome.split('—')[0].trim().substring(0,30), desc:'CPA R$ '+cpaBad[0].cpa.toFixed(2)+' — acima do limite, revise público e lances', urgencia:'Alta', ucor:'yellow' });
+  if (roasM >= 2.5 && roasM < 3) acoes.push({ icon:'🎯', cor:'rgba(91,94,244,.1)', titulo:'Otimizar segmentação geral', desc:'ROAS médio '+roasM.toFixed(2)+'x — perto da meta, foque em excluir públicos frios', urgencia:'Médio', ucor:'accent' });
+
+  if (acoes.length === 0) {
+    acoes.push({ icon:'✅', cor:'rgba(0,214,143,.1)', titulo:'Campanhas saudáveis', desc:'Todas as métricas estão dentro dos parâmetros. Continue monitorando diariamente.', urgencia:'OK', ucor:'green' });
+  }
+
+  el.innerHTML = '<div class="stack" style="padding-top:4px">' + acoes.slice(0,4).map(function(a) {
+    var badgeClass = { green:'badge-green', red:'badge-red', yellow:'badge-yellow', blue:'badge-blue', accent:'badge-purple' }[a.ucor] || 'badge-blue';
+    return '<div class="action-item">' +
+      '<div class="action-icon" style="background:'+a.cor+';font-size:18px">'+a.icon+'</div>' +
+      '<div class="action-body">' +
+        '<div class="action-title">'+a.titulo+'</div>' +
+        '<div class="action-desc">'+a.desc+'</div>' +
+      '</div>' +
+      '<span class="badge '+badgeClass+'" style="font-size:10px;white-space:nowrap">'+a.urgencia+'</span>' +
+    '</div>';
+  }).join('') + '</div>';
 }
 
 // ══════════════════════════════════════════════════════
@@ -1553,14 +2068,17 @@ function renderCampaignsTable() {
 
         <!-- Score de saúde -->
         <td><span class="badge badge-${corScore}" style="font-size:10px">${score}/100</span></td>
+
+        <!-- Recomendação -->
+        <td>${gerarBadgeRecomendacao(c)}</td>
       </tr>
     `;
-  }).join('') || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.</td></tr>';
+  }).join('') || '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.</td></tr>';
 
   // Campanhas GA4
   var ga4Rows = '';
   if (ga4State.campanhas && ga4State.campanhas.length) {
-    ga4Rows = '<tr><td colspan="10" style="padding:12px 16px;background:rgba(234,88,12,.06);border-top:2px solid rgba(234,88,12,.3);font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(234,88,12,.9)">📊 GOOGLE ANALYTICS 4 — ' + ga4State.campanhas.length + ' campanhas · últimos 30 dias</td></tr>';
+    ga4Rows = '<tr><td colspan="11" style="padding:12px 16px;background:rgba(234,88,12,.06);border-top:2px solid rgba(234,88,12,.3);font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(234,88,12,.9)">📊 GOOGLE ANALYTICS 4 — ' + ga4State.campanhas.length + ' campanhas · últimos 30 dias</td></tr>';
     ga4Rows += ga4State.campanhas.slice(0,30).map(function(c) {
       var srcBadge = c.fonte === 'Meta Ads' ? 'blue' : c.fonte === 'Google Ads' ? 'green' : 'yellow';
       return '<tr style="opacity:.92">' +
@@ -1575,11 +2093,37 @@ function renderCampaignsTable() {
         '<td class="mono" style="font-size:12px"><span style="color:var(--green)">'+(c.conversoes||0).toFixed(0)+'</span><span style="font-size:10px;color:var(--muted)"> conv.</span></td>' +
         '<td class="mono" style="font-size:12px;color:var(--muted)">—</td>' +
         '<td><span class="badge badge-blue" style="font-size:10px">GA4</span></td>' +
+        '<td><span class="badge badge-blue" style="font-size:10px">🔵 Analisar</span></td>' +
       '</tr>';
     }).join('');
   }
 
   document.getElementById('campaigns-tbody').innerHTML = rows + ga4Rows;
+}
+
+// ── Recomendação por campanha ─────────────────────────────────
+function gerarBadgeRecomendacao(c) {
+  var roas = c.roas || 0;
+  var ctr  = c.ctr  || 0;
+  var cpa  = c.cpa  || 0;
+  var metaCPA = 50;
+
+  if (roas < 1 && c.gastos > 10) {
+    return '<span class="badge badge-red" style="font-size:10px">🔴 Pausar</span>';
+  }
+  if (cpa > metaCPA * 2 && cpa > 0) {
+    return '<span class="badge badge-red" style="font-size:10px">🔴 Pausar</span>';
+  }
+  if (ctr < 0.8 && ctr >= 0) {
+    return '<span class="badge badge-blue" style="font-size:10px">🔵 Testar Criativo</span>';
+  }
+  if (roas >= 3 && ctr >= 1.5) {
+    return '<span class="badge badge-green" style="font-size:10px">🟢 Escalar</span>';
+  }
+  if (roas >= 1.5 && roas < 3) {
+    return '<span class="badge badge-yellow" style="font-size:10px">🟡 Otimizar</span>';
+  }
+  return '<span class="badge" style="font-size:10px;background:rgba(96,96,160,.15);color:var(--muted);border:1px solid var(--border)">— Aguardando</span>';
 }
 
 function atualizarObjetivo(campId, objetivo) {
@@ -1780,6 +2324,219 @@ function salvarHistoricoAnalise(camps, texto) {
     });
     localStorage.setItem('analise_historico', JSON.stringify(hist.slice(0, 20)));
   } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════
+// RELATÓRIOS EXECUTIVOS
+// ══════════════════════════════════════════════════════
+function renderReports() {
+  var camps   = campanhas();
+  var ga4     = ga4State.campanhas || [];
+  var periodo = parseInt(document.getElementById('reports-periodo')?.value || '30');
+
+  // Totais Meta Ads
+  var metaGasto = camps.reduce(function(s,c){ return s+(c.gastos||0); }, 0);
+  var metaConv  = camps.reduce(function(s,c){ return s+(c.conversoes||0); }, 0);
+  var metaValor = camps.reduce(function(s,c){ return s+(c.valorConv||0); }, 0);
+  var metaCTR   = camps.length ? camps.reduce(function(s,c){ return s+(c.ctr||0); },0)/camps.length : 0;
+
+  // Totais GA4
+  var ga4Sessoes = ga4.reduce(function(s,c){ return s+(c.sessoes||0); }, 0);
+  var ga4Conv    = ga4.reduce(function(s,c){ return s+(c.conversoes||0); }, 0);
+  var ga4Receita = ga4.reduce(function(s,c){ return s+(c.receita||0); }, 0);
+
+  // Totais combinados (Meta + GA4)
+  var totalGasto = metaGasto;
+  var totalConv  = metaConv + ga4Conv;
+  var totalValor = metaValor + ga4Receita;
+  var roasMedio  = totalGasto > 0 && totalValor > 0 ? totalValor / totalGasto : 0;
+  var cpaMedio   = totalConv > 0 ? totalGasto / totalConv : 0;
+
+  var fmt = function(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); };
+
+  // Summary cards
+  var repGasto = document.getElementById('rep-total-gasto');
+  var repConv  = document.getElementById('rep-total-conv');
+  var repRoas  = document.getElementById('rep-roas-medio');
+  var repCpa   = document.getElementById('rep-cpa-medio');
+  var repPer   = document.getElementById('rep-periodo-label');
+  var repCV    = document.getElementById('rep-conv-valor');
+  var repRS    = document.getElementById('rep-roas-status');
+  var repCS    = document.getElementById('rep-cpa-status');
+
+  if (repGasto) repGasto.textContent = totalGasto > 0 ? fmt(totalGasto) : '—';
+  if (repConv)  repConv.textContent  = totalConv  > 0 ? totalConv.toFixed(0) : '—';
+  if (repRoas)  { repRoas.textContent = roasMedio > 0 ? roasMedio.toFixed(2) + 'x' : '—'; repRoas.style.color = roasMedio >= 3 ? 'var(--green)' : roasMedio >= 1.5 ? 'var(--yellow)' : 'var(--red)'; }
+  if (repCpa)   { repCpa.textContent  = cpaMedio  > 0 ? fmt(cpaMedio) : '—'; repCpa.style.color = cpaMedio <= 50 && cpaMedio > 0 ? 'var(--green)' : cpaMedio > 50 ? 'var(--red)' : 'var(--text)'; }
+  if (repPer)   repPer.textContent  = 'Últimos ' + periodo + ' dias';
+  if (repCV)    repCV.textContent   = totalValor > 0 ? 'Receita: ' + fmt(totalValor) : 'Sem receita registrada';
+  if (repRS)    repRS.textContent   = roasMedio >= 3 ? 'Acima da meta (3x) ✅' : roasMedio > 0 ? 'Abaixo da meta (3x) ⚠️' : 'Meta: 3,0x';
+  if (repCS)    repCS.textContent   = cpaMedio <= 50 && cpaMedio > 0 ? 'Dentro da meta ✅' : cpaMedio > 0 ? 'Acima da meta ⚠️' : 'Meta: R$ 50';
+
+  // Comparativo canais
+  var emptyEl = document.getElementById('rep-canais-empty');
+  var tblEl   = document.getElementById('rep-canais-table');
+  var tbodyEl = document.getElementById('rep-canais-tbody');
+
+  var temDados = camps.length > 0 || ga4.length > 0;
+  if (emptyEl) emptyEl.style.display = temDados ? 'none' : 'block';
+  if (tblEl)   tblEl.style.display   = temDados ? 'block' : 'none';
+
+  if (tbodyEl && temDados) {
+    var linhas = '';
+    // Linha Meta Ads
+    if (camps.length > 0) {
+      var metaROAS = metaGasto > 0 && metaValor > 0 ? (metaValor / metaGasto) : 0;
+      var metaCPAr = metaConv > 0 ? metaGasto / metaConv : 0;
+      linhas += '<tr>' +
+        '<td><span style="font-size:18px">📘</span> <strong>Meta Ads</strong></td>' +
+        '<td class="mono" style="color:var(--blue)">' + camps.reduce(function(s,c){return s+(c.alcance||0);},0).toLocaleString('pt-BR') + '</td>' +
+        '<td class="mono">' + camps.reduce(function(s,c){return s+(c.cliques||0);},0).toLocaleString('pt-BR') + '</td>' +
+        '<td class="mono" style="color:var(--green)">' + metaConv.toFixed(0) + '</td>' +
+        '<td class="mono" style="color:var(--yellow)">' + fmt(metaGasto) + '</td>' +
+        '<td class="mono" style="color:' + (metaROAS>=3?'var(--green)':metaROAS>=1.5?'var(--yellow)':'var(--red)') + '">' + (metaROAS > 0 ? metaROAS.toFixed(2) + 'x' : '—') + '</td>' +
+        '<td class="mono" style="color:' + (metaCPAr<=50&&metaCPAr>0?'var(--green)':metaCPAr>50?'var(--red)':'var(--muted)') + '">' + (metaCPAr > 0 ? fmt(metaCPAr) : '—') + '</td>' +
+        '<td class="mono" style="color:' + (metaCTR>=1.5?'var(--green)':'var(--yellow)') + '">' + metaCTR.toFixed(2) + '%</td>' +
+        '<td>' + (camps.filter(function(c){return c.status==='ACTIVE';}).length + ' ativas') + '</td>' +
+      '</tr>';
+    }
+    // Linha GA4 / Google Ads
+    if (ga4.length > 0) {
+      var googleCamps = ga4.filter(function(c){ return c.fonte === 'Google Ads'; });
+      var googleSess  = googleCamps.reduce(function(s,c){return s+(c.sessoes||0);},0);
+      var googleConv  = googleCamps.reduce(function(s,c){return s+(c.conversoes||0);},0);
+      var googleRec   = googleCamps.reduce(function(s,c){return s+(c.receita||0);},0);
+      if (googleCamps.length > 0) {
+        linhas += '<tr>' +
+          '<td><span style="font-size:18px">🔍</span> <strong>Google Ads (GA4)</strong></td>' +
+          '<td class="mono" style="color:var(--blue)">' + googleSess.toLocaleString('pt-BR') + ' sess.</td>' +
+          '<td class="mono">—</td>' +
+          '<td class="mono" style="color:var(--green)">' + googleConv.toFixed(0) + '</td>' +
+          '<td class="mono" style="color:var(--muted)">Via GA4</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td>' + googleCamps.length + ' campanhas</td>' +
+        '</tr>';
+      }
+      // Linha outros (Meta via GA4)
+      var metaGA4 = ga4.filter(function(c){ return c.fonte === 'Meta Ads'; });
+      var metaGA4Sess = metaGA4.reduce(function(s,c){return s+(c.sessoes||0);},0);
+      var metaGA4Conv = metaGA4.reduce(function(s,c){return s+(c.conversoes||0);},0);
+      if (metaGA4.length > 0) {
+        linhas += '<tr>' +
+          '<td><span style="font-size:18px">📘</span> <strong>Meta Ads via GA4</strong></td>' +
+          '<td class="mono" style="color:var(--blue)">' + metaGA4Sess.toLocaleString('pt-BR') + ' sess.</td>' +
+          '<td class="mono">—</td>' +
+          '<td class="mono" style="color:var(--green)">' + metaGA4Conv.toFixed(0) + '</td>' +
+          '<td class="mono" style="color:var(--muted)">Via UTM</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td class="mono" style="color:var(--muted)">—</td>' +
+          '<td>' + metaGA4.length + ' campanhas</td>' +
+        '</tr>';
+      }
+    }
+    tbodyEl.innerHTML = linhas || '<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--muted)">Sem dados disponíveis</td></tr>';
+  }
+
+  // Top 5 ROAS
+  var topRoasEl = document.getElementById('rep-top-roas');
+  if (topRoasEl) {
+    if (camps.length === 0) {
+      topRoasEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Conecte Meta Ads para ver ranking</div>';
+    } else {
+      var topRoas = camps.slice().sort(function(a,b){ return (b.roas||0) - (a.roas||0); }).slice(0, 5);
+      topRoasEl.innerHTML = topRoas.map(function(c, i) {
+        var cor = i === 0 ? 'var(--yellow)' : i < 3 ? 'var(--accentL)' : 'var(--text)';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:'+cor+';width:18px;font-size:12px">#'+(i+1)+'</div>' +
+          '<div style="flex:1;min-width:0;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nome+'</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:700;color:'+(c.roas>=3?'var(--green)':c.roas>=1.5?'var(--yellow)':'var(--red)')+'">'+((c.roas||0).toFixed(2))+'x</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // Top 5 Pior CPA
+  var topCpaEl = document.getElementById('rep-top-cpa');
+  if (topCpaEl) {
+    var campsComCPA = camps.filter(function(c){ return c.cpa > 0; });
+    if (campsComCPA.length === 0) {
+      topCpaEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Conecte Meta Ads para ver ranking</div>';
+    } else {
+      var piorCpa = campsComCPA.slice().sort(function(a,b){ return (b.cpa||0) - (a.cpa||0); }).slice(0, 5);
+      topCpaEl.innerHTML = piorCpa.map(function(c, i) {
+        var cor = c.cpa > 100 ? 'var(--red)' : c.cpa > 50 ? 'var(--yellow)' : 'var(--green)';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:var(--muted);width:18px;font-size:12px">#'+(i+1)+'</div>' +
+          '<div style="flex:1;min-width:0;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nome+'</div>' +
+          '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:700;color:'+cor+'">R$ '+(c.cpa||0).toFixed(2)+'</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // Distribuição de gastos
+  var distEl = document.getElementById('rep-distribuicao');
+  if (distEl && metaGasto > 0) {
+    var metaPct = 100; // por enquanto só Meta tem custo real
+    distEl.innerHTML = '<div style="margin-bottom:12px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>📘 Meta Ads</span><span style="font-family:\'IBM Plex Mono\',monospace;color:#1877f2;font-weight:700">'+fmt(metaGasto)+' (100%)</span></div>' +
+      '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+metaPct+'%;background:#1877f2;border-radius:4px"></div></div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.7">' +
+      '📊 <strong style="color:var(--text)">Para ver o Google Ads:</strong><br>' +
+      'O GA4 registra sessões e conversões mas não o custo do Google Ads.<br>' +
+      'Conecte o Google Ads diretamente para ver o gasto real.' +
+    '</div>';
+  }
+
+  // Melhorias baseadas em dados reais
+  var melhoriasEl = document.getElementById('rep-melhorias');
+  if (melhoriasEl && camps.length > 0) {
+    var melhorias = [];
+    var cpaBad = camps.filter(function(c){ return c.cpa > 80 && c.cpa > 0; });
+    var roasBad = camps.filter(function(c){ return c.roas > 0 && c.roas < 1.5; });
+    var ctrBad  = camps.filter(function(c){ return c.ctr < 1.0; });
+    var escalavel = camps.filter(function(c){ return c.roas >= 3 && c.ctr >= 1.5; });
+
+    if (cpaBad.length > 0) melhorias.push({ cor:'var(--red)', titulo: cpaBad.length + ' campanha(s) com CPA crítico', desc: cpaBad.map(function(c){return c.nome.split('—')[0].trim();}).join(', ') + ' — CPA acima de R$ 80. Reduza o orçamento ou pause.' });
+    if (roasBad.length > 0) melhorias.push({ cor:'var(--red)', titulo: roasBad.length + ' campanha(s) abaixo do ROAS mínimo', desc: roasBad.map(function(c){return c.nome.split('—')[0].trim();}).join(', ') + ' — ROAS abaixo de 1,5x. Revise segmentação e criativos.' });
+    if (ctrBad.length > 0)  melhorias.push({ cor:'var(--yellow)', titulo: ctrBad.length + ' campanha(s) com CTR baixo', desc: 'CTR abaixo de 1% em ' + ctrBad.length + ' campanha(s). Teste novos criativos, imagens e textos de anúncio.' });
+    if (escalavel.length > 0) melhorias.push({ cor:'var(--green)', titulo: escalavel.length + ' campanha(s) prontas para escalar', desc: escalavel.map(function(c){return c.nome.split('—')[0].trim();}).join(', ') + ' — ROAS ≥3x e CTR ≥1,5%. Aumente o orçamento 20% por semana.' });
+    if (melhorias.length === 0) melhorias.push({ cor:'var(--green)', titulo:'Campanhas dentro dos parâmetros', desc:'Todas as campanhas estão com métricas saudáveis. Continue monitorando e considere expandir o público.' });
+
+    melhoriasEl.innerHTML = '<div class="stack">' + melhorias.map(function(m) {
+      return '<div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid '+m.cor+'">' +
+        '<div style="font-weight:600;font-size:12px;margin-bottom:3px;color:'+m.cor+'">'+m.titulo+'</div>' +
+        '<div style="font-size:11px;color:var(--muted)">'+m.desc+'</div>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  // Histórico de análises
+  var histEl = document.getElementById('rep-historico');
+  if (histEl) {
+    var hist = [];
+    try { hist = JSON.parse(localStorage.getItem('analise_historico') || '[]'); } catch(e) {}
+    if (hist.length === 0) {
+      histEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Rode análises com IA em Analisar com IA para ver o histórico aqui</div>';
+    } else {
+      histEl.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Data</th><th>Campanhas analisadas</th><th>Resumo</th></tr></thead><tbody>' +
+        hist.slice(0, 10).map(function(h) {
+          var data = h.data ? new Date(h.data).toLocaleString('pt-BR') : '—';
+          var camps2 = Array.isArray(h.campanhas) ? h.campanhas.join(', ') : '—';
+          return '<tr><td class="mono" style="font-size:11px;white-space:nowrap">'+data+'</td><td style="font-size:12px;max-width:200px">'+camps2+'</td><td style="font-size:11px;color:var(--muted);max-width:300px">'+h.resumo+'</td></tr>';
+        }).join('') +
+      '</tbody></table></div>';
+    }
+  }
+}
+
+function exportarRelatorio() {
+  toast('Funcionalidade de exportação PDF disponível em breve. Use Ctrl+P para imprimir.', 'blue');
+  setTimeout(function() { window.print(); }, 800);
 }
 
 function gerarRespostaDemo(camps, metaCPA, metaROAS) {
@@ -2490,6 +3247,9 @@ function renderFunilDados() {
   setText2('funil-ch-compra', totalCompra);
   setText2('funil-ch-outros', totalOutros);
 
+  // Oportunidades do funil
+  renderFunilOportunidades(totalCliques, totalConv, totalAlcance, totalGasto, totalValor, roas);
+
   // Budget summary by funnel stage
   var etapas = { topo:[], meio:[], fundo:[], retencao:[] };
   filtrados.forEach(function(c){ etapas[classificarEtapaFunil(c)].push(c); });
@@ -2531,6 +3291,66 @@ function renderFunilPlanning() {
       '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + s.pct + '% · R$ ' + (valor*30).toFixed(0) + '/mes</div>' +
     '</div>';
   }).join('');
+}
+
+function renderFunilOportunidades(cliques, conv, alcance, gasto, valor, roas) {
+  var el = document.getElementById('funil-oportunidades');
+  if (!el) return;
+
+  var oportunidades = [];
+  var ctr  = alcance > 0 ? (cliques / alcance * 100) : 0;
+  var cvr  = cliques > 0 ? (conv / cliques * 100) : 0;
+  var cpa  = conv > 0 ? gasto / conv : 0;
+  var cpm  = alcance > 0 ? (gasto / alcance * 1000) : 0;
+
+  // Gargalo 1: CTR baixo (topo)
+  if (ctr > 0 && ctr < 1.0) {
+    oportunidades.push({ icon:'🎨', cor:'var(--yellow)', etapa:'TOPO', gargalo: true,
+      texto:'CTR '+ctr.toFixed(2)+'% abaixo do mínimo (1%) — o gargalo está no criativo. Teste imagens mais chamativas e hooks nos primeiros 3 segundos' });
+  } else if (ctr >= 1.5) {
+    oportunidades.push({ icon:'✅', cor:'var(--green)', etapa:'TOPO',
+      texto:'CTR '+ctr.toFixed(2)+'% saudável — topo do funil funcionando bem. Considere aumentar o alcance' });
+  }
+
+  // Gargalo 2: CVR baixo (meio → fundo)
+  if (cvr > 0 && cvr < 1.0) {
+    oportunidades.push({ icon:'🖱️', cor:'var(--red)', etapa:'MEIO→FUNDO', gargalo: true,
+      texto:'CVR '+cvr.toFixed(2)+'% crítico — muitos cliques, poucas conversões. Revise a landing page, formulário ou oferta' });
+  } else if (cvr >= 2) {
+    oportunidades.push({ icon:'✅', cor:'var(--green)', etapa:'MEIO→FUNDO',
+      texto:'CVR '+cvr.toFixed(2)+'% — boa taxa de conversão. A landing page está convertendo bem' });
+  }
+
+  // Gargalo 3: CPA alto
+  if (cpa > 80) {
+    oportunidades.push({ icon:'💸', cor:'var(--red)', etapa:'FUNDO', gargalo: true,
+      texto:'CPA R$ '+cpa.toFixed(2)+' acima do limite para óticas (R$ 80). Priorize remarketing para públicos quentes' });
+  } else if (cpa > 0 && cpa <= 50) {
+    oportunidades.push({ icon:'🎯', cor:'var(--green)', etapa:'FUNDO',
+      texto:'CPA R$ '+cpa.toFixed(2)+' dentro da meta — campanha eficiente. Bom momento para escalar' });
+  }
+
+  // Oportunidade de escala
+  if (roas >= 3) {
+    oportunidades.push({ icon:'🚀', cor:'var(--green)', etapa:'ESCALA',
+      texto:'ROAS '+roas.toFixed(2)+'x acima de 3x — funil saudável. Aumente o orçamento do topo em 20% para ampliar o volume de conversões' });
+  }
+
+  if (oportunidades.length === 0) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados do Meta Ads para identificar oportunidades</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="stack">' + oportunidades.map(function(o) {
+    return '<div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid '+o.cor+'">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">' +
+        '<span style="font-size:14px">'+o.icon+'</span>' +
+        '<span style="font-size:10px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+o.cor+'">ETAPA: '+o.etapa+'</span>' +
+        (o.gargalo ? '<span class="badge badge-red" style="font-size:9px;margin-left:auto">GARGALO</span>' : '') +
+      '</div>' +
+      '<div style="font-size:12px;line-height:1.6;color:var(--text)">'+o.texto+'</div>' +
+    '</div>';
+  }).join('') + '</div>';
 }
 
 // ══════════════════════════════════════════════════════
@@ -3639,6 +4459,60 @@ var QUICK_PROMPTS = {
         '5. Projecao de resultados em 30, 60 e 90 dias\n\n' +
         'Dados: ' + JSON.stringify(camps.map(function(c) {
           return { nome: c.nome, fonte: c.fonte, gastos: c.gastos, roas: c.roas, cpa: c.cpa, conversoes: c.conversoes, valorConv: c.valorConv };
+        }));
+    },
+  },
+  comportamento: {
+    titulo: 'Analise de Comportamento do Publico',
+    buildPrompt: function(camps) {
+      var dadosComp = '';
+      // Tenta pegar dados de comportamento se disponíveis
+      var totalAlcance = camps.reduce(function(s,c){ return s+(c.alcance||0); }, 0);
+      var totalImpr    = camps.reduce(function(s,c){ return s+(c.impressoes||0); }, 0);
+      var totalCliques = camps.reduce(function(s,c){ return s+(c.cliques||0); }, 0);
+      var totalConv    = camps.reduce(function(s,c){ return s+(c.conversoes||0); }, 0);
+      var totalGasto   = camps.reduce(function(s,c){ return s+(c.gastos||0); }, 0);
+      return 'Analise o comportamento do publico nessas campanhas e forneca:\n' +
+        '1. Perfil do publico ideal com base nas metricas (quem provavelmente esta convertendo)\n' +
+        '2. Hipoteses sobre faixa etaria e genero dominante baseado no CPA e CTR\n' +
+        '3. Analise do horario e dia mais provavel de conversao\n' +
+        '4. Recomendacoes de segmentacao de publico para reduzir CPA\n' +
+        '5. Estrategia de exclusao de publico para melhorar eficiencia\n' +
+        '6. Sugestoes de publico lookalike e interesses para expandir o alcance qualificado\n\n' +
+        'Dados das campanhas:\n' +
+        '- Alcance total: ' + totalAlcance.toLocaleString('pt-BR') + ' pessoas\n' +
+        '- Impressoes: ' + totalImpr.toLocaleString('pt-BR') + '\n' +
+        '- Cliques: ' + totalCliques.toLocaleString('pt-BR') + '\n' +
+        '- Conversoes: ' + totalConv + '\n' +
+        '- Gasto total: R$ ' + totalGasto.toFixed(2) + '\n' +
+        '- CTR medio: ' + (totalImpr > 0 ? ((totalCliques/totalImpr)*100).toFixed(2) : 0) + '%\n' +
+        '- CPA medio: R$ ' + (totalConv > 0 ? (totalGasto/totalConv).toFixed(2) : 0) + '\n\n' +
+        'Campanhas: ' + JSON.stringify(camps.map(function(c) {
+          return { nome: c.nome, fonte: c.fonte, ctr: c.ctr, cpa: c.cpa, roas: c.roas, conversoes: c.conversoes, gastos: c.gastos };
+        }));
+    },
+  },
+  planoConteudo: {
+    titulo: 'Plano de Conteudo 30 Dias',
+    buildPrompt: function(camps) {
+      var melhorCTR  = camps.slice().sort(function(a,b){ return (b.ctr||0)-(a.ctr||0); })[0];
+      var melhorROAS = camps.slice().sort(function(a,b){ return (b.roas||0)-(a.roas||0); })[0];
+      var pioresCTR  = camps.filter(function(c){ return (c.ctr||0) < 1.0; });
+      return 'Crie um plano de conteudo para 30 dias baseado nos dados dessas campanhas de trafego pago:\n\n' +
+        '## O que preciso:\n' +
+        '1. Calendario editorial semanal (4 semanas) com temas de criativo por dia\n' +
+        '2. Para cada semana: qual formato priorizar (video, carrossel, imagem estatica) e por que\n' +
+        '3. 3 ideias de hooks (primeiros 3 segundos) para aumentar o CTR baseado nas campanhas com melhor performance\n' +
+        '4. Temas de alto engajamento para o setor de oticas\n' +
+        '5. Cronograma de testes A/B para o mes\n' +
+        '6. Recomendacoes de copy para cada etapa do funil\n\n' +
+        '## Contexto das campanhas:\n' +
+        '- Campanha com melhor CTR: ' + (melhorCTR ? melhorCTR.nome + ' (' + (melhorCTR.ctr||0).toFixed(2) + '%)' : 'N/A') + '\n' +
+        '- Campanha com melhor ROAS: ' + (melhorROAS ? melhorROAS.nome + ' (' + (melhorROAS.roas||0).toFixed(2) + 'x)' : 'N/A') + '\n' +
+        '- Campanhas com CTR baixo (precisam de novos criativos): ' + pioresCTR.length + ' campanha(s)\n' +
+        '- Total de campanhas ativas: ' + camps.filter(function(c){ return c.status==='ACTIVE'; }).length + '\n\n' +
+        'Dados: ' + JSON.stringify(camps.map(function(c) {
+          return { nome: c.nome, ctr: c.ctr, roas: c.roas, conversoes: c.conversoes, gastos: c.gastos };
         }));
     },
   },
