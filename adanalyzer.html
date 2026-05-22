@@ -754,6 +754,39 @@ select.inp{cursor:pointer}
     </div>
   </div>
 
+  <!-- Google Tag Manager -->
+  <div class="card" style="margin-top:16px;border-color:rgba(66,133,244,.3)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(66,133,244,.15);display:flex;align-items:center;justify-content:center;font-size:20px">🏷️</div>
+      <div>
+        <div style="font-weight:600">Google Tag Manager</div>
+        <div id="gtm-status" class="text-sm text-muted">Rastreamento avançado de conversões</div>
+      </div>
+      <div style="margin-left:auto" id="gtm-badge"><span class="badge badge-red">Desconectado</span></div>
+    </div>
+    <div class="stack">
+      <div>
+        <label>Container ID do GTM</label>
+        <input class="inp inp-mono" id="int-gtm-id" placeholder="GTM-XXXXXXX"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary flex-1" onclick="conectarGTM()">💾 Salvar e Ativar</button>
+        <button class="btn btn-ghost" onclick="verificarGTM()">🔍 Verificar no site</button>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.8">
+        💡 <strong style="color:var(--text)">O que o GTM rastreia automaticamente:</strong><br>
+        • Clique no botão WhatsApp → evento <span class="font-mono" style="color:var(--accentL)">whatsapp_click</span><br>
+        • Envio de formulário → evento <span class="font-mono" style="color:var(--accentL)">lead_form_submit</span><br>
+        • Agendamento confirmado → evento <span class="font-mono" style="color:var(--accentL)">appointment_booked</span><br>
+        • Página de produto vista → evento <span class="font-mono" style="color:var(--accentL)">view_item</span><br><br>
+        📍 <strong style="color:var(--text)">Como encontrar o Container ID:</strong><br>
+        Acesse <span class="font-mono" style="color:var(--accentL)">tagmanager.google.com</span> → selecione o container → aparece no topo como <span class="font-mono" style="color:var(--accentL)">GTM-XXXXXXX</span>
+      </div>
+      <div id="gtm-preview" style="display:none;background:var(--bg3);border-radius:var(--radius);padding:12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accentL)"></div>
+    </div>
+  </div>
+
   <!-- CRM e Ferramentas (outras) -->
   <div class="card" style="margin-top:16px;border-color:rgba(96,96,160,.25)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
@@ -971,6 +1004,76 @@ select.inp{cursor:pointer}
       </div>
     </div>
   </div>
+
+  <!-- INTELIGÊNCIA DE ALERTAS -->
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">🧠 Guia de Diagnóstico Rápido — O que fazer quando um alerta disparar</div>
+    <div class="stack" style="margin-top:4px">
+      <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--red)">
+        <div style="font-weight:600;font-size:12px;color:var(--red);margin-bottom:6px">🔴 ROAS caiu abaixo de 2x</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <strong style="color:var(--text)">1. Verifique:</strong> CTR caiu? CPM subiu? Frequência muito alta?<br>
+          <strong style="color:var(--text)">2. Se CTR caiu:</strong> Troque o criativo. O público pode estar saturado.<br>
+          <strong style="color:var(--text)">3. Se CPM subiu:</strong> Alta competição no leilão. Tente ampliar o público ou mudar o horário.<br>
+          <strong style="color:var(--text)">4. Se freq &gt; 3x:</strong> Expanda o público ou exclua compradores recentes.<br>
+          <strong style="color:var(--text)">5. Prazo de ação:</strong> Se persistir por 3 dias, reduza o budget 30% enquanto testa.
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+        <div style="font-weight:600;font-size:12px;color:var(--yellow);margin-bottom:6px">⚠️ CPA acima da meta em 20%</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <strong style="color:var(--text)">1. Verifique:</strong> O pixel está disparando corretamente no GTM?<br>
+          <strong style="color:var(--text)">2. Se landing page:</strong> Teste a velocidade. Acima de 3s perde 40% dos cliques.<br>
+          <strong style="color:var(--text)">3. Se público:</strong> Restrinja por faixa etária ou interesses mais qualificados.<br>
+          <strong style="color:var(--text)">4. Remarketing:</strong> Crie uma campanha de retargeting para visitantes dos últimos 30 dias.<br>
+          <strong style="color:var(--text)">5. Urgência:</strong> Adicione prazo na oferta ("Válido até domingo")
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--green)">
+        <div style="font-weight:600;font-size:12px;color:var(--green);margin-bottom:6px">🚀 Budget esgotando com ROAS ≥ 3x</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <strong style="color:var(--text)">1. Ação imediata:</strong> Aumente o budget em 20% imediatamente.<br>
+          <strong style="color:var(--text)">2. Duplicar anúncios:</strong> Crie uma cópia com novos criativos para testar escala.<br>
+          <strong style="color:var(--text)">3. Públicos similares:</strong> Crie Lookalike 1-3% dos compradores atuais.<br>
+          <strong style="color:var(--text)">4. Regra de ouro:</strong> Nunca aumente mais de 50% do budget de uma vez. O algoritmo pode entrar em modo de aprendizado.
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--blue)">
+        <div style="font-weight:600;font-size:12px;color:var(--blue);margin-bottom:6px">📉 CTR caiu mais de 30%</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <strong style="color:var(--text)">Sinal de saturação do criativo.</strong> O público já viu o anúncio muitas vezes.<br>
+          <strong style="color:var(--text)">1.</strong> Troque a imagem/vídeo principal imediatamente.<br>
+          <strong style="color:var(--text)">2.</strong> Mude o hook (primeiras 3 palavras do copy).<br>
+          <strong style="color:var(--text)">3.</strong> Teste formato diferente (se era imagem, use vídeo).<br>
+          <strong style="color:var(--text)">Regra:</strong> Renove criativos a cada 2–3 semanas para evitar fadiga.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONITORAMENTO PREDITIVO -->
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">🔮 Projeção de Performance — Próximos 7 dias</div>
+    <div id="alert-projecao">
+      <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center">
+          <div style="font-size:24px;margin-bottom:6px">📈</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">TENDÊNCIA</div>
+          <div id="alert-tendencia" style="font-size:14px;font-weight:600;color:var(--blue)">Conecte Meta para ver</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center">
+          <div style="font-size:24px;margin-bottom:6px">⚠️</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">ALERTAS PREVISTOS</div>
+          <div id="alert-previstos" style="font-size:14px;font-weight:600;color:var(--yellow)">Aguardando dados</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center">
+          <div style="font-size:24px;margin-bottom:6px">💰</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">BUDGET EM RISCO</div>
+          <div id="alert-budget-risco" style="font-size:14px;font-weight:600;color:var(--red)">Aguardando dados</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════ VIEW: WORKSPACE -->
@@ -1185,11 +1288,142 @@ select.inp{cursor:pointer}
   </div>
 
   <!-- Histórico de análises -->
-  <div class="card">
+  <div class="card" style="margin-bottom:16px">
     <div class="section-title">📋 Histórico de Análises com IA</div>
     <div id="rep-historico">
       <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
         Rode análises com IA em Analisar com IA para ver o histórico aqui
+      </div>
+    </div>
+  </div>
+
+  <!-- MATRIZ DE DECISÃO INTELIGENTE -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title">⚡ Matriz de Decisão Inteligente de Campanhas</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Use esta matriz para tomar decisões rápidas e consistentes sobre cada campanha</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:rgba(0,214,143,.08);border:1px solid rgba(0,214,143,.25);border-radius:var(--radius);padding:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:6px">🚀 ESCALAR</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          ✓ ROAS ≥ 3,0x<br>
+          ✓ CTR ≥ 1,5%<br>
+          ✓ CPA ≤ R$ 50<br>
+          ✓ Budget usado ≥ 80%<br><br>
+          <strong style="color:var(--green)">Ação:</strong> Aumente 20% do orçamento por semana. Máx 50% de uma vez.
+        </div>
+      </div>
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--radius);padding:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:6px">🔧 OTIMIZAR</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          ○ ROAS entre 1,5x e 3,0x<br>
+          ○ CTR entre 1,0% e 1,5%<br>
+          ○ CPA entre R$ 50–80<br>
+          ○ Frequência > 3x/semana<br><br>
+          <strong style="color:var(--yellow)">Ação:</strong> Teste novo criativo, refine o público, ajuste lance.
+        </div>
+      </div>
+      <div style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);border-radius:var(--radius);padding:14px">
+        <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:6px">⏸ PAUSAR</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          ✗ ROAS &lt; 1,5x por 3+ dias<br>
+          ✗ CPA > R$ 100<br>
+          ✗ CTR &lt; 0,5%<br>
+          ✗ Zero conv. em 5 dias<br><br>
+          <strong style="color:var(--red)">Ação:</strong> Pause imediatamente. Avalie criativo e oferta antes de reativar.
+        </div>
+      </div>
+    </div>
+    <div id="rep-matriz-camps">
+      <div style="padding:12px;text-align:center;color:var(--muted);font-size:12px">Conecte o Meta Ads para ver a classificação automática de cada campanha</div>
+    </div>
+  </div>
+
+  <!-- PLAYBOOK DE OTIMIZAÇÃO -->
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="section-title">📋 Playbook Semanal — O que fazer todo dia</div>
+      <div class="stack" style="margin-top:4px">
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--accent)">
+          <div style="font-weight:600;font-size:12px;color:var(--accentL);margin-bottom:4px">Segunda-feira — Planejamento</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Analise o final de semana · Revise orçamento da semana · Aplique a Matriz de Decisão · Configure alertas · Rode IA se ROAS caiu</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--blue)">
+          <div style="font-weight:600;font-size:12px;color:var(--blue);margin-bottom:4px">Terça a Quinta — Monitoramento</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Confira ROAS e CPA diários · Ajuste lances se necessário · Aprove novos criativos · Monitore frequência de exibição</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--yellow)">
+          <div style="font-weight:600;font-size:12px;color:var(--yellow);margin-bottom:4px">Sexta-feira — Relatório e Escala</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Exporte relatório semanal · Escale campanhas com ROAS ≥3x · Documente aprendizados · Planeje testes da próxima semana</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--green)">
+          <div style="font-weight:600;font-size:12px;color:var(--green);margin-bottom:4px">Final de semana — Manutenção leve</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Verifique alertas críticos · Não faça grandes mudanças · Deixe o algoritmo estabilizar · Analise comportamento do público</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🧮 Calculadora: Projeção de ROAS</div>
+      <div class="stack" style="margin-top:4px">
+        <div>
+          <label>Budget mensal (R$)</label>
+          <input class="inp inp-mono" type="number" id="calc-budget" value="5000" placeholder="5000" oninput="calcularProjecao()">
+        </div>
+        <div>
+          <label>ROAS esperado (x)</label>
+          <input class="inp inp-mono" type="number" id="calc-roas" value="3" step="0.1" placeholder="3.0" oninput="calcularProjecao()">
+        </div>
+        <div>
+          <label>Ticket médio (R$)</label>
+          <input class="inp inp-mono" type="number" id="calc-ticket" value="200" placeholder="200" oninput="calcularProjecao()">
+        </div>
+        <div id="calc-result" style="background:var(--bg3);border-radius:var(--radius);padding:14px;font-family:'IBM Plex Mono',monospace;font-size:12px">
+          <div style="color:var(--muted);margin-bottom:8px">Projeção mensal:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><div style="font-size:10px;color:var(--muted)">RECEITA GERADA</div><div id="proj-receita" style="font-size:18px;font-weight:700;color:var(--green)">R$ 15.000</div></div>
+            <div><div style="font-size:10px;color:var(--muted)">LUCRO ESTIMADO</div><div id="proj-lucro" style="font-size:18px;font-weight:700;color:var(--blue)">R$ 10.000</div></div>
+            <div><div style="font-size:10px;color:var(--muted)">VENDAS ESTIMADAS</div><div id="proj-vendas" style="font-size:18px;font-weight:700;color:var(--accentL)">75</div></div>
+            <div><div style="font-size:10px;color:var(--muted)">ROI</div><div id="proj-roi" style="font-size:18px;font-weight:700;color:var(--yellow)">200%</div></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6">
+          * Projeção baseada em ROAS linear. Resultados reais variam conforme sazonalidade, criativo e competitividade do leilão.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIA DE CRIATIVO E COPY -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title">🎨 Guia Rápido: Criativos que Convertem para Óticas</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+        <div style="font-size:18px;margin-bottom:6px">📸</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--accentL)">Imagem</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Pessoa usando óculos · Foco no rosto · Luz natural · CTR esperado: 1,8–2,5%</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+        <div style="font-size:18px;margin-bottom:6px">🎬</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--blue)">Vídeo 15s</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Hook nos 3s iniciais · Transformação antes/depois · CTA WhatsApp · CPM 20–30% menor</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+        <div style="font-size:18px;margin-bottom:6px">📱</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--green)">Stories/Reels</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Formato vertical 9:16 · Texto grande e legível · Swipe up / botão · CVR 40% maior</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+        <div style="font-size:18px;margin-bottom:6px">🛍️</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--yellow)">Carrossel</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Produtos + preços visíveis · 3–5 frames · Última frame com CTA · Engajamento 2–3x maior</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--accent)">
+      <div style="font-size:12px;font-weight:600;margin-bottom:4px">🔥 Copys que mais convertem para óticas:</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.8">
+        <span style="color:var(--text)">"Consulta gratuita + óculos com desconto de até 50%"</span> ·
+        <span style="color:var(--text)">"Seus óculos novos em 24h na loja mais perto de você"</span> ·
+        <span style="color:var(--text)">"Exame de vista grátis — agende pelo WhatsApp"</span> ·
+        <span style="color:var(--text)">"Óculos a partir de R$ X — parcele em até 12x sem juros"</span>
       </div>
     </div>
   </div>
@@ -1343,6 +1577,86 @@ select.inp{cursor:pointer}
             <span style="color:var(--red)">• "CVR crítico no fundo — revise a landing page"</span><br>
             <span style="color:var(--green)">• "Remarketing com ROAS 5x — escale orçamento"</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULADOR DE INVESTIMENTO -->
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">🧮 Simulador: Qual o Budget Ideal para o seu CPA meta?</div>
+    <div class="grid-2" style="align-items:start;margin-top:8px">
+      <div class="stack">
+        <div>
+          <label>Meta de conversões por mês</label>
+          <input class="inp inp-mono" type="number" id="sim-conv" value="30" placeholder="30" oninput="calcSimulador()">
+        </div>
+        <div>
+          <label>CPA máximo aceitável (R$)</label>
+          <input class="inp inp-mono" type="number" id="sim-cpa" value="50" placeholder="50" oninput="calcSimulador()">
+        </div>
+        <div>
+          <label>ROAS esperado (x)</label>
+          <input class="inp inp-mono" type="number" id="sim-roas" value="3" step="0.1" placeholder="3.0" oninput="calcSimulador()">
+        </div>
+        <div>
+          <label>Ticket médio da venda (R$)</label>
+          <input class="inp inp-mono" type="number" id="sim-ticket" value="250" placeholder="250" oninput="calcSimulador()">
+        </div>
+      </div>
+      <div id="sim-result" style="background:var(--bg3);border-radius:var(--radius);padding:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;font-family:'IBM Plex Mono',monospace">PROJEÇÃO MENSAL</div>
+        <div class="stack">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Budget necessário</span>
+            <span id="sim-r-budget" style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--yellow);font-size:15px">R$ 1.500</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Receita gerada</span>
+            <span id="sim-r-receita" style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--green);font-size:15px">R$ 7.500</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Lucro estimado</span>
+            <span id="sim-r-lucro" style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--blue);font-size:15px">R$ 6.000</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+            <span style="font-size:12px;color:var(--muted)">ROI sobre investimento</span>
+            <span id="sim-r-roi" style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accentL);font-size:15px">400%</span>
+          </div>
+          <div id="sim-alerta" style="padding:10px 12px;border-radius:var(--radius);font-size:11px;margin-top:4px;background:rgba(91,94,244,.1);border:1px solid rgba(91,94,244,.25);line-height:1.6;color:var(--accentL)">
+            💡 Budget sugerido por etapa: Topo R$ 600 (40%) · Meio R$ 450 (30%) · Fundo R$ 300 (20%) · Retenção R$ 150 (10%)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST CAMPANHA PERFEITA -->
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">✅ Checklist: Campanha Perfeita para Óticas</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accentL);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">ANTES DE PUBLICAR</div>
+        <div class="stack">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Pixel Meta instalado e disparando</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Evento de conversão configurado no Events Manager</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> GTM com tag do Meta Pixel ativo</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> URL da landing page testada e funcional</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Links com parâmetros UTM gerados</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Criativos em pelo menos 2 formatos (imagem + vídeo)</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Público-alvo definido com localização geográfica</label>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">APÓS 3 DIAS DE VEICULAÇÃO</div>
+        <div class="stack">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> CTR acima de 1% (se não, troque o criativo)</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> CPM abaixo de R$ 40 (se não, revise o público)</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Pelo menos 1 conversão registrada</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Frequência abaixo de 2x (se não, expanda o público)</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> GA4 recebendo sessões com utm_source=facebook</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> CPA dentro da meta (R$ 50 máximo para óticas)</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit"><input type="checkbox" style="accent-color:var(--accent)"> Relatório enviado ao cliente / gestor</label>
         </div>
       </div>
     </div>
@@ -1547,14 +1861,15 @@ function navTo(id, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + id).classList.add('active');
   if (el) el.classList.add('active');
-  if (id === 'dashboard') renderDashboard();
-  if (id === 'analyze')   renderAnalyze();
-  if (id === 'campaigns') renderCampaignsTable();
-  if (id === 'reports')   renderReports();
-  if (id === 'funil')       atualizarFunil();
+  if (id === 'dashboard')   renderDashboard();
+  if (id === 'analyze')     renderAnalyze();
+  if (id === 'campaigns')   renderCampaignsTable();
+  if (id === 'reports')     renderReports();
+  if (id === 'funil')       { atualizarFunil(); calcSimulador(); }
   if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta');
   if (id === 'localidades') buscarLocalidades();
-  if (id === 'emailcrm')   renderEmailCRM();
+  if (id === 'emailcrm')    renderEmailCRM();
+  if (id === 'alerts')      renderAlertProjecao();
 }
 
 function trocarWorkspace(val) {
@@ -2532,6 +2847,10 @@ function renderReports() {
       '</tbody></table></div>';
     }
   }
+
+  // Matriz de decisão inteligente
+  renderMatrizDecisao();
+  calcularProjecao();
 }
 
 function exportarRelatorio() {
@@ -4412,6 +4731,139 @@ function saveCrmField(key, val) {
   if (kdb && kondadoOk) kdb.innerHTML = '<span class="badge badge-green">● Configurado</span>';
 })();
 
+// ══════════════════════════════════════════════════════
+// GOOGLE TAG MANAGER
+// ══════════════════════════════════════════════════════
+function conectarGTM() {
+  var id = (document.getElementById('int-gtm-id') || {}).value || '';
+  id = id.trim().toUpperCase();
+  if (!id) { toast('Digite o Container ID do GTM (ex: GTM-XXXXXXX)', 'red'); return; }
+  if (!/^GTM-[A-Z0-9]+$/.test(id)) { toast('Container ID inválido. Formato esperado: GTM-XXXXXXX', 'red'); return; }
+  localStorage.setItem('gtm_container_id', id);
+  var badge = document.getElementById('gtm-badge');
+  var status = document.getElementById('gtm-status');
+  if (badge) badge.innerHTML = '<span class="badge badge-green">● Configurado</span>';
+  if (status) status.textContent = 'Container: ' + id + ' · salvo';
+  var preview = document.getElementById('gtm-preview');
+  if (preview) {
+    preview.style.display = 'block';
+    preview.innerHTML = '&lt;!-- Google Tag Manager --&gt;<br>' +
+      '&lt;script&gt;(function(w,d,s,l,i){...})(' + "'window','document','script','dataLayer','" + id + "');&lt;/script&gt;<br>' +
+      '&lt;!-- Adicione no &lt;head&gt; do seu site --&gt;';
+  }
+  toast('GTM ' + id + ' configurado! Adicione a tag ao seu site para rastrear conversões.', 'green');
+}
+
+function verificarGTM() {
+  var id = localStorage.getItem('gtm_container_id') || (document.getElementById('int-gtm-id') || {}).value || '';
+  if (!id) { toast('Configure o Container ID primeiro', 'yellow'); return; }
+  toast('Para verificar: abra o site → F12 → Network → busque por "gtm.js" ou use a extensão "Tag Assistant" do Chrome', 'blue');
+}
+
+(function restaurarGTM() {
+  var id = localStorage.getItem('gtm_container_id');
+  if (!id) return;
+  var inp = document.getElementById('int-gtm-id');
+  if (inp) inp.value = id;
+  var badge = document.getElementById('gtm-badge');
+  var status = document.getElementById('gtm-status');
+  if (badge) badge.innerHTML = '<span class="badge badge-green">● Configurado</span>';
+  if (status) status.textContent = 'Container: ' + id + ' · ativo';
+})();
+
+// ══════════════════════════════════════════════════════
+// CALCULADORAS — REPORTS & FUNIL
+// ══════════════════════════════════════════════════════
+function calcularProjecao() {
+  var budget = parseFloat((document.getElementById('calc-budget') || {}).value || 5000);
+  var roas   = parseFloat((document.getElementById('calc-roas')   || {}).value || 3);
+  var ticket = parseFloat((document.getElementById('calc-ticket') || {}).value || 200);
+  if (!budget || !roas || !ticket) return;
+  var receita = budget * roas;
+  var lucro   = receita - budget;
+  var vendas  = Math.round(receita / ticket);
+  var roi     = Math.round((lucro / budget) * 100);
+  var setText = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('proj-receita', 'R$ ' + receita.toLocaleString('pt-BR', {minimumFractionDigits:0,maximumFractionDigits:0}));
+  setText('proj-lucro',   'R$ ' + lucro.toLocaleString('pt-BR',  {minimumFractionDigits:0,maximumFractionDigits:0}));
+  setText('proj-vendas',  vendas.toLocaleString('pt-BR'));
+  setText('proj-roi',     roi + '%');
+  var roasEl = document.getElementById('proj-receita');
+  if (roasEl) roasEl.style.color = roas >= 3 ? 'var(--green)' : roas >= 1.5 ? 'var(--yellow)' : 'var(--red)';
+}
+
+function calcSimulador() {
+  var conv   = parseFloat((document.getElementById('sim-conv')   || {}).value || 30);
+  var cpa    = parseFloat((document.getElementById('sim-cpa')    || {}).value || 50);
+  var roas   = parseFloat((document.getElementById('sim-roas')   || {}).value || 3);
+  var ticket = parseFloat((document.getElementById('sim-ticket') || {}).value || 250);
+  if (!conv || !cpa) return;
+  var budget  = conv * cpa;
+  var receita = ticket * conv;
+  var lucro   = receita - budget;
+  var roi     = budget > 0 ? Math.round((lucro / budget) * 100) : 0;
+  var setText = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('sim-r-budget',  'R$ ' + budget.toLocaleString('pt-BR',  {minimumFractionDigits:0}));
+  setText('sim-r-receita', 'R$ ' + receita.toLocaleString('pt-BR', {minimumFractionDigits:0}));
+  setText('sim-r-lucro',   'R$ ' + lucro.toLocaleString('pt-BR',   {minimumFractionDigits:0}));
+  setText('sim-r-roi',     roi + '%');
+  var alerta = document.getElementById('sim-alerta');
+  if (alerta) {
+    var t = Math.round(budget * 0.40), m = Math.round(budget * 0.30), f = Math.round(budget * 0.20), r = Math.round(budget * 0.10);
+    alerta.innerHTML = '💡 Budget sugerido por etapa: <strong>Topo R$ ' + t + ' (40%)</strong> · <strong>Meio R$ ' + m + ' (30%)</strong> · <strong>Fundo R$ ' + f + ' (20%)</strong> · <strong>Retenção R$ ' + r + ' (10%)</strong>';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// MATRIZ DE DECISÃO — RELATÓRIOS
+// ══════════════════════════════════════════════════════
+function renderMatrizDecisao() {
+  var el = document.getElementById('rep-matriz-camps');
+  if (!el) return;
+  var camps = campanhas();
+  if (!camps.length) {
+    el.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:12px">Conecte o Meta Ads para ver a classificação automática de cada campanha</div>';
+    return;
+  }
+  var rows = camps.map(function(c) {
+    var acao, badge, cor;
+    if (c.roas >= 3 && c.ctr >= 1.5 && c.cpa <= 50) {
+      acao = '🚀 ESCALAR'; badge = 'badge-green'; cor = 'var(--green)';
+    } else if (c.roas >= 1.5 && c.roas < 3) {
+      acao = '🔧 OTIMIZAR'; badge = 'badge-yellow'; cor = 'var(--yellow)';
+    } else if (c.roas < 1.5 && c.roas > 0) {
+      acao = '⏸ PAUSAR'; badge = 'badge-red'; cor = 'var(--red)';
+    } else {
+      acao = '🔵 TESTAR'; badge = 'badge-blue'; cor = 'var(--blue)';
+    }
+    return '<tr>' +
+      '<td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">' + c.nome + '</td>' +
+      '<td class="mono" style="color:' + (c.roas>=3?'var(--green)':c.roas>=1.5?'var(--yellow)':'var(--red)') + '">' + (c.roas||0).toFixed(2) + 'x</td>' +
+      '<td class="mono" style="color:' + (c.cpa<=50&&c.cpa>0?'var(--green)':c.cpa>50?'var(--red)':'var(--muted)') + '">' + (c.cpa?'R$ '+c.cpa.toFixed(2):'—') + '</td>' +
+      '<td class="mono" style="color:' + (c.ctr>=1.5?'var(--green)':c.ctr>=1?'var(--yellow)':'var(--red)') + '">' + (c.ctr||0).toFixed(2) + '%</td>' +
+      '<td><span class="badge ' + badge + '" style="font-size:11px">' + acao + '</span></td>' +
+    '</tr>';
+  }).join('');
+  el.innerHTML = '<table class="tbl"><thead><tr><th>Campanha</th><th>ROAS</th><th>CPA</th><th>CTR</th><th>Decisão IA</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+// ══════════════════════════════════════════════════════
+// ALERTS — PROJEÇÃO DE PERFORMANCE
+// ══════════════════════════════════════════════════════
+function renderAlertProjecao() {
+  var camps = campanhas();
+  if (!camps.length) return;
+  var roasM = camps.reduce(function(s,c){ return s+(c.roas||0); },0) / camps.length;
+  var tEl = document.getElementById('alert-tendencia');
+  var pEl = document.getElementById('alert-previstos');
+  var bEl = document.getElementById('alert-budget-risco');
+  if (tEl) { tEl.textContent = roasM >= 3 ? '📈 Crescimento' : roasM >= 1.5 ? '➡️ Estável' : '📉 Declínio'; tEl.style.color = roasM >= 3 ? 'var(--green)' : roasM >= 1.5 ? 'var(--blue)' : 'var(--red)'; }
+  var alertasPrev = camps.filter(function(c){ return c.roas < 2 || c.cpa > 80 || c.ctr < 0.8; }).length;
+  if (pEl) { pEl.textContent = alertasPrev === 0 ? 'Nenhum alerta previsto ✅' : alertasPrev + ' alerta(s) prováveis'; pEl.style.color = alertasPrev === 0 ? 'var(--green)' : 'var(--yellow)'; }
+  var emRisco = camps.filter(function(c){ return c.roas < 1.5 && c.gastos > 0; }).reduce(function(s,c){return s+c.gastos;},0);
+  if (bEl) { bEl.textContent = emRisco > 0 ? 'R$ ' + emRisco.toFixed(2) + ' em risco' : 'Nenhum budget em risco ✅'; bEl.style.color = emRisco > 0 ? 'var(--red)' : 'var(--green)'; }
+}
+
 // Inicializa UTM builder e Funil (script está no final do body, DOM já pronto)
 setUtmPlatform('meta');
 atualizarFunil();
@@ -4652,6 +5104,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 renderDashboard();
 renderCampaignsTable();
+
+// Inicializa calculadoras com valores padrão
+setTimeout(function() { calcularProjecao(); calcSimulador(); }, 100);
 
 // Restaura credenciais salvas e atualiza badge de status
 (function restaurarSessao() {
