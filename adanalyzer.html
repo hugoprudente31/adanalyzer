@@ -572,36 +572,51 @@ select.inp{cursor:pointer}
     </div>
   </div>
 
-  <!-- Builderall -->
+  <!-- Builderall / Mailing Boss -->
   <div class="card" style="margin-top:16px;border-color:rgba(16,185,129,.3)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:20px">🏗️</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:20px">📧</div>
       <div>
-        <div style="font-weight:600">Builderall</div>
-        <div id="builderall-status" class="text-sm text-muted">E-mail Marketing + CRM</div>
+        <div style="font-weight:600">Mailing Boss <span style="font-size:11px;font-weight:400;color:var(--muted)">by Builderall</span></div>
+        <div id="builderall-status" class="text-sm text-muted">E-mail Marketing + CRM do Builderall</div>
       </div>
       <div style="margin-left:auto" id="builderall-badge"><span class="badge badge-red">Desconectado</span></div>
     </div>
     <div class="stack">
-      <div>
-        <label>API Key do Builderall</label>
-        <input class="inp inp-mono" type="password" id="int-builderall-key" placeholder="Sua API Key do Builderall"/>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Dashboard Builderall → Configurações → API → Gerar chave</div>
+      <!-- Mailing Boss -->
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">📧 Mailing Boss — API Key</div>
+        <div class="stack">
+          <div>
+            <label>API Key do Mailing Boss</label>
+            <input class="inp inp-mono" type="password" id="int-builderall-key" placeholder="Cole aqui a API Key do Mailing Boss"/>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7">
+              📍 <strong>Como encontrar:</strong><br>
+              1. Abra o <strong>Mailing Boss</strong> dentro do Builderall<br>
+              2. Clique no seu nome/avatar (canto superior direito)<br>
+              3. Vá em <strong>Account Settings → API</strong> ou <strong>Integrations → API Key</strong><br>
+              4. Copie a chave e cole aqui
+            </div>
+          </div>
+          <div>
+            <label>URL do Mailing Boss <span style="color:var(--muted);font-size:11px">(URL que você acessa)</span></label>
+            <input class="inp inp-mono" id="int-builderall-account" placeholder="app.mailingboss.com ou suaconta.builderall.com"/>
+          </div>
+        </div>
       </div>
-      <div>
-        <label>URL da sua conta <span style="color:var(--muted);font-size:11px">(subdomínio)</span></label>
-        <input class="inp inp-mono" id="int-builderall-account" placeholder="suaconta.builderall.com"/>
-      </div>
+      <!-- Testar conexão -->
+      <div id="ba-test-result" style="display:none;padding:10px 14px;border-radius:var(--radius);background:var(--bg3);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);word-break:break-all;max-height:120px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-primary flex-1" onclick="conectarBuilderall()">Conectar Builderall</button>
-        <button class="btn btn-ghost" onclick="sincronizarBuilderall()">↻ Sincronizar</button>
+        <button class="btn btn-primary flex-1" onclick="conectarBuilderall()">💾 Salvar e Conectar</button>
+        <button class="btn btn-ghost" onclick="testarBuilderall()">🔍 Testar API</button>
+        <button class="btn btn-ghost" onclick="sincronizarBuilderall()">↻ Sync</button>
       </div>
       <div class="divider"></div>
       <div style="font-size:11px;color:var(--muted);line-height:1.7">
         💡 <strong>O que será sincronizado:</strong><br>
-        📧 <strong>Mailing Boss</strong> — campanhas de e-mail, taxa de abertura, cliques, descadastros<br>
-        👥 <strong>CRM</strong> — leads, status do pipeline, origem, valor do negócio<br>
-        🔀 <strong>Funil completo</strong> — do anúncio pago até o fechamento no CRM
+        📧 Campanhas de e-mail — enviados, taxa de abertura, cliques, descadastros<br>
+        👥 CRM — leads, pipeline, origem, valor do negócio<br>
+        🔀 Funil — anúncio → clique → lead → venda
       </div>
     </div>
   </div>
@@ -3169,9 +3184,48 @@ async function sincronizarBuilderall() {
     navTo('integrations', document.querySelector('.nav-item[onclick*="integrations"]'));
     return;
   }
-  toast('Sincronizando Builderall...', 'blue');
+  toast('Sincronizando Mailing Boss...', 'blue');
   await Promise.all([buscarEmailsBuilderall(), buscarLeadsBuilderall()]);
   renderEmailCRM();
+}
+
+async function testarBuilderall() {
+  var key     = document.getElementById('int-builderall-key').value.trim();
+  var account = document.getElementById('int-builderall-account').value.trim();
+  var resEl   = document.getElementById('ba-test-result');
+  if (!key || !account) { toast('Preencha API Key e URL antes de testar', 'red'); return; }
+  if (resEl) { resEl.style.display = 'block'; resEl.textContent = '⏳ Testando conexão...'; }
+
+  // Testa vários endpoints comuns do Mailing Boss
+  var acc = account.replace(/https?:\/\//,'').replace(/\/$/,'');
+  var ENDPOINTS = [
+    '/api/v1/campaigns',
+    '/api/v1/lists',
+    '/api/campaigns',
+    '/api/lists',
+    '/api/v2/campaigns',
+    '/mailingboss/api/v1/campaigns',
+  ];
+
+  for (var i = 0; i < ENDPOINTS.length; i++) {
+    var ep = ENDPOINTS[i];
+    try {
+      var url = '/api/builderall?' + new URLSearchParams({ account: acc, path: ep, api_key: key });
+      var r = await fetch(url);
+      var data = await r.json();
+      var preview = JSON.stringify(data).slice(0, 300);
+      if (!data.erro && r.ok) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--green)">✅ Endpoint encontrado: <strong>' + ep + '</strong></span><br>' + preview;
+        // Salva o endpoint que funcionou
+        builderallState.emailEndpoint = ep;
+        localStorage.setItem('ba_email_endpoint', ep);
+        toast('Endpoint Mailing Boss encontrado: ' + ep, 'green');
+        return;
+      }
+    } catch(e) {}
+  }
+  if (resEl) resEl.innerHTML = '<span style="color:var(--yellow)">⚠️ Nenhum endpoint padrão respondeu.<br>Cole abaixo o erro e me envie — ajusto o endpoint correto.</span><br><br>Tente acessar o Mailing Boss → Configurações → API e verifique a URL base documentada.';
+  toast('Teste concluído — veja o resultado em Integrações', 'yellow');
 }
 
 async function chamarBuilderallAPI(path) {
@@ -3190,8 +3244,9 @@ async function chamarBuilderallAPI(path) {
 
 async function buscarEmailsBuilderall() {
   try {
-    // Tenta endpoint Mailing Boss do Builderall
-    var data = await chamarBuilderallAPI('/api/v1/mailing/campaigns?limit=50');
+    // Usa endpoint que funcionou no teste, ou tenta os padrões
+    var ep = builderallState.emailEndpoint || localStorage.getItem('ba_email_endpoint') || '/api/v1/campaigns';
+    var data = await chamarBuilderallAPI(ep + (ep.includes('?') ? '&' : '?') + 'limit=50');
     var items = data.data || data.campaigns || data || [];
     builderallState.emails = items.map(function(c) {
       return {
