@@ -236,6 +236,10 @@ select.inp{cursor:pointer}
   <div class="nav-item" onclick="navTo('localidades',this)">
     <span>📍</span> Localidades
   </div>
+  <div class="nav-item" onclick="navTo('emailcrm',this)">
+    <span>📧</span> E-mail & CRM
+    <span id="emailcrm-badge-nav" style="display:none;font-size:9px;background:rgba(16,185,129,.2);color:var(--green);padding:1px 5px;border-radius:99px;margin-left:auto">●</span>
+  </div>
 
   <div class="nav-section">CONTAS</div>
   <div class="nav-item" onclick="navTo('integrations',this)">
@@ -568,13 +572,47 @@ select.inp{cursor:pointer}
     </div>
   </div>
 
-  <!-- CRM e Ferramentas -->
-  <div class="card" style="margin-top:16px;border-color:rgba(16,185,129,.25)">
+  <!-- Builderall -->
+  <div class="card" style="margin-top:16px;border-color:rgba(16,185,129,.3)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔗</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:20px">🏗️</div>
       <div>
-        <div style="font-weight:600">CRM e Ferramentas</div>
-        <div style="font-size:12px;color:var(--muted)">Conecte seu CRM para cruzar leads com anúncios</div>
+        <div style="font-weight:600">Builderall</div>
+        <div id="builderall-status" class="text-sm text-muted">E-mail Marketing + CRM</div>
+      </div>
+      <div style="margin-left:auto" id="builderall-badge"><span class="badge badge-red">Desconectado</span></div>
+    </div>
+    <div class="stack">
+      <div>
+        <label>API Key do Builderall</label>
+        <input class="inp inp-mono" type="password" id="int-builderall-key" placeholder="Sua API Key do Builderall"/>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Dashboard Builderall → Configurações → API → Gerar chave</div>
+      </div>
+      <div>
+        <label>URL da sua conta <span style="color:var(--muted);font-size:11px">(subdomínio)</span></label>
+        <input class="inp inp-mono" id="int-builderall-account" placeholder="suaconta.builderall.com"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary flex-1" onclick="conectarBuilderall()">Conectar Builderall</button>
+        <button class="btn btn-ghost" onclick="sincronizarBuilderall()">↻ Sincronizar</button>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">
+        💡 <strong>O que será sincronizado:</strong><br>
+        📧 <strong>Mailing Boss</strong> — campanhas de e-mail, taxa de abertura, cliques, descadastros<br>
+        👥 <strong>CRM</strong> — leads, status do pipeline, origem, valor do negócio<br>
+        🔀 <strong>Funil completo</strong> — do anúncio pago até o fechamento no CRM
+      </div>
+    </div>
+  </div>
+
+  <!-- CRM e Ferramentas (outras) -->
+  <div class="card" style="margin-top:16px;border-color:rgba(96,96,160,.25)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(96,96,160,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔗</div>
+      <div>
+        <div style="font-weight:600">Outros CRMs e Ferramentas</div>
+        <div style="font-size:12px;color:var(--muted)">Kommo, Kondado e outras integrações</div>
       </div>
     </div>
     <div class="stack">
@@ -629,6 +667,116 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+</div>
+
+<!-- ══════════════════════════════════ VIEW: EMAIL & CRM -->
+<div class="view" id="view-emailcrm">
+  <div class="row-between" style="margin-bottom:20px">
+    <div>
+      <div class="page-title">E-mail Marketing & CRM</div>
+      <div class="page-sub">Builderall Mailing Boss · funil de leads · integração com anúncios pagos</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="emailcrm-status-badge"><span class="badge badge-red">● Desconectado</span></div>
+      <button class="btn btn-ghost" onclick="sincronizarBuilderall()">↻ Sincronizar</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px">
+    <button id="ec-tab-email" onclick="ecSetTab('email')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500">📧 E-mail Marketing</button>
+    <button id="ec-tab-crm" onclick="ecSetTab('crm')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit">👥 CRM — Leads</button>
+    <button id="ec-tab-funil" onclick="ecSetTab('funil')" style="padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit">🔀 Funil de Leads</button>
+  </div>
+
+  <!-- Tab: E-mail -->
+  <div id="ec-panel-email">
+    <div class="grid-4" id="ec-email-summary" style="margin-bottom:16px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">CAMPANHAS</div>
+        <div style="font-size:24px;font-weight:700;color:var(--accentL);font-family:'IBM Plex Mono',monospace" id="ec-total-camps">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">ENVIADOS</div>
+        <div style="font-size:24px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="ec-total-sent">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">TAXA ABERTURA</div>
+        <div style="font-size:24px;font-weight:700;color:var(--green);font-family:'IBM Plex Mono',monospace" id="ec-avg-open">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">TAXA CLIQUE</div>
+        <div style="font-size:24px;font-weight:700;color:var(--yellow);font-family:'IBM Plex Mono',monospace" id="ec-avg-click">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 90px 80px 80px 80px 80px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
+        <div>CAMPANHA</div><div>STATUS</div><div>ENVIADOS</div><div>ABERTOS</div><div>CLIQUES</div><div>DESCAD.</div>
+      </div>
+      <div id="ec-email-list">
+        <div style="padding:48px;text-align:center;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:14px">📧</div>
+          <div style="font-weight:600;margin-bottom:8px">Conecte o Builderall para ver campanhas de e-mail</div>
+          <div style="font-size:12px">Vá em <span style="color:var(--accentL)">Integrações → Builderall</span> e insira sua API Key</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: CRM -->
+  <div id="ec-panel-crm" style="display:none">
+    <div class="grid-4" id="ec-crm-summary" style="margin-bottom:16px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">TOTAL LEADS</div>
+        <div style="font-size:24px;font-weight:700;color:var(--accentL);font-family:'IBM Plex Mono',monospace" id="ec-crm-total">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">NOVOS (30d)</div>
+        <div style="font-size:24px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="ec-crm-novos">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">EM NEGOC.</div>
+        <div style="font-size:24px;font-weight:700;color:var(--yellow);font-family:'IBM Plex Mono',monospace" id="ec-crm-negoc">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">CONVERTIDOS</div>
+        <div style="font-size:24px;font-weight:700;color:var(--green);font-family:'IBM Plex Mono',monospace" id="ec-crm-conv">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 80px 120px;align-items:center;gap:8px;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">
+        <div>CONTATO</div><div>ORIGEM</div><div>STATUS</div><div>VALOR</div><div>DATA</div>
+      </div>
+      <div id="ec-crm-list">
+        <div style="padding:48px;text-align:center;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:14px">👥</div>
+          <div style="font-weight:600;margin-bottom:8px">Conecte o Builderall CRM para ver seus leads</div>
+          <div style="font-size:12px">Vá em <span style="color:var(--accentL)">Integrações → Builderall</span> e insira sua API Key</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Funil de Leads -->
+  <div id="ec-panel-funil" style="display:none">
+    <div class="grid-2" style="align-items:start">
+      <div class="card">
+        <div class="section-title">🔀 Funil Anúncio → Lead → Venda</div>
+        <div id="ec-funil-visual" style="padding:8px 0">
+          <div style="padding:40px;text-align:center;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:10px">🔀</div>
+            <div style="font-size:13px">Conecte Meta Ads + Builderall CRM para ver o funil completo</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">📊 Origem dos Leads</div>
+        <div id="ec-leads-origem" style="padding:16px 0">
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados do CRM...</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════ VIEW: ALERTS -->
@@ -1035,6 +1183,7 @@ function navTo(id, el) {
   if (id === 'funil')       atualizarFunil();
   if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta');
   if (id === 'localidades') buscarLocalidades();
+  if (id === 'emailcrm')   renderEmailCRM();
 }
 
 function trocarWorkspace(val) {
@@ -2961,6 +3110,327 @@ function renderPosicionamentos(rows) {
 }
 
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// BUILDERALL — E-MAIL MARKETING & CRM
+// ══════════════════════════════════════════════════════
+var builderallState = {
+  key:       localStorage.getItem('ba_key')     || '',
+  account:   localStorage.getItem('ba_account') || '',
+  conectado: false,
+  emails:    [],
+  leads:     [],
+  listas:    [],
+};
+
+(function restaurarBuilderall() {
+  var k = localStorage.getItem('ba_key');
+  var a = localStorage.getItem('ba_account');
+  if (k) { var el = document.getElementById('int-builderall-key');     if(el) el.value = k; }
+  if (a) { var el2 = document.getElementById('int-builderall-account'); if(el2) el2.value = a; }
+  if (k && a) {
+    builderallState.key      = k;
+    builderallState.account  = a;
+    builderallState.conectado = true;
+    atualizarBadgeBuilderall(true);
+  }
+})();
+
+function atualizarBadgeBuilderall(ok) {
+  var badge  = document.getElementById('builderall-badge');
+  var status = document.getElementById('builderall-status');
+  var navBadge = document.getElementById('emailcrm-badge-nav');
+  if (badge)    badge.innerHTML  = ok ? '<span class="badge badge-green">● Conectado</span>' : '<span class="badge badge-red">Desconectado</span>';
+  if (status)   status.textContent = ok ? 'Conta: ' + builderallState.account : 'E-mail Marketing + CRM';
+  if (navBadge) navBadge.style.display = ok ? 'inline' : 'none';
+  var ecBadge = document.getElementById('emailcrm-status-badge');
+  if (ecBadge) ecBadge.innerHTML = ok
+    ? '<span class="badge badge-green">● Builderall conectado</span>'
+    : '<span class="badge badge-red">● Desconectado</span>';
+}
+
+function conectarBuilderall() {
+  var key     = document.getElementById('int-builderall-key').value.trim();
+  var account = document.getElementById('int-builderall-account').value.trim();
+  if (!key)     { toast('Cole sua API Key do Builderall', 'red'); return; }
+  if (!account) { toast('Informe a URL da sua conta Builderall', 'red'); return; }
+  builderallState.key      = key;
+  builderallState.account  = account.replace(/https?:\/\//,'').replace(/\/$/,'');
+  builderallState.conectado = true;
+  localStorage.setItem('ba_key',     builderallState.key);
+  localStorage.setItem('ba_account', builderallState.account);
+  atualizarBadgeBuilderall(true);
+  toast('Builderall salvo — sincronizando...', 'green');
+  sincronizarBuilderall();
+}
+
+async function sincronizarBuilderall() {
+  if (!builderallState.conectado) {
+    toast('Conecte o Builderall primeiro em Integrações', 'yellow');
+    navTo('integrations', document.querySelector('.nav-item[onclick*="integrations"]'));
+    return;
+  }
+  toast('Sincronizando Builderall...', 'blue');
+  await Promise.all([buscarEmailsBuilderall(), buscarLeadsBuilderall()]);
+  renderEmailCRM();
+}
+
+async function chamarBuilderallAPI(path) {
+  // Usa o proxy do servidor para evitar CORS
+  var proxyUrl = '/api/builderall?' + new URLSearchParams({
+    account:  builderallState.account,
+    path:     path,
+    api_key:  builderallState.key,
+  }).toString();
+  var resp = await fetch(proxyUrl);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  var data = await resp.json();
+  if (data.erro) throw new Error(data.erro);
+  return data;
+}
+
+async function buscarEmailsBuilderall() {
+  try {
+    // Tenta endpoint Mailing Boss do Builderall
+    var data = await chamarBuilderallAPI('/api/v1/mailing/campaigns?limit=50');
+    var items = data.data || data.campaigns || data || [];
+    builderallState.emails = items.map(function(c) {
+      return {
+        id:          c.id || c.campaign_id,
+        nome:        c.name || c.subject || c.title || 'Sem nome',
+        status:      c.status || 'sent',
+        enviados:    Number(c.total_sent || c.sent || c.recipients || 0),
+        abertos:     Number(c.opens || c.opened || 0),
+        cliques:     Number(c.clicks || c.clicked || 0),
+        descad:      Number(c.unsubscribes || c.unsubscribed || 0),
+        taxa_abertura: Number(c.open_rate || c.opens_rate || 0),
+        taxa_clique:   Number(c.click_rate || c.clicks_rate || 0),
+        data:        c.sent_at || c.created_at || c.date || '',
+      };
+    });
+    toast('E-mails: ' + builderallState.emails.length + ' campanhas carregadas', 'green');
+  } catch(e) {
+    // Fallback: tenta endpoint alternativo
+    try {
+      var data2 = await chamarBuilderallAPI('/mailingboss/api/v1/campaigns');
+      var items2 = data2.data || data2 || [];
+      builderallState.emails = items2.map(function(c) {
+        return {
+          nome:     c.name || c.subject || 'Sem nome',
+          status:   c.status || 'sent',
+          enviados: Number(c.total_sent || 0),
+          abertos:  Number(c.opens || 0),
+          cliques:  Number(c.clicks || 0),
+          descad:   Number(c.unsubscribes || 0),
+          taxa_abertura: c.total_sent > 0 ? (c.opens / c.total_sent * 100) : 0,
+          taxa_clique:   c.total_sent > 0 ? (c.clicks / c.total_sent * 100) : 0,
+          data:     c.sent_at || '',
+        };
+      });
+    } catch(e2) {
+      toast('Erro e-mail Builderall: ' + e.message + ' — verifique a URL da conta e API Key', 'red');
+    }
+  }
+}
+
+async function buscarLeadsBuilderall() {
+  try {
+    var data = await chamarBuilderallAPI('/api/v1/crm/contacts?limit=100&sort=created_at&order=desc');
+    var items = data.data || data.contacts || data || [];
+    builderallState.leads = items.map(function(c) {
+      return {
+        id:      c.id,
+        nome:    c.name || c.full_name || (c.first_name + ' ' + (c.last_name||'')).trim() || 'Sem nome',
+        email:   c.email || '',
+        telefone:c.phone || c.mobile || '',
+        origem:  c.source || c.utm_source || c.lead_source || 'Direto',
+        status:  c.status || c.stage || 'Novo',
+        valor:   Number(c.deal_value || c.value || c.amount || 0),
+        data:    c.created_at || c.date || '',
+      };
+    });
+    toast('CRM: ' + builderallState.leads.length + ' leads carregados', 'green');
+  } catch(e) {
+    try {
+      var data2 = await chamarBuilderallAPI('/api/v1/leads?per_page=100');
+      var items2 = data2.data || data2 || [];
+      builderallState.leads = items2.map(function(c) {
+        return {
+          nome:    c.name || c.email || 'Lead',
+          email:   c.email || '',
+          origem:  c.source || 'Direto',
+          status:  c.status || 'Novo',
+          valor:   Number(c.value || 0),
+          data:    c.created_at || '',
+        };
+      });
+    } catch(e2) {
+      toast('Erro CRM Builderall: ' + e.message, 'red');
+    }
+  }
+}
+
+// ── UI: tabs e render ─────────────────────────────────
+var ecTabAtual = 'email';
+
+function ecSetTab(tab) {
+  ecTabAtual = tab;
+  ['email','crm','funil'].forEach(function(t) {
+    var btn   = document.getElementById('ec-tab-'+t);
+    var panel = document.getElementById('ec-panel-'+t);
+    if (btn)   { btn.style.borderBottom = t===tab ? '2px solid var(--accent)' : '2px solid transparent'; btn.style.color = t===tab ? 'var(--text)' : 'var(--muted)'; }
+    if (panel) panel.style.display = t===tab ? 'block' : 'none';
+  });
+}
+
+function renderEmailCRM() {
+  if (!builderallState.conectado) return;
+  renderEmailsBuilderall();
+  renderLeadsBuilderall();
+  renderFunilBuilderall();
+}
+
+function renderEmailsBuilderall() {
+  var emails  = builderallState.emails;
+  var totSent = emails.reduce(function(s,e){ return s+e.enviados; }, 0);
+  var avgOpen = emails.length ? emails.reduce(function(s,e){ return s+(e.enviados>0?(e.abertos/e.enviados*100):0); },0)/emails.length : 0;
+  var avgClick= emails.length ? emails.reduce(function(s,e){ return s+(e.enviados>0?(e.cliques/e.enviados*100):0); },0)/emails.length : 0;
+
+  var setText = function(id,v) { var el=document.getElementById(id); if(el) el.textContent=v; };
+  setText('ec-total-camps', emails.length);
+  setText('ec-total-sent',  totSent.toLocaleString('pt-BR'));
+  setText('ec-avg-open',    avgOpen.toFixed(1)+'%');
+  setText('ec-avg-click',   avgClick.toFixed(1)+'%');
+
+  var list = document.getElementById('ec-email-list');
+  if (!list) return;
+  if (!emails.length) {
+    list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Nenhuma campanha de e-mail encontrada — verifique a API Key e tente sincronizar novamente</div>';
+    return;
+  }
+  list.innerHTML = emails.map(function(e) {
+    var abPct  = e.enviados > 0 ? (e.abertos  / e.enviados * 100) : (e.taxa_abertura || 0);
+    var clPct  = e.enviados > 0 ? (e.cliques  / e.enviados * 100) : (e.taxa_clique   || 0);
+    var abCor  = abPct >= 25 ? 'var(--green)' : abPct >= 15 ? 'var(--yellow)' : 'var(--red)';
+    var clCor  = clPct >= 3  ? 'var(--green)' : clPct >= 1  ? 'var(--yellow)' : 'var(--red)';
+    var stBadge= e.status === 'sent' || e.status === 'completed' ? 'badge-green' : e.status === 'sending' ? 'badge-yellow' : 'badge-blue';
+    return '<div style="display:grid;grid-template-columns:1fr 90px 80px 80px 80px 80px;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
+      '<div><div style="font-weight:500">' + e.nome + '</div><div style="font-size:10px;color:var(--muted)">' + (e.data ? new Date(e.data).toLocaleDateString('pt-BR') : '—') + '</div></div>' +
+      '<div><span class="badge '+stBadge+'" style="font-size:10px">' + e.status + '</span></div>' +
+      '<div class="mono" style="color:var(--blue)">' + e.enviados.toLocaleString('pt-BR') + '</div>' +
+      '<div class="mono" style="color:'+abCor+'">' + abPct.toFixed(1) + '%</div>' +
+      '<div class="mono" style="color:'+clCor+'">' + clPct.toFixed(1) + '%</div>' +
+      '<div class="mono" style="color:var(--muted)">' + e.descad + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderLeadsBuilderall() {
+  var leads = builderallState.leads;
+  var hoje  = new Date();
+  var ha30d = new Date(hoje - 30*24*60*60*1000);
+  var novos = leads.filter(function(l){ return l.data && new Date(l.data) >= ha30d; }).length;
+
+  var STATUS_GRUPOS = {
+    novo:       ['novo','new','lead','prospect'],
+    negoc:      ['negociando','negociação','proposta','qualificado','qualified','in progress','opportunity'],
+    convertido: ['convertido','ganho','fechado','won','closed','cliente','client'],
+  };
+  var contar = function(grupo) {
+    return leads.filter(function(l) {
+      var s = (l.status||'').toLowerCase();
+      return STATUS_GRUPOS[grupo].some(function(k){ return s.includes(k); });
+    }).length;
+  };
+
+  var setText = function(id,v) { var el=document.getElementById(id); if(el) el.textContent=v; };
+  setText('ec-crm-total', leads.length.toLocaleString('pt-BR'));
+  setText('ec-crm-novos', novos);
+  setText('ec-crm-negoc', contar('negoc'));
+  setText('ec-crm-conv',  contar('convertido'));
+
+  var list = document.getElementById('ec-crm-list');
+  if (!list) return;
+  if (!leads.length) {
+    list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Nenhum lead encontrado no CRM — verifique a API Key</div>';
+    return;
+  }
+  var STATUS_COR = { novo:'blue', negoc:'yellow', convertido:'green' };
+  list.innerHTML = leads.slice(0,40).map(function(l) {
+    var grp = 'novo';
+    var sl  = (l.status||'').toLowerCase();
+    if (STATUS_GRUPOS.convertido.some(function(k){return sl.includes(k);})) grp='convertido';
+    else if (STATUS_GRUPOS.negoc.some(function(k){return sl.includes(k);})) grp='negoc';
+    var cor = STATUS_COR[grp] || 'blue';
+    return '<div style="display:grid;grid-template-columns:1fr 100px 100px 80px 120px;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px">' +
+      '<div><div style="font-weight:500">' + l.nome + '</div><div style="font-size:10px;color:var(--muted)">' + (l.email||l.telefone||'—') + '</div></div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + (l.origem||'—') + '</div>' +
+      '<div><span class="badge badge-'+cor+'" style="font-size:10px">' + (l.status||'—') + '</span></div>' +
+      '<div class="mono" style="color:'+(l.valor>0?'var(--yellow)':'var(--muted)')+'">' + (l.valor>0?'R$ '+l.valor.toFixed(0):'—') + '</div>' +
+      '<div class="mono" style="color:var(--muted);font-size:11px">' + (l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderFunilBuilderall() {
+  var leads = builderallState.leads;
+  var camps = campanhas();
+
+  // Funil cross-platform
+  var totalImpressoes = camps.reduce(function(s,c){ return s+(c.impressoes||0); },0);
+  var totalCliques    = camps.reduce(function(s,c){ return s+(c.cliques||0); },0);
+  var totalLeads      = leads.length;
+  var totalConv       = leads.filter(function(l){
+    var s=(l.status||'').toLowerCase();
+    return ['convertido','ganho','fechado','won','closed','cliente'].some(function(k){return s.includes(k);});
+  }).length;
+
+  var el = document.getElementById('ec-funil-visual');
+  if (!el) return;
+
+  var stages = [
+    { label:'Impressões',  value: totalImpressoes, color:'#6366f1', icon:'👁️' },
+    { label:'Cliques',     value: totalCliques,    color:'#8b5cf6', icon:'🖱️' },
+    { label:'Leads CRM',   value: totalLeads,      color:'#0EA5E9', icon:'👤' },
+    { label:'Convertidos', value: totalConv,        color:'#10b981', icon:'✅' },
+  ].filter(function(s){ return s.value > 0; });
+
+  if (!stages.length) {
+    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px">Conecte Meta Ads + Builderall para ver o funil completo</div>';
+    return;
+  }
+  var maxV = stages[0].value || 1;
+  el.innerHTML = stages.map(function(s, i) {
+    var pct  = Math.round((s.value / maxV) * 60) + 40;
+    var next = stages[i+1];
+    var conv = next && s.value > 0 ? ((next.value/s.value)*100).toFixed(2)+'%' : null;
+    return '<div style="text-align:center;margin-bottom:4px">' +
+      '<div style="margin:0 auto;width:'+pct+'%;background:'+s.color+';border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-size:18px">'+s.icon+'</span>' +
+        '<div style="text-align:center"><div style="font-weight:700;font-size:16px;color:#fff;font-family:\'IBM Plex Mono\',monospace">'+s.value.toLocaleString('pt-BR')+'</div><div style="font-size:10px;color:rgba(255,255,255,.8)">'+s.label+'</div></div>' +
+        '<div style="width:20px"></div>' +
+      '</div>' +
+      (conv ? '<div style="font-size:10px;color:var(--muted);margin:3px 0;font-family:\'IBM Plex Mono\',monospace">↓ '+conv+' taxa conv.</div>' : '') +
+    '</div>';
+  }).join('');
+
+  // Origem dos leads
+  var origemEl = document.getElementById('ec-leads-origem');
+  if (origemEl && leads.length) {
+    var origens = {};
+    leads.forEach(function(l){ var o = l.origem||'Direto'; origens[o]=(origens[o]||0)+1; });
+    var maxO = Math.max.apply(null, Object.values(origens));
+    origemEl.innerHTML = Object.entries(origens).sort(function(a,b){return b[1]-a[1];}).slice(0,8).map(function(kv) {
+      var pct = (kv[1]/leads.length*100).toFixed(1);
+      var cor = kv[0].toLowerCase().includes('facebook')||kv[0].toLowerCase().includes('instagram') ? '#1877f2' :
+                kv[0].toLowerCase().includes('google') ? '#34a853' : 'var(--accentL)';
+      return '<div style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>'+kv[0]+'</span><span style="font-family:\'IBM Plex Mono\',monospace;color:'+cor+'">'+kv[1]+' ('+pct+'%)</span></div>' +
+        '<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:2px"></div></div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
 // CRM E FERRAMENTAS
 // ══════════════════════════════════════════════════════
 var CRM_FIELDS = ['kommo_domain','kommo_token','kondado_key','outro_nome','outro_token','outro_webhook'];

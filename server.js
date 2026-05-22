@@ -141,6 +141,40 @@ app.post('/api/claude', async (req, res) => {
   }
 });
 
+// ── Proxy Builderall: /api/builderall ────────────────────────
+app.get('/api/builderall', async (req, res) => {
+  try {
+    const { account, path, ...params } = req.query;
+    if (!account || !path) return res.status(400).json({ erro: 'account e path obrigatórios' });
+
+    const base = account.startsWith('http') ? account : `https://${account}`;
+    const url  = `${base}${path}?${new URLSearchParams(params)}`;
+    console.log(`[BUILDERALL] → ${url.replace(/api_key=[^&]+/, 'api_key=***')}`);
+
+    const response = await fetch(url, {
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${params.api_key || ''}`,
+        'User-Agent': 'AdAnalyzer/1.0',
+      },
+      timeout: 30000,
+    });
+
+    const text = await response.text();
+    try {
+      const json = JSON.parse(text);
+      res.json(json);
+    } catch(e) {
+      console.error('[BUILDERALL] Resposta não-JSON:', text.slice(0, 300));
+      res.status(502).json({ erro: 'Resposta inválida do Builderall', raw: text.slice(0, 200) });
+    }
+  } catch(err) {
+    console.error('[BUILDERALL] Erro:', err.message);
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // ── Status ────────────────────────────────────────────────────
 app.get('/api/status', (req, res) => {
   res.json({
