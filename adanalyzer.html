@@ -2211,19 +2211,23 @@ function campanhas() { return workspace().campanhas; }
 // NAVEGAÇÃO
 // ══════════════════════════════════════════════════════
 function navTo(id, el) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('view-' + id).classList.add('active');
-  if (el) el.classList.add('active');
-  if (id === 'dashboard')   renderDashboard();
-  if (id === 'analyze')     renderAnalyze();
-  if (id === 'campaigns')   renderCampaignsTable();
-  if (id === 'reports')     renderReports();
-  if (id === 'funil')       { atualizarFunil(); calcSimulador(); }
-  if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta');
-  if (id === 'localidades') buscarLocalidades();
-  if (id === 'emailcrm')    renderEmailCRM();
-  if (id === 'alerts')      renderAlertProjecao();
+  try {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    var viewEl = document.getElementById('view-' + id);
+    if (!viewEl) { console.warn('[navTo] view não encontrada:', id); return; }
+    viewEl.classList.add('active');
+    if (el) el.classList.add('active');
+  } catch(e) { console.error('[navTo] erro ao trocar view:', e); return; }
+  try { if (id === 'dashboard')   renderDashboard(); }   catch(e) { console.error('[dash]', e); }
+  try { if (id === 'analyze')     renderAnalyze(); }     catch(e) { console.error('[analyze]', e); }
+  try { if (id === 'campaigns')   renderCampaignsTable(); } catch(e) { console.error('[camps]', e); }
+  try { if (id === 'reports')     renderReports(); }     catch(e) { console.error('[reports]', e); }
+  try { if (id === 'funil')       { atualizarFunil(); calcSimulador(); } } catch(e) { console.error('[funil]', e); }
+  try { if (id === 'utm')         setUtmPlatform(utmState ? utmState.platform : 'meta'); } catch(e) { console.error('[utm]', e); }
+  try { if (id === 'localidades') buscarLocalidades(); } catch(e) { console.error('[loc]', e); }
+  try { if (id === 'emailcrm')    renderEmailCRM(); }    catch(e) { console.error('[email]', e); }
+  try { if (id === 'alerts')      renderAlertProjecao(); } catch(e) { console.error('[alerts]', e); }
 }
 
 function trocarWorkspace(val) {
@@ -5492,11 +5496,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // ══════════════════════════════════════════════════════
 
 
-renderDashboard();
-renderCampaignsTable();
+try { renderDashboard(); } catch(e) { console.error('[init] renderDashboard:', e); }
+try { renderCampaignsTable(); } catch(e) { console.error('[init] renderCampaignsTable:', e); }
 
 // Inicializa calculadoras com valores padrão
-setTimeout(function() { calcularProjecao(); calcSimulador(); }, 100);
+setTimeout(function() {
+  try { calcularProjecao(); } catch(e) { console.error('[init] calcularProjecao:', e); }
+  try { calcSimulador(); } catch(e) { console.error('[init] calcSimulador:', e); }
+}, 100);
 
 // Restaura credenciais salvas e atualiza badge de status
 (function restaurarSessao() {
