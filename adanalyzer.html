@@ -604,6 +604,22 @@ select.inp{cursor:pointer}
           </div>
         </div>
       </div>
+      <!-- Builderall CRM -->
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">👥 Builderall CRM — cKey</div>
+        <div class="stack">
+          <div>
+            <label>cKey do CRM <span style="color:var(--muted);font-size:11px">(do script de rastreamento)</span></label>
+            <input class="inp inp-mono" type="password" id="int-builderall-ckey" placeholder="eb8d67e83a1516eca825c2231aee81d7"/>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7">
+              📍 <strong>Onde encontrar:</strong> Builderall → CRM → Configurações → Script de rastreamento<br>
+              Procure <code style="color:var(--accentL)">cKey:'...'</code> no código do script<br>
+              API: <span style="color:var(--muted)">crm-api.eb4us.com</span>
+            </div>
+          </div>
+          <div id="ba-crm-badge"><span class="badge badge-red">● CRM não configurado</span></div>
+        </div>
+      </div>
       <!-- Testar conexão -->
       <div id="ba-test-result" style="display:none;padding:10px 14px;border-radius:var(--radius);background:var(--bg3);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);word-break:break-all;max-height:120px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px">
@@ -3129,25 +3145,36 @@ function renderPosicionamentos(rows) {
 // BUILDERALL — E-MAIL MARKETING & CRM
 // ══════════════════════════════════════════════════════
 var builderallState = {
-  key:       localStorage.getItem('ba_key')     || '',
-  account:   localStorage.getItem('ba_account') || '',
-  conectado: false,
-  emails:    [],
-  leads:     [],
-  listas:    [],
+  key:           localStorage.getItem('ba_key')           || '',
+  account:       localStorage.getItem('ba_account')       || '',
+  cKey:          localStorage.getItem('ba_ckey')          || '',
+  emailEndpoint: localStorage.getItem('ba_email_endpoint')|| '/api/v1/campaigns',
+  conectado:     false,
+  crmConectado:  false,
+  emails:        [],
+  leads:         [],
+  listas:        [],
 };
 
 (function restaurarBuilderall() {
-  var k = localStorage.getItem('ba_key');
-  var a = localStorage.getItem('ba_account');
-  if (k) { var el = document.getElementById('int-builderall-key');     if(el) el.value = k; }
-  if (a) { var el2 = document.getElementById('int-builderall-account'); if(el2) el2.value = a; }
+  var k  = localStorage.getItem('ba_key');
+  var a  = localStorage.getItem('ba_account');
+  var ck = localStorage.getItem('ba_ckey');
+  if (k)  { var el  = document.getElementById('int-builderall-key');   if(el)  el.value  = k;  }
+  if (a)  { var el2 = document.getElementById('int-builderall-account'); if(el2) el2.value = a;  }
+  if (ck) { var el3 = document.getElementById('int-builderall-ckey');   if(el3) el3.value = ck; }
   if (k && a) {
-    builderallState.key      = k;
-    builderallState.account  = a;
+    builderallState.key       = k;
+    builderallState.account   = a;
     builderallState.conectado = true;
-    atualizarBadgeBuilderall(true);
   }
+  if (ck) {
+    builderallState.cKey         = ck;
+    builderallState.crmConectado = true;
+    var cb = document.getElementById('ba-crm-badge');
+    if (cb) cb.innerHTML = '<span class="badge badge-green">● CRM configurado</span>';
+  }
+  if (k || ck) atualizarBadgeBuilderall(true);
 })();
 
 function atualizarBadgeBuilderall(ok) {
@@ -3166,15 +3193,25 @@ function atualizarBadgeBuilderall(ok) {
 function conectarBuilderall() {
   var key     = document.getElementById('int-builderall-key').value.trim();
   var account = document.getElementById('int-builderall-account').value.trim();
-  if (!key)     { toast('Cole sua API Key do Builderall', 'red'); return; }
-  if (!account) { toast('Informe a URL da sua conta Builderall', 'red'); return; }
-  builderallState.key      = key;
-  builderallState.account  = account.replace(/https?:\/\//,'').replace(/\/$/,'');
-  builderallState.conectado = true;
-  localStorage.setItem('ba_key',     builderallState.key);
-  localStorage.setItem('ba_account', builderallState.account);
+  var ckey    = document.getElementById('int-builderall-ckey').value.trim();
+
+  if (ckey) {
+    builderallState.cKey         = ckey;
+    builderallState.crmConectado = true;
+    localStorage.setItem('ba_ckey', ckey);
+    var cb = document.getElementById('ba-crm-badge');
+    if (cb) cb.innerHTML = '<span class="badge badge-green">● CRM configurado</span>';
+    toast('CRM Builderall salvo!', 'green');
+  }
+  if (key && account) {
+    builderallState.key       = key;
+    builderallState.account   = account.replace(/https?:\/\//,'').replace(/\/$/,'');
+    builderallState.conectado = true;
+    localStorage.setItem('ba_key',     builderallState.key);
+    localStorage.setItem('ba_account', builderallState.account);
+  }
+  if (!key && !ckey) { toast('Cole ao menos a API Key do Mailing Boss ou o cKey do CRM', 'red'); return; }
   atualizarBadgeBuilderall(true);
-  toast('Builderall salvo — sincronizando...', 'green');
   sincronizarBuilderall();
 }
 
@@ -3288,25 +3325,60 @@ async function buscarEmailsBuilderall() {
 }
 
 async function buscarLeadsBuilderall() {
-  try {
-    var data = await chamarBuilderallAPI('/api/v1/crm/contacts?limit=100&sort=created_at&order=desc');
-    var items = data.data || data.contacts || data || [];
-    builderallState.leads = items.map(function(c) {
-      return {
-        id:      c.id,
-        nome:    c.name || c.full_name || (c.first_name + ' ' + (c.last_name||'')).trim() || 'Sem nome',
-        email:   c.email || '',
-        telefone:c.phone || c.mobile || '',
-        origem:  c.source || c.utm_source || c.lead_source || 'Direto',
-        status:  c.status || c.stage || 'Novo',
-        valor:   Number(c.deal_value || c.value || c.amount || 0),
-        data:    c.created_at || c.date || '',
-      };
-    });
-    toast('CRM: ' + builderallState.leads.length + ' leads carregados', 'green');
-  } catch(e) {
+  if (!builderallState.cKey && !builderallState.key) return;
+
+  // Usa crm-api.eb4us.com com cKey (API real do Builderall CRM)
+  if (builderallState.cKey) {
     try {
-      var data2 = await chamarBuilderallAPI('/api/v1/leads?per_page=100');
+      var CRM_BASE = 'https://crm-api.eb4us.com';
+      var CRM_ENDPOINTS = [
+        '/api/v1/contacts',
+        '/api/contacts',
+        '/v1/contacts',
+        '/api/v1/leads',
+        '/api/leads',
+      ];
+      var leads = null;
+      for (var i = 0; i < CRM_ENDPOINTS.length; i++) {
+        try {
+          var url = '/api/builderall?' + new URLSearchParams({
+            account: 'crm-api.eb4us.com',
+            path:    CRM_ENDPOINTS[i],
+            cKey:    builderallState.cKey,
+            limit:   100,
+          });
+          var r = await fetch(url);
+          var d = await r.json();
+          if (!d.erro && (d.data || Array.isArray(d))) { leads = d.data || d; break; }
+        } catch(e2) {}
+      }
+      if (!leads) throw new Error('Nenhum endpoint CRM respondeu');
+
+      builderallState.leads = leads.map(function(c) {
+        return {
+          id:      c.id,
+          nome:    c.name || c.full_name || ((c.first_name||'') + ' ' + (c.last_name||'')).trim() || c.email || 'Lead',
+          email:   c.email || '',
+          telefone:c.phone || c.mobile || c.whatsapp || '',
+          origem:  c.source || c.utm_source || c.lead_source || c.channel || 'Direto',
+          status:  c.status || c.stage || c.pipeline_stage || 'Novo',
+          valor:   Number(c.deal_value || c.value || c.amount || c.revenue || 0),
+          data:    c.created_at || c.date || c.inserted_at || '',
+        };
+      });
+      var cb = document.getElementById('ba-crm-badge');
+      if (cb) cb.innerHTML = '<span class="badge badge-green">● CRM: ' + builderallState.leads.length + ' leads</span>';
+      toast('CRM: ' + builderallState.leads.length + ' leads carregados', 'green');
+      return;
+    } catch(e) {
+      toast('Erro CRM Builderall: ' + e.message, 'red');
+    }
+  }
+
+  // Fallback: tenta via conta Mailing Boss
+  if (builderallState.key && builderallState.account) {
+    try {
+      var data2 = await chamarBuilderallAPI('/api/v1/crm/contacts?limit=100');
       var items2 = data2.data || data2 || [];
       builderallState.leads = items2.map(function(c) {
         return {
@@ -3318,8 +3390,9 @@ async function buscarLeadsBuilderall() {
           data:    c.created_at || '',
         };
       });
+      toast('CRM: ' + builderallState.leads.length + ' leads', 'green');
     } catch(e2) {
-      toast('Erro CRM Builderall: ' + e.message, 'red');
+      toast('Erro CRM: ' + e2.message, 'red');
     }
   }
 }

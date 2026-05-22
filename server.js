@@ -141,33 +141,39 @@ app.post('/api/claude', async (req, res) => {
   }
 });
 
-// ── Proxy Builderall: /api/builderall ────────────────────────
+// ── Proxy Builderall / CRM eb4us: /api/builderall ───────────
 app.get('/api/builderall', async (req, res) => {
   try {
-    const { account, path, ...params } = req.query;
+    const { account, path, api_key, cKey, ...rest } = req.query;
     if (!account || !path) return res.status(400).json({ erro: 'account e path obrigatórios' });
 
-    const base = account.startsWith('http') ? account : `https://${account}`;
-    const url  = `${base}${path}?${new URLSearchParams(params)}`;
-    console.log(`[BUILDERALL] → ${url.replace(/api_key=[^&]+/, 'api_key=***')}`);
+    const base   = account.startsWith('http') ? account : `https://${account}`;
+    const qp     = new URLSearchParams(rest);
+    if (cKey)    qp.set('cKey', cKey);
+    if (api_key) qp.set('api_key', api_key);
+    const url = `${base}${path}?${qp}`;
 
-    const response = await fetch(url, {
-      redirect: 'follow',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${params.api_key || ''}`,
-        'User-Agent': 'AdAnalyzer/1.0',
-      },
-      timeout: 30000,
-    });
+    const logUrl = url
+      .replace(/cKey=[^&]+/, 'cKey=***')
+      .replace(/api_key=[^&]+/, 'api_key=***');
+    console.log(`[BUILDERALL] → ${logUrl}`);
 
+    const headers = {
+      'Accept': 'application/json',
+      'User-Agent': 'AdAnalyzer/1.0',
+      'Content-Type': 'application/json',
+    };
+    if (api_key) headers['Authorization'] = `Bearer ${api_key}`;
+    if (cKey)    headers['X-CRM-Key']     = cKey;
+
+    const response = await fetch(url, { redirect: 'follow', headers, timeout: 30000 });
     const text = await response.text();
+
     try {
-      const json = JSON.parse(text);
-      res.json(json);
+      res.json(JSON.parse(text));
     } catch(e) {
       console.error('[BUILDERALL] Resposta não-JSON:', text.slice(0, 300));
-      res.status(502).json({ erro: 'Resposta inválida do Builderall', raw: text.slice(0, 200) });
+      res.status(502).json({ erro: 'Resposta inválida', raw: text.slice(0, 300), status: response.status });
     }
   } catch(err) {
     console.error('[BUILDERALL] Erro:', err.message);
