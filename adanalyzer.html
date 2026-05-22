@@ -2960,26 +2960,10 @@ Por favor, analise e forneça recomendações práticas e priorizadas.`;
     statusBadge.innerHTML = '<span class="badge badge-yellow">● Gerando análise...</span>';
     out.innerHTML = '<span class="cursor"></span>';
 
-    // Detecta se está rodando local (VS Code) ou no GAS publicado
-    const isLocal = window.location.hostname === 'localhost'
-                 || window.location.hostname === '127.0.0.1';
-
-    const claudeEndpoint = isLocal
-      ? '/api/claude'   // proxy local (sem CORS)
-      : 'https://api.anthropic.com/v1/messages'; // direto (GAS publicado)
-
-    const claudeHeaders = isLocal
-      ? { 'Content-Type': 'application/json' }  // server.js adiciona a key
-      : {
-          'Content-Type':  'application/json',
-          'x-api-key':     claudeKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        };
-
-    const claudeBody = isLocal
-      ? { apiKey: claudeKey, model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] }
-      : { model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
+    // Sempre usa o proxy do servidor (funciona em localhost E Railway)
+    const claudeEndpoint = '/api/claude';
+    const claudeHeaders  = { 'Content-Type': 'application/json' };
+    const claudeBody     = { apiKey: claudeKey, model: 'claude-sonnet-4-5', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
 
     const resp = await fetch(claudeEndpoint, {
       method: 'POST',
@@ -5384,16 +5368,12 @@ async function rodarAnaliseRapida(tipo) {
   badge.innerHTML  = '<span class="badge badge-green">● Processando</span>';
 
   try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    var resp = await fetch('/api/claude', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        apiKey: key,
+        model: 'claude-sonnet-4-5',
         max_tokens: 1200,
         system: 'Voce e um especialista em trafego pago com 10+ anos de experiencia em Meta Ads e Google Ads. Responda em portugues brasileiro de forma direta e pratica, com dados especificos e acoes concretas.',
         messages: [{ role: 'user', content: cfg.buildPrompt(camps) }],
@@ -5441,15 +5421,11 @@ async function testarClaude() {
 
   toast('Testando conexão com o Claude...', 'blue');
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/claude', {
       method: 'POST',
-      headers: {
-        'Content-Type':   'application/json',
-        'x-api-key':      key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        apiKey: key,
         model: 'claude-sonnet-4-5', max_tokens: 20,
         messages: [{ role: 'user', content: 'Responda apenas: OK' }]
       })
