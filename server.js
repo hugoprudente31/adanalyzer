@@ -181,6 +181,44 @@ app.get('/api/builderall', async (req, res) => {
   }
 });
 
+// ── Proxy OpenAI (DALL-E): /api/openai/images ────────────────
+app.post('/api/openai/images', async (req, res) => {
+  try {
+    const { apiKey, ...body } = req.body;
+    if (!apiKey) return res.status(400).json({ error: { message: 'apiKey obrigatório' } });
+
+    console.log('[OPENAI] → Gerando imagem DALL-E...');
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body),
+      timeout: 90000
+    });
+
+    const json = await response.json();
+    if (json.error) {
+      console.error('[OPENAI] Erro:', json.error.message);
+    } else {
+      console.log('[OPENAI] ✅ Imagem gerada');
+    }
+    res.json(json);
+
+  } catch(err) {
+    console.error('[OPENAI] Erro:', err.message);
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ── Nexus Studio (React app): /studio ────────────────────────
+app.use('/studio', express.static(path.join(__dirname, 'studio')));
+app.get('/studio/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'studio', 'index.html'));
+});
+
 // ── Status ────────────────────────────────────────────────────
 app.get('/api/status', (req, res) => {
   res.json({
