@@ -586,9 +586,9 @@ select.inp{cursor:pointer}
 
 <!-- ══════════════════════════════════ VIEW: CAMPAIGNS -->
 <div class="view" id="view-campaigns">
-  <div class="row-between" style="margin-bottom:16px">
+  <div class="row-between" style="margin-bottom:12px">
     <div>
-      <div class="page-title">Campanhas</div>
+      <div class="page-title">Campanhas <span id="camps-count-title" style="font-size:13px;font-weight:400;color:var(--muted)"></span></div>
       <div class="page-sub">Configure o objetivo de cada campanha para calcular o ROI real</div>
     </div>
     <div class="row">
@@ -604,6 +604,69 @@ select.inp{cursor:pointer}
       </select>
       <button class="btn btn-ghost" onclick="salvarObjetivosCampanhas()" style="color:var(--green);border-color:rgba(0,214,143,.3)">💾 Salvar objetivos</button>
     </div>
+  </div>
+
+  <!-- ── Filtros avançados ─────────────────────────── -->
+  <div class="card" style="padding:12px 16px;margin-bottom:12px">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <input class="inp" placeholder="🔍 Buscar campanha..." id="filtro-busca"
+        oninput="renderCampaignsTable()" style="flex:1;min-width:180px;max-width:260px">
+
+      <select class="inp" style="width:130px" id="filtro-status" onchange="renderCampaignsTable()">
+        <option value="">Todos status</option>
+        <option value="ACTIVE">✅ Ativas</option>
+        <option value="PAUSED">⏸ Pausadas</option>
+        <option value="ARCHIVED">🗄 Arquivadas</option>
+      </select>
+
+      <select class="inp" style="width:155px" id="filtro-performance" onchange="renderCampaignsTable()">
+        <option value="">Toda performance</option>
+        <option value="escalar">🟢 Escalar agora</option>
+        <option value="otimizar">🟡 Otimizar</option>
+        <option value="pausar">🔴 Pausar</option>
+        <option value="criativo">🔵 Testar criativo</option>
+        <option value="aguardando">⚪ Aguardando dados</option>
+      </select>
+
+      <select class="inp" style="width:150px" id="filtro-objetivo" onchange="renderCampaignsTable()">
+        <option value="">Todos objetivos</option>
+        <option value="compra">🛒 Compra/E-com</option>
+        <option value="lead">💬 Lead/WhatsApp</option>
+        <option value="agendamento">📅 Agendamento</option>
+        <option value="engajamento">👁 Engajamento</option>
+      </select>
+
+      <select class="inp" style="width:140px" id="filtro-roi" onchange="renderCampaignsTable()">
+        <option value="">Qualquer ROI</option>
+        <option value="positivo">💰 ROI positivo</option>
+        <option value="negativo">📉 ROI negativo</option>
+        <option value="sem_dados">❓ Sem dados ROI</option>
+      </select>
+
+      <select class="inp" style="width:150px" id="filtro-score" onchange="renderCampaignsTable()">
+        <option value="">Qualquer saúde</option>
+        <option value="saudavel">🟢 Saudável (≥70)</option>
+        <option value="alerta">🟡 Em alerta (45–69)</option>
+        <option value="critico">🔴 Crítico (&lt;45)</option>
+      </select>
+
+      <select class="inp" style="width:150px" id="filtro-ordenar" onchange="renderCampaignsTable()">
+        <option value="nome">Ordenar: Nome A-Z</option>
+        <option value="gastos_desc">↓ Maior gasto</option>
+        <option value="gastos_asc">↑ Menor gasto</option>
+        <option value="score_desc">↓ Maior saúde</option>
+        <option value="score_asc">↑ Menor saúde</option>
+        <option value="roas_desc">↓ Maior ROAS</option>
+        <option value="ctr_desc">↓ Maior CTR</option>
+        <option value="conv_desc">↓ Mais conversões</option>
+      </select>
+
+      <button class="btn btn-ghost" onclick="limparFiltrosCampanhas()" style="font-size:11px;padding:6px 10px" title="Limpar todos os filtros">✕ Limpar</button>
+      <button class="btn btn-ghost" onclick="sincronizarComCRM()" style="color:var(--accentL);border-color:rgba(99,102,241,.35);font-size:11px;padding:6px 12px" title="Enviar dados para o Nexus CRM">🔗 Sync → CRM</button>
+    </div>
+
+    <!-- Barra de sumário -->
+    <div id="camps-summary" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted)"></div>
   </div>
 
   <!-- Legenda de objetivos -->
@@ -2706,8 +2769,134 @@ function calcularMetricaObjetivo(c) {
   }
 }
 
+// Retorna o tipo de recomendação como string (para filtro)
+function gerarTipoRecomendacao(c) {
+  var roas = c.roas || 0;
+  var ctr  = c.ctr  || 0;
+  var cpa  = c.cpa  || 0;
+  if (roas < 1 && c.gastos > 10)            return 'pausar';
+  if (cpa > 100 && cpa > 0)                 return 'pausar';
+  if (ctr < 0.8 && ctr >= 0 && c.gastos > 5) return 'criativo';
+  if (roas >= 3 && ctr >= 1.5)              return 'escalar';
+  if (roas >= 1.5 && roas < 3)              return 'otimizar';
+  return 'aguardando';
+}
+
+function limparFiltrosCampanhas() {
+  ['filtro-busca','filtro-status','filtro-performance','filtro-objetivo','filtro-roi','filtro-score','filtro-ordenar'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'INPUT') el.value = '';
+    else el.selectedIndex = 0;
+  });
+  renderCampaignsTable();
+}
+
+function sincronizarComCRM() {
+  var camps = campanhas();
+  if (!camps.length) { toast('Nenhuma campanha para sincronizar', 'yellow'); return; }
+  var payload = {
+    timestamp: new Date().toISOString(),
+    totalCampanhas: camps.length,
+    ativas: camps.filter(function(c){ return c.status === 'ACTIVE'; }).length,
+    gastoTotal: camps.reduce(function(a,c){ return a + (c.gastos||0); }, 0),
+    conversoes: camps.reduce(function(a,c){ return a + (c.conversoes||0); }, 0),
+    campanhas: camps.map(function(c) {
+      var metrica = calcularMetricaObjetivo(c);
+      return {
+        id: c.id, nome: c.nome, fonte: c.fonte, status: c.status,
+        gastos: c.gastos||0, roas: c.roas||0, ctr: c.ctr||0,
+        conversoes: c.conversoes||0, cpa: c.cpa||0,
+        score: calcScore(c),
+        recomendacao: gerarTipoRecomendacao(c),
+        metricaPrincipal: metrica.metricaPrincipal,
+        roi: metrica.roi || null
+      };
+    })
+  };
+  localStorage.setItem('adanalyzer_crm_sync', JSON.stringify(payload));
+  toast('✅ ' + camps.length + ' campanhas sincronizadas com o Nexus CRM!', 'green');
+
+  // Abre o Nexus Studio em nova aba se não estiver aberto
+  var url = window.location.origin + '/studio';
+  var msg = 'Dados sincronizados! Acesse o Nexus CRM → Sincronizar → AdAnalyzer para importar.';
+  if (confirm(msg + '\n\nAbrir o Nexus Studio agora?')) window.open(url, '_blank');
+}
+
 function renderCampaignsTable() {
-  const rows = campanhas().map(c => {
+  // ── Lê filtros ───────────────────────────────────────────
+  var busca    = ((document.getElementById('filtro-busca')    || {}).value || '').trim().toLowerCase();
+  var fStatus  = ((document.getElementById('filtro-status')   || {}).value || '');
+  var fPerf    = ((document.getElementById('filtro-performance') || {}).value || '');
+  var fObj     = ((document.getElementById('filtro-objetivo') || {}).value || '');
+  var fRoi     = ((document.getElementById('filtro-roi')      || {}).value || '');
+  var fScore   = ((document.getElementById('filtro-score')    || {}).value || '');
+  var fOrdem   = ((document.getElementById('filtro-ordenar')  || {}).value || 'nome');
+
+  var all = campanhas();
+
+  // ── Aplica filtros ───────────────────────────────────────
+  var filtered = all.filter(function(c) {
+    if (busca && c.nome.toLowerCase().indexOf(busca) === -1) return false;
+    if (fStatus && c.status !== fStatus) return false;
+    if (fObj) {
+      var obj = (objetivosCampanhas[c.id] || {}).objetivo || 'lead';
+      if (obj !== fObj) return false;
+    }
+    if (fPerf && gerarTipoRecomendacao(c) !== fPerf) return false;
+    if (fRoi) {
+      var m = calcularMetricaObjetivo(c);
+      var roiNum = parseFloat(m.roi);
+      if (fRoi === 'positivo'  && (isNaN(roiNum) || roiNum <= 0)) return false;
+      if (fRoi === 'negativo'  && (isNaN(roiNum) || roiNum >= 0)) return false;
+      if (fRoi === 'sem_dados' && !isNaN(roiNum)) return false;
+    }
+    if (fScore) {
+      var s = calcScore(c);
+      if (fScore === 'saudavel' && s < 70)               return false;
+      if (fScore === 'alerta'   && (s < 45 || s >= 70))  return false;
+      if (fScore === 'critico'  && s >= 45)               return false;
+    }
+    return true;
+  });
+
+  // ── Ordena ────────────────────────────────────────────────
+  filtered.sort(function(a, b) {
+    switch(fOrdem) {
+      case 'gastos_desc': return (b.gastos||0) - (a.gastos||0);
+      case 'gastos_asc':  return (a.gastos||0) - (b.gastos||0);
+      case 'score_desc':  return calcScore(b) - calcScore(a);
+      case 'score_asc':   return calcScore(a) - calcScore(b);
+      case 'roas_desc':   return (b.roas||0) - (a.roas||0);
+      case 'ctr_desc':    return (b.ctr||0) - (a.ctr||0);
+      case 'conv_desc':   return (b.conversoes||0) - (a.conversoes||0);
+      default: return a.nome.localeCompare(b.nome, 'pt-BR');
+    }
+  });
+
+  // ── Sumário ───────────────────────────────────────────────
+  var ativas   = filtered.filter(function(c){ return c.status==='ACTIVE'; }).length;
+  var pausadas = filtered.filter(function(c){ return c.status!=='ACTIVE'; }).length;
+  var escalar  = filtered.filter(function(c){ return gerarTipoRecomendacao(c)==='escalar'; }).length;
+  var pausar   = filtered.filter(function(c){ return gerarTipoRecomendacao(c)==='pausar'; }).length;
+  var gastoFilt= filtered.reduce(function(a,c){ return a+(c.gastos||0); }, 0);
+
+  var titleEl = document.getElementById('camps-count-title');
+  if (titleEl) titleEl.textContent = '— ' + filtered.length + (filtered.length < all.length ? ' de '+all.length : '') + ' campanhas';
+
+  var sumEl = document.getElementById('camps-summary');
+  if (sumEl) {
+    sumEl.style.display = filtered.length ? 'flex' : 'none';
+    sumEl.innerHTML =
+      '<span>✅ <strong style="color:var(--green)">' + ativas + '</strong> ativas</span>' +
+      '<span>⏸ <strong style="color:var(--yellow)">' + pausadas + '</strong> pausadas</span>' +
+      (escalar ? '<span>🚀 <strong style="color:var(--green)">' + escalar + '</strong> p/ escalar</span>' : '') +
+      (pausar  ? '<span>🔴 <strong style="color:var(--red)">'  + pausar  + '</strong> p/ pausar</span>' : '') +
+      '<span>💰 Gasto filtrado: <strong style="color:var(--yellow)">R$ ' + gastoFilt.toFixed(2) + '</strong></span>';
+  }
+
+  // ── Renderiza linhas ─────────────────────────────────────
+  const rows = filtered.map(c => {
     const score  = calcScore(c);
     const corScore = score>=70?'green':score>=45?'yellow':'red';
     const obj    = objetivosCampanhas[c.id] || {};
@@ -2721,10 +2910,9 @@ function renderCampaignsTable() {
           <div style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.nome}">${c.nome}</div>
         </td>
         <td><span class="badge badge-${c.fonte==='Meta Ads'?'blue':'green'}" style="font-size:10px">${c.fonte}</span></td>
-        <td><span class="badge badge-${c.status==='ACTIVE'?'green':'yellow'}" style="font-size:10px">${c.status}</span></td>
+        <td><span class="badge badge-${c.status==='ACTIVE'?'green':c.status==='PAUSED'?'yellow':'red'}" style="font-size:10px">${c.status==='ACTIVE'?'✅ ATIVA':c.status==='PAUSED'?'⏸ PAUSADA':'🗄 '+c.status}</span></td>
         <td class="mono" style="color:var(--yellow);font-size:12px">R$ ${(c.gastos||0).toFixed(2)}</td>
 
-        <!-- Seletor de objetivo -->
         <td>
           <select class="inp" style="padding:4px 6px;font-size:11px;width:130px;font-family:'IBM Plex Mono',monospace"
             onchange="atualizarObjetivo('${c.id}', this.value)">
@@ -2732,7 +2920,6 @@ function renderCampaignsTable() {
           </select>
         </td>
 
-        <!-- Campo de valor por conversão -->
         <td>
           ${objSel === 'engajamento'
             ? `<div style="display:flex;gap:4px">
@@ -2750,29 +2937,26 @@ function renderCampaignsTable() {
           }
         </td>
 
-        <!-- ROI calculado -->
         <td class="mono" style="color:${metrica.cor};font-size:12px;font-weight:700">
           ${metrica.metricaPrincipal}<br>
           <span style="font-size:10px;color:var(--muted);font-weight:400">${metrica.secundaria}</span>
         </td>
 
-        <!-- Conversões -->
         <td class="mono" style="font-size:12px">
           <span style="color:var(--blue)">${(c.conversoes||0).toFixed(0)}</span>
           <span style="font-size:10px;color:var(--muted)"> conv.</span>
         </td>
 
-        <!-- CTR -->
         <td class="mono" style="font-size:12px;color:${(c.ctr||0)>=1.5?'var(--green)':'var(--yellow)'}">${(c.ctr||0).toFixed(2)}%</td>
 
-        <!-- Score de saúde -->
         <td><span class="badge badge-${corScore}" style="font-size:10px">${score}/100</span></td>
 
-        <!-- Recomendação -->
         <td>${gerarBadgeRecomendacao(c)}</td>
       </tr>
     `;
-  }).join('') || '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.</td></tr>';
+  }).join('') || '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">' +
+    (all.length ? '⚠️ Nenhuma campanha corresponde aos filtros — <a href="#" onclick="limparFiltrosCampanhas();return false" style="color:var(--accentL)">limpar filtros</a>' : 'Nenhuma campanha carregada. Sincronize o Meta Ads primeiro.') +
+    '</td></tr>';
 
   // Campanhas GA4
   var ga4Rows = '';

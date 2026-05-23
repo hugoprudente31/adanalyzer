@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: adanalyzer
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: GAS_URL
+        value: https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec
+      - key: ADMIN_EMAIL
+        value: admin@empresa.com
+      - key: NODE_ENV
+        value: production
