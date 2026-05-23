@@ -218,6 +218,9 @@ select.inp{cursor:pointer}
   <div class="nav-item active" onclick="navTo('dashboard',this)">
     <span>⚡</span> Dashboard
   </div>
+  <div class="nav-item" onclick="navTo('copilot',this)" style="background:linear-gradient(90deg,rgba(99,102,241,.12),transparent);border-left:2px solid var(--accent)">
+    <span>✦</span> AI Copilot <span style="font-size:9px;background:var(--accent);color:#fff;padding:1px 5px;border-radius:8px;margin-left:2px">NEW</span>
+  </div>
   <div class="nav-item" onclick="navTo('analyze',this)">
     <span>🤖</span> Analisar com IA
   </div>
@@ -410,6 +413,52 @@ select.inp{cursor:pointer}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ VIEW: AI COPILOT -->
+<div class="view" id="view-copilot" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden">
+
+  <!-- Header -->
+  <div style="padding:16px 24px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg2)">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">✦</div>
+    <div>
+      <div style="font-weight:700;font-size:15px">AI Copilot — AdAnalyzer</div>
+      <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">claude-sonnet-4-6 · Contexto completo de campanhas, métricas e alertas</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <span id="copilot-status" style="font-size:11px;color:var(--muted)">● Pronto</span>
+      <button class="btn btn-ghost" onclick="limparCopilot()" style="font-size:11px;padding:5px 10px">🗑 Limpar</button>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div id="copilot-chips" style="padding:12px 24px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;background:var(--bg2)">
+    <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.08em;width:100%;margin-bottom:2px">PERGUNTAS RÁPIDAS</div>
+    <button class="btn btn-ghost" onclick="copilotQuick('Faça um resumo completo das minhas campanhas: quais estão bem, quais precisam de atenção e as 3 ações mais urgentes.')" style="font-size:11px;padding:5px 12px">📊 Resumo geral</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Quais campanhas devo escalar agora? Mostre as que têm maior ROAS e potencial de crescimento.')" style="font-size:11px;padding:5px 12px">🚀 O que escalar?</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Quais campanhas devo pausar imediatamente? Justifique com os dados.')" style="font-size:11px;padding:5px 12px">🔴 O que pausar?</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Analise o CTR de todas as campanhas. Quais estão abaixo da média e o que posso testar no criativo?')" style="font-size:11px;padding:5px 12px">🎨 Análise CTR</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Qual é o meu CPA médio por campanha? Estou dentro de uma meta saudável?')" style="font-size:11px;padding:5px 12px">💰 CPA por campanha</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Crie uma estratégia de distribuição de orçamento para os próximos 7 dias com base nas campanhas atuais.')" style="font-size:11px;padding:5px 12px">📅 Estratégia semanal</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Redija uma análise executiva de 5 linhas sobre a performance dos meus anúncios para apresentar ao cliente.')" style="font-size:11px;padding:5px 12px">📋 Relatório executivo</button>
+    <button class="btn btn-ghost" onclick="copilotQuick('Com base nas minhas campanhas e nos dados do CRM, como posso melhorar a taxa de conversão de lead para cliente?')" style="font-size:11px;padding:5px 12px">🔗 Ads + CRM insights</button>
+  </div>
+
+  <!-- Mensagens -->
+  <div id="copilot-msgs" style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px"></div>
+
+  <!-- Input -->
+  <div style="padding:12px 24px 16px;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg2)">
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <textarea id="copilot-input" class="inp"
+        placeholder="Pergunte qualquer coisa sobre suas campanhas, ROAS, orçamento, estratégia..."
+        style="flex:1;resize:none;min-height:44px;max-height:120px;line-height:1.5;padding:10px 14px;font-size:13px"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarCopilot()}"
+        oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button class="btn btn-primary" onclick="enviarCopilot()" id="copilot-btn" style="height:44px;padding:0 20px;flex-shrink:0">Enviar</button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px">Enter para enviar · Shift+Enter para nova linha · O Copilot vê todas suas campanhas em tempo real</div>
   </div>
 </div>
 
@@ -2284,6 +2333,7 @@ function navTo(id, el) {
     if (el) el.classList.add('active');
   } catch(e) { console.error('[navTo] erro ao trocar view:', e); return; }
   try { if (id === 'dashboard')   renderDashboard(); }   catch(e) { console.error('[dash]', e); }
+  try { if (id === 'copilot')     initCopilot(); }       catch(e) { console.error('[copilot]', e); }
   try { if (id === 'analyze')     renderAnalyze(); }     catch(e) { console.error('[analyze]', e); }
   try { if (id === 'campaigns')   renderCampaignsTable(); } catch(e) { console.error('[camps]', e); }
   try { if (id === 'reports')     renderReports(); }     catch(e) { console.error('[reports]', e); }
@@ -5640,6 +5690,182 @@ async function testarClaude() {
 
 // ══════════════════════════════════════════════════════
 // UTILS
+// ══════════════════════════════════════════════════════
+// AI COPILOT
+// ══════════════════════════════════════════════════════
+
+var copilotHistory = [];
+var copilotLoading = false;
+
+function copilotContexto() {
+  var camps = campanhas();
+  var ativas = camps.filter(function(c){ return c.status === 'ACTIVE'; });
+  var gastoTotal = camps.reduce(function(a,c){ return a+(c.gastos||0); }, 0);
+  var convTotal  = camps.reduce(function(a,c){ return a+(c.conversoes||0); }, 0);
+  var roasMedia  = ativas.length ? (ativas.reduce(function(a,c){ return a+(c.roas||0); }, 0) / ativas.length) : 0;
+  var ctrMedia   = ativas.length ? (ativas.reduce(function(a,c){ return a+(c.ctr||0); }, 0) / ativas.length) : 0;
+
+  var topRoas = camps.slice().sort(function(a,b){ return (b.roas||0)-(a.roas||0); }).slice(0,5);
+  var maioresCusto = camps.slice().sort(function(a,b){ return (b.gastos||0)-(a.gastos||0); }).slice(0,3);
+  var aPausar  = camps.filter(function(c){ return gerarTipoRecomendacao(c) === 'pausar'; });
+  var aEscalar = camps.filter(function(c){ return gerarTipoRecomendacao(c) === 'escalar'; });
+
+  // Lê dados do Nexus CRM se disponíveis
+  var crmInfo = '';
+  try {
+    var raw = localStorage.getItem('adanalyzer_crm_sync');
+    if (!raw) raw = localStorage.getItem('nexus_to_adanalyzer_pipeline');
+    if (raw) {
+      var d = JSON.parse(raw);
+      crmInfo = '\n\nCRM (Nexus Studio): Pipeline R$ ' + (d.totalPipeline || 0) + ' | ' + (d.totalCampanhas || 0) + ' campanhas integradas';
+    }
+  } catch(e) {}
+
+  return 'Você é o AI Copilot do AdAnalyzer, especialista em performance de anúncios pagos (Meta Ads e Google Ads). ' +
+    'Responda sempre em português, de forma direta e prática. Use **negrito** para destacar métricas importantes. ' +
+    'Formate listas com hífens. Seja conciso mas completo.\n\n' +
+    '=== DADOS DO WORKSPACE ===\n' +
+    'Workspace: ' + (workspace().nome || 'Principal') + '\n' +
+    'Total campanhas: ' + camps.length + ' | Ativas: ' + ativas.length + ' | Pausadas: ' + (camps.length - ativas.length) + '\n' +
+    'Gasto total: R$ ' + gastoTotal.toFixed(2) + '\n' +
+    'Conversões totais: ' + convTotal + '\n' +
+    'ROAS médio (ativas): ' + roasMedia.toFixed(2) + 'x\n' +
+    'CTR médio: ' + ctrMedia.toFixed(2) + '%\n\n' +
+    '=== CAMPANHAS ATIVAS ===\n' +
+    ativas.map(function(c) {
+      var score = calcScore(c);
+      var rec = gerarTipoRecomendacao(c);
+      return '- ' + c.nome + ' | ROAS ' + (c.roas||0).toFixed(2) + 'x | CTR ' + (c.ctr||0).toFixed(2) + '% | Gasto R$ ' + (c.gastos||0).toFixed(2) + ' | ' + (c.conversoes||0) + ' conv. | CPA R$ ' + (c.cpa||0).toFixed(2) + ' | Score ' + score + '/100 | Rec: ' + rec;
+    }).join('\n') + '\n\n' +
+    (aPausar.length ? '=== RECOMENDADAS PARA PAUSAR ===\n' + aPausar.map(function(c){ return '- ' + c.nome + ' (ROAS ' + (c.roas||0).toFixed(2) + 'x, gasto R$ ' + (c.gastos||0).toFixed(2) + ')'; }).join('\n') + '\n\n' : '') +
+    (aEscalar.length ? '=== RECOMENDADAS PARA ESCALAR ===\n' + aEscalar.map(function(c){ return '- ' + c.nome + ' (ROAS ' + (c.roas||0).toFixed(2) + 'x, CTR ' + (c.ctr||0).toFixed(2) + '%)'; }).join('\n') + '\n\n' : '') +
+    '=== TOP 5 POR ROAS ===\n' +
+    topRoas.map(function(c){ return '- ' + c.nome + ': ' + (c.roas||0).toFixed(2) + 'x ROAS'; }).join('\n') +
+    crmInfo;
+}
+
+function initCopilot() {
+  if (copilotHistory.length === 0) {
+    var camps = campanhas();
+    var ativas = camps.filter(function(c){ return c.status === 'ACTIVE'; }).length;
+    var welcome = 'Olá! Sou o **AI Copilot** do AdAnalyzer.\n\n' +
+      'Tenho acesso completo às suas campanhas em tempo real:\n' +
+      '- **' + camps.length + ' campanhas** carregadas (' + ativas + ' ativas)\n' +
+      '- Dados de ROAS, CTR, CPA, conversões e score de saúde\n' +
+      '- Alertas ativos e recomendações de otimização\n\n' +
+      (camps.length === 0
+        ? '⚠️ Nenhuma campanha carregada ainda. Conecte o Meta Ads em **Integrações** primeiro.'
+        : 'Use os botões acima para perguntas rápidas, ou me escreva qualquer coisa. O que você precisa?');
+    copilotHistory = [{ role: 'assistant', text: welcome }];
+  }
+  renderCopilotMsgs();
+  setTimeout(function() {
+    var msgs = document.getElementById('copilot-msgs');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }, 50);
+}
+
+function renderCopilotMsgs() {
+  var container = document.getElementById('copilot-msgs');
+  if (!container) return;
+  container.innerHTML = copilotHistory.map(function(m) {
+    var isAI = m.role === 'assistant';
+    var text = m.text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li style="margin:2px 0">$1</li>')
+      .replace(/(<li.*<\/li>)/gs, '<ul style="margin:6px 0 6px 16px;padding:0">$1</ul>')
+      .replace(/\n/g, '<br>');
+    return '<div style="display:flex;gap:10px;align-items:flex-start;' + (isAI ? '' : 'flex-direction:row-reverse') + '">' +
+      '<div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;' +
+        (isAI ? 'background:linear-gradient(135deg,var(--accent),var(--purple))' : 'background:var(--bg3);border:1px solid var(--border)') + '">' +
+        (isAI ? '✦' : '👤') +
+      '</div>' +
+      '<div style="max-width:78%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;' +
+        (isAI
+          ? 'background:var(--bg3);border:1px solid var(--border);border-top-left-radius:3px'
+          : 'background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(168,85,247,.12));border:1px solid rgba(99,102,241,.25);border-top-right-radius:3px') + '">' +
+        text +
+      '</div>' +
+    '</div>';
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function copilotQuick(pergunta) {
+  document.getElementById('copilot-input').value = pergunta;
+  enviarCopilot();
+}
+
+function limparCopilot() {
+  copilotHistory = [];
+  initCopilot();
+}
+
+async function enviarCopilot() {
+  if (copilotLoading) return;
+  var input = document.getElementById('copilot-input');
+  var msg = (input.value || '').trim();
+  if (!msg) return;
+
+  var claudeKey = localStorage.getItem('claude_api_key') || '';
+  if (!claudeKey) {
+    toast('Configure a API key do Claude em Integrações → Claude IA', 'yellow');
+    return;
+  }
+
+  input.value = '';
+  input.style.height = '44px';
+  copilotHistory.push({ role: 'user', text: msg });
+
+  // Loader
+  copilotHistory.push({ role: 'assistant', text: '⟳ Analisando...' });
+  copilotLoading = true;
+  var btn = document.getElementById('copilot-btn');
+  var statusEl = document.getElementById('copilot-status');
+  if (btn) btn.disabled = true;
+  if (statusEl) statusEl.textContent = '● Pensando...';
+  renderCopilotMsgs();
+
+  try {
+    // Monta histórico para multi-turn
+    var messages = copilotHistory
+      .filter(function(m){ return m.role !== 'assistant' || m.text !== '⟳ Analisando...'; })
+      .slice(-12) // Mantém últimas 12 mensagens
+      .filter(function(m){ return m.role === 'user' || (m.role === 'assistant' && m.text !== '⟳ Analisando...'); })
+      .map(function(m){ return { role: m.role, content: m.text }; });
+
+    var resp = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: claudeKey,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1800,
+        system: copilotContexto(),
+        messages: messages
+      })
+    });
+
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+    var resposta = data.content.map(function(b){ return b.text || ''; }).join('');
+
+    // Remove loader e adiciona resposta
+    copilotHistory = copilotHistory.filter(function(m){ return m.text !== '⟳ Analisando...'; });
+    copilotHistory.push({ role: 'assistant', text: resposta });
+
+  } catch(e) {
+    copilotHistory = copilotHistory.filter(function(m){ return m.text !== '⟳ Analisando...'; });
+    copilotHistory.push({ role: 'assistant', text: '❌ Erro: ' + e.message + '\n\nVerifique a API key em **Integrações → Claude IA**.' });
+  }
+
+  copilotLoading = false;
+  if (btn) btn.disabled = false;
+  if (statusEl) statusEl.textContent = '● Pronto';
+  renderCopilotMsgs();
+}
+
 // ══════════════════════════════════════════════════════
 function toast(msg, cor='blue') {
   const el = document.createElement('div');
