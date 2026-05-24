@@ -49,6 +49,9 @@ app.use('/api/gtm', require('./src/routes/gtmAdmin.routes'));
 // ── Dashboard por loja (Meta Ads + IA) ───────────────────────
 app.use('/api/dashboard', require('./src/routes/dashboard'));
 
+// ── Hub de integração Kommo ↔ Sistema ────────────────────────
+app.use('/api', require('./src/integrations/index'));
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
