@@ -37,6 +37,12 @@ app.use('/api/analytics', require('./src/routes/analytics.routes'));
 // ── OAuth Meta ────────────────────────────────────────────────
 app.use('/auth', require('./src/routes/oauth'));
 
+// ── OAuth Google ──────────────────────────────────────────────
+app.use('/auth', require('./src/routes/googleOAuth'));
+
+// ── Google APIs (GA4 + Search Console + GTM) ─────────────────
+app.use('/api/google', require('./src/routes/googleApis.routes'));
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
