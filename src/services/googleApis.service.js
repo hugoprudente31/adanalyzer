@@ -22,16 +22,19 @@ async function discoverGA4Properties(forceRefresh = false) {
   const auth = getAuthenticatedClient();
   const adminApi = google.analyticsadmin({ version: "v1beta", auth });
 
-  const response = await adminApi.properties.list({
-    filter: "parent:accounts/-",
-    pageSize: 200,
-  });
+  // accountSummaries lista todas as contas e propriedades de uma vez
+  const response = await adminApi.accountSummaries.list({ pageSize: 200 });
 
-  const properties = (response.data.properties || []).map((p) => ({
-    propertyId: p.name.replace("properties/", ""),
-    displayName: p.displayName,
-    createTime: p.createTime,
-  }));
+  const properties = [];
+  for (const account of response.data.accountSummaries || []) {
+    for (const prop of account.propertySummaries || []) {
+      properties.push({
+        propertyId:  prop.property.replace("properties/", ""),
+        displayName: prop.displayName,
+        accountName: account.displayName,
+      });
+    }
+  }
 
   _cache.ga4 = properties;
   _cache.ts  = Date.now();
