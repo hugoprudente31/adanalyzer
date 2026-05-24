@@ -31,8 +31,27 @@ app.use(express.json());
 // ── Rotas Meta Ads (Graph API completa) ──────────────────────
 app.use('/api/meta/v2', require('./src/routes/metaAds'));
 
+// ── Google Ads + GA4 + Search Console ────────────────────────
+app.use('/api/analytics', require('./src/routes/analytics.routes'));
+
 // ── OAuth Meta ────────────────────────────────────────────────
 app.use('/auth', require('./src/routes/oauth'));
+
+// ── Health check ──────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  const ACCOUNTS = require('./src/config/accounts.config');
+  res.json({
+    status: 'ok',
+    service: 'AdAnalyzer',
+    timestamp: new Date().toISOString(),
+    connectedAccounts: {
+      googleAds: ACCOUNTS.googleAds.length,
+      ga4: ACCOUNTS.googleAnalytics.length,
+      searchConsole: ACCOUNTS.searchConsole.length,
+      metaAds: !!process.env.META_ACCESS_TOKEN,
+    },
+  });
+});
 
 // Serve arquivos estáticos da pasta atual
 app.use(express.static(__dirname));
