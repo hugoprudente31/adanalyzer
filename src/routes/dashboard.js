@@ -24,21 +24,38 @@ function setCached(key, data) {
   cache.set(key, { data, ts: Date.now() });
 }
 
-async function fetchCampaigns() {
-  // Busca insights por campanha dos últimos 30 dias via serviço existente
-  return metaAds.getInsights({ datePreset: "last_30d", level: "campaign" });
+async function fetchCampaigns({ since, until, datePreset } = {}) {
+  if (since && until) {
+    return metaAds.getInsights({ dateRange: { since, until }, level: "campaign" });
+  }
+  return metaAds.getInsights({ datePreset: datePreset || "last_30d", level: "campaign" });
 }
 
-// GET /api/dashboard/report
+function parseDateParams(query) {
+  const { since, until, preset } = query;
+  if (since && until) return { since, until };
+  if (preset) return { datePreset: preset };
+  return {};
+}
+
+function cacheKey(base, query) {
+  const { since, until, preset } = query;
+  if (since && until) return `${base}_${since}_${until}`;
+  if (preset) return `${base}_${preset}`;
+  return base;
+}
+
+// GET /api/dashboard/report?since=2026-05-01&until=2026-05-24
 router.get("/report", async (req, res) => {
   try {
-    const cached = getCached("report");
+    const key    = cacheKey("report", req.query);
+    const cached = getCached(key);
     if (cached) return res.json(cached);
 
-    const campaigns = await fetchCampaigns();
+    const campaigns = await fetchCampaigns(parseDateParams(req.query));
     const report    = generateReport(campaigns);
 
-    setCached("report", report);
+    setCached(key, report);
     res.json(report);
   } catch (err) {
     console.error("[Dashboard] /report:", err.message);
@@ -46,16 +63,17 @@ router.get("/report", async (req, res) => {
   }
 });
 
-// GET /api/dashboard/alerts
+// GET /api/dashboard/alerts?since=2026-05-01&until=2026-05-24
 router.get("/alerts", async (req, res) => {
   try {
-    const cached = getCached("alerts");
+    const key    = cacheKey("alerts", req.query);
+    const cached = getCached(key);
     if (cached) return res.json(cached);
 
-    const campaigns = await fetchCampaigns();
+    const campaigns = await fetchCampaigns(parseDateParams(req.query));
     const result    = await runAlerts(campaigns);
 
-    setCached("alerts", result);
+    setCached(key, result);
     res.json(result);
   } catch (err) {
     console.error("[Dashboard] /alerts:", err.message);
@@ -63,20 +81,21 @@ router.get("/alerts", async (req, res) => {
   }
 });
 
-// GET /api/dashboard/summary — visão rápida sem IA
+// GET /api/dashboard/summary?since=2026-05-01&until=2026-05-24
 router.get("/summary", async (req, res) => {
   try {
-    const campaigns = await fetchCampaigns();
+    const campaigns = await fetchCampaigns(parseDateParams(req.query));
     const report    = generateReport(campaigns);
     res.json({
+      period:     req.query.since ? `${req.query.since} → ${req.query.until}` : (req.query.preset || "last_30d"),
       grandTotal: report.grandTotal,
       stores:     report.stores.map((s) => ({
-        store:          s.store,
-        color:          s.color,
-        spend:          s.metrics.spend.formatted,
-        actions:        s.metrics.actions.formatted,
-        ctr:            s.metrics.ctr.formatted,
-        cpc:            s.metrics.cpc.formatted,
+        store:           s.store,
+        color:           s.color,
+        spend:           s.metrics.spend.formatted,
+        actions:         s.metrics.actions.formatted,
+        ctr:             s.metrics.ctr.formatted,
+        cpc:             s.metrics.cpc.formatted,
         activeCampaigns: s.activeCampaigns,
       })),
       generatedAt: report.generatedAt,
