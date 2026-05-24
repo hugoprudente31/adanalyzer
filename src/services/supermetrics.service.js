@@ -1,9 +1,9 @@
 /**
- * AdAnalyzer — supermetrics.service.js
- * Integração com Supermetrics para Google Ads, GA4 e Search Console.
+ * AdAnalyzer — supermetrics.service.js (dinâmico)
+ * Contas descobertas automaticamente via Supermetrics — sem hardcode.
  */
 
-const ACCOUNTS = require("../config/accounts.config");
+const discovery = require("./accounts.discovery");
 
 const SUPERMETRICS_MCP_URL = process.env.SUPERMETRICS_MCP_URL || "https://mcp.supermetrics.com/mcp";
 
@@ -11,48 +11,25 @@ async function supermetricsQuery(tool, params) {
   const response = await fetch(`${SUPERMETRICS_MCP_URL}/tools/${tool}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
+    body: JSON.stringify({ ...params, compress: true }),
   });
 
   const data = await response.json();
-  if (!data.success && data.error) {
-    throw new Error(`Supermetrics Error [${tool}]: ${data.error}`);
-  }
+  if (!data.success && data.error) throw new Error(`Supermetrics [${tool}]: ${data.error}`);
   return data;
 }
 
 // ── Google Ads ────────────────────────────────────────────────
 
-async function getAllGoogleAdsMetrics({ datePreset = "last_30_days", fields = "campaign,impressions,clicks,cost,ctr,average_cpc,conversions" } = {}) {
-  return supermetricsQuery("data_query", {
-    ds_id: "AW",
-    ds_accounts: ACCOUNTS.allGoogleAdsIds,
-    date_range_type: datePreset,
-    fields,
-    settings: { report_type: "campaign" },
-  });
-}
+async function getGoogleAdsDashboard({ datePreset = "last_30_days" } = {}) {
+  const accounts = await discovery.discoverGoogleAdsAccounts();
 
-async function getGoogleAdsMetrics(accountIdOrSlug, options = {}) {
-  const account = ACCOUNTS.findGoogleAds(accountIdOrSlug);
-  if (!account) throw new Error(`Conta Google Ads não encontrada: ${accountIdOrSlug}`);
-
-  const { datePreset = "last_30_days", fields = "campaign,impressions,clicks,cost,ctr,average_cpc,conversions", reportType = "campaign", startDate, endDate } = options;
-
-  const params = { ds_id: "AW", ds_accounts: account.id, fields, settings: { report_type: reportType } };
-  if (startDate && endDate) { params.date_range_type = "custom"; params.start_date = startDate; params.end_date = endDate; }
-  else params.date_range_type = datePreset;
-
-  return supermetricsQuery("data_query", params);
-}
-
-async function getGoogleAdsDashboard() {
   const results = await Promise.allSettled(
-    ACCOUNTS.googleAds.map((account) =>
+    accounts.map((account) =>
       supermetricsQuery("data_query", {
         ds_id: "AW",
         ds_accounts: account.id,
-        date_range_type: "last_30_days",
+        date_range_type: datePreset,
         fields: "impressions,clicks,cost,ctr,average_cpc,conversions,cost_per_conversion",
         settings: { report_type: "account" },
       }).then((data) => ({ account, data }))
@@ -60,74 +37,107 @@ async function getGoogleAdsDashboard() {
   );
 
   return results.map((result, i) => ({
-    account: ACCOUNTS.googleAds[i],
+    account: accounts[i],
     metrics: result.status === "fulfilled" ? result.value.data : null,
     error:   result.status === "rejected"  ? result.reason?.message : null,
   }));
 }
 
-async function compareAccounts({ datePreset = "last_30_days", metric = "cost" } = {}) {
-  const dashboard = await getGoogleAdsDashboard();
+async function getGoogleAdsMetrics(query, options = {}) {
+  const account = await discovery.findGoogleAdsAccount(query);
+  if (!account) throw new Error(`Conta Google Ads não encontrada: "${query}"`);
+
+  const { datePreset = "last_30_days", startDate, endDate, reportType = "campaign", fields = "campaign,impressions,clicks,cost,ctr,average_cpc,conversions" } = options;
+
+  const params = { ds_id: "AW", ds_accounts: account.id, fields, settings: { report_type: reportType } };
+  if (startDate && endDate) { params.date_range_type = "custom"; params.start_date = startDate; params.end_date = endDate; }
+  else params.date_range_type = datePreset;
+
+  const data = await supermetricsQuery("data_query", params);
+  return { account, data };
+}
+
+async function compareGoogleAdsAccounts({ datePreset = "last_30_days", metric = "cost" } = {}) {
+  const dashboard = await getGoogleAdsDashboard({ datePreset });
   return dashboard
     .filter((d) => d.metrics)
-    .map((d) => ({ name: d.account.name, slug: d.account.slug, color: d.account.color, ...d.metrics }))
+    .map((d) => ({ id: d.account.id, name: d.account.name, isMCC: d.account.isMCC, ...d.metrics }))
     .sort((a, b) => (parseFloat(b[metric]) || 0) - (parseFloat(a[metric]) || 0));
 }
 
-// ── Google Analytics 4 ────────────────────────────────────────
+// ── GA4 ───────────────────────────────────────────────────────
 
-async function getGA4Metrics(propertyIdOrSlug, options = {}) {
-  const property = ACCOUNTS.findGA4(propertyIdOrSlug);
-  if (!property) throw new Error(`Propriedade GA4 não encontrada: ${propertyIdOrSlug}`);
+async function getAllGA4Metrics({ datePreset = "last_30_days", fields } = {}) {
+  const properties = await discovery.discoverGA4Accounts();
+  const defaultFields = "sessions,users,new_users,bounce_rate,avg_session_duration,conversions";
 
-  const { datePreset = "last_30_days", fields = "sessions,users,new_users,bounce_rate,avg_session_duration,conversions", startDate, endDate } = options;
+  const results = await Promise.allSettled(
+    properties.map((property) =>
+      supermetricsQuery("data_query", {
+        ds_id: "GAWA", ds_accounts: property.id,
+        date_range_type: datePreset, fields: fields || defaultFields,
+      }).then((data) => ({ property, data }))
+    )
+  );
+
+  return results.map((result, i) => ({
+    property: properties[i],
+    metrics: result.status === "fulfilled" ? result.value.data : null,
+    error:   result.status === "rejected"  ? result.reason?.message : null,
+  }));
+}
+
+async function getGA4Metrics(query, options = {}) {
+  const property = await discovery.findGA4Account(query);
+  if (!property) throw new Error(`Propriedade GA4 não encontrada: "${query}"`);
+
+  const { datePreset = "last_30_days", startDate, endDate, fields = "sessions,users,new_users,bounce_rate,avg_session_duration,conversions" } = options;
 
   const params = { ds_id: "GAWA", ds_accounts: property.id, fields };
   if (startDate && endDate) { params.date_range_type = "custom"; params.start_date = startDate; params.end_date = endDate; }
   else params.date_range_type = datePreset;
 
-  return supermetricsQuery("data_query", params);
+  const data = await supermetricsQuery("data_query", params);
+  return { property, data };
 }
 
-async function getAllGA4Metrics(options = {}) {
+// ── Search Console ────────────────────────────────────────────
+
+async function getSearchConsoleMetrics({ datePreset = "last_30_days", startDate, endDate, fields = "query,clicks,impressions,ctr,position" } = {}) {
+  const sites = await discovery.discoverSearchConsoleAccounts();
+
   const results = await Promise.allSettled(
-    ACCOUNTS.googleAnalytics.map((property) =>
-      getGA4Metrics(property.id, options).then((data) => ({ property, data }))
-    )
+    sites.map((site) => {
+      const params = { ds_id: "GW", ds_accounts: site.id, fields, settings: { data_precision: "1_NORMAL" } };
+      if (startDate && endDate) { params.date_range_type = "custom"; params.start_date = startDate; params.end_date = endDate; }
+      else params.date_range_type = datePreset;
+      return supermetricsQuery("data_query", params).then((data) => ({ site, data }));
+    })
   );
+
   return results.map((result, i) => ({
-    property: ACCOUNTS.googleAnalytics[i],
+    site:    sites[i],
     metrics: result.status === "fulfilled" ? result.value.data : null,
     error:   result.status === "rejected"  ? result.reason?.message : null,
   }));
 }
 
-// ── Google Search Console ─────────────────────────────────────
-
-async function getSearchConsoleMetrics({ datePreset = "last_30_days", fields = "query,clicks,impressions,ctr,position", startDate, endDate } = {}) {
-  const site = ACCOUNTS.searchConsole[0];
-  const params = { ds_id: "GW", ds_accounts: site.id, fields, settings: { data_precision: "1_NORMAL" } };
-  if (startDate && endDate) { params.date_range_type = "custom"; params.start_date = startDate; params.end_date = endDate; }
-  else params.date_range_type = datePreset;
-  return supermetricsQuery("data_query", params);
-}
-
-async function getTopKeywords({ limit = 20, datePreset = "last_30_days" } = {}) {
-  return getSearchConsoleMetrics({ datePreset, fields: "query,clicks,impressions,ctr,position" });
-}
-
 // ── Relatório Consolidado ─────────────────────────────────────
 
 async function getFullReport({ datePreset = "last_30_days" } = {}) {
-  const [googleAds, ga4, searchConsole] = await Promise.allSettled([
-    getGoogleAdsDashboard(),
+  const [googleAds, ga4, searchConsole, accounts] = await Promise.allSettled([
+    getGoogleAdsDashboard({ datePreset }),
     getAllGA4Metrics({ datePreset }),
     getSearchConsoleMetrics({ datePreset }),
+    discovery.discoverAllAccounts(),
   ]);
 
   return {
     period: datePreset,
     generatedAt: new Date().toISOString(),
+    accountsSummary: accounts.status === "fulfilled"
+      ? { googleAds: accounts.value.googleAds.length, ga4: accounts.value.ga4.length, searchConsole: accounts.value.searchConsole.length }
+      : null,
     googleAds:     googleAds.status     === "fulfilled" ? googleAds.value     : { error: googleAds.reason?.message },
     ga4:           ga4.status           === "fulfilled" ? ga4.value           : { error: ga4.reason?.message },
     searchConsole: searchConsole.status === "fulfilled" ? searchConsole.value : { error: searchConsole.reason?.message },
@@ -135,9 +145,9 @@ async function getFullReport({ datePreset = "last_30_days" } = {}) {
 }
 
 module.exports = {
-  getAllGoogleAdsMetrics, getGoogleAdsMetrics, getGoogleAdsDashboard, compareAccounts,
-  getGA4Metrics, getAllGA4Metrics,
-  getSearchConsoleMetrics, getTopKeywords,
+  getGoogleAdsDashboard, getGoogleAdsMetrics, compareGoogleAdsAccounts,
+  getAllGA4Metrics, getGA4Metrics,
+  getSearchConsoleMetrics,
   getFullReport,
-  ACCOUNTS,
+  discovery,
 };
