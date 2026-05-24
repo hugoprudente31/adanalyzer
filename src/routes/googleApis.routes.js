@@ -61,6 +61,25 @@ router.get("/gtm/:accountId/containers", asyncHandler(async (req, res) => {
   res.json({ success: true, data });
 }));
 
+// GET /api/google/discover — lista todas as contas disponíveis
+router.get("/discover", asyncHandler(async (req, res) => {
+  const [ga4, sc] = await Promise.allSettled([
+    google.discoverGA4Properties(),
+    google.discoverSearchConsoleSites(),
+  ]);
+  res.json({
+    success: true,
+    ga4:           ga4.status === "fulfilled" ? ga4.value : { error: ga4.reason?.message },
+    searchConsole: sc.status  === "fulfilled" ? sc.value  : { error: sc.reason?.message },
+  });
+}));
+
+// POST /api/google/discover/refresh — força atualização do cache
+router.post("/discover/refresh", asyncHandler(async (req, res) => {
+  const data = await google.refreshDiscovery();
+  res.json({ success: true, message: "Cache atualizado", data });
+}));
+
 router.use((err, req, res, _next) => {
   console.error("[Google APIs Route Error]", err.message);
   res.status(500).json({ success: false, error: err.message });
