@@ -72,6 +72,28 @@ router.get("/google/callback", async (req, res) => {
   }
 });
 
+// GET /auth/google/show-token — mostra refresh token (TEMPORÁRIO - remover após setup)
+router.get("/google/show-token", (req, res) => {
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN || storedTokens?.refresh_token;
+  if (!refreshToken) {
+    return res.send(`
+      <h2>Token não encontrado</h2>
+      <p>Faça login primeiro em <a href="/auth/google">/auth/google</a></p>
+    `);
+  }
+  res.send(`
+    <html><body style="font-family:monospace;padding:40px;background:#1a1a1a;color:#fff">
+    <h2 style="color:#4CAF50">✅ GOOGLE_REFRESH_TOKEN encontrado</h2>
+    <p style="color:#aaa">Copie o token abaixo e adicione nas Variables do Railway:</p>
+    <div style="background:#333;padding:20px;border-radius:8px;word-break:break-all;font-size:14px;margin:20px 0">
+      <b style="color:#FFD700">GOOGLE_REFRESH_TOKEN</b> =<br><br>
+      <span style="color:#90EE90">${refreshToken}</span>
+    </div>
+    <p style="color:#ff6b6b">⚠️ Após copiar e salvar no Railway, acesse /auth/google/remove-token para apagar esta rota.</p>
+    </body></html>
+  `);
+});
+
 // GET /auth/google/status — verifica conexão
 router.get("/google/status", (req, res) => {
   const hasRefreshToken = !!process.env.GOOGLE_REFRESH_TOKEN || !!storedTokens?.refresh_token;
