@@ -9,6 +9,8 @@
 //  4. Abra http://localhost:3000
 // ═══════════════════════════════════════════════════════════════
 
+require('dotenv').config();
+
 const express = require('express');
 const fetch   = require('node-fetch');
 const cors    = require('cors');
@@ -25,6 +27,12 @@ const ADMIN_EMAIL = 'admin@empresa.com';
 // ── Middlewares ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+
+// ── Rotas Meta Ads (Graph API completa) ──────────────────────
+app.use('/api/meta/v2', require('./src/routes/metaAds'));
+
+// ── OAuth Meta ────────────────────────────────────────────────
+app.use('/auth', require('./src/routes/oauth'));
 
 // Serve arquivos estáticos da pasta atual
 app.use(express.static(__dirname));
