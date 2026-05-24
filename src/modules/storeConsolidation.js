@@ -27,6 +27,10 @@ const CAMPAIGN_STORE_PATTERNS = [
   { pattern: /tgt/i,               store: "Multi Lojas" },
   { pattern: /otica/i,             store: "Multi Lojas" },
   { pattern: /promo/i,             store: "Multi Lojas" },
+  { pattern: /indique/i,           store: "Multi Lojas" },
+  { pattern: /engajamento/i,       store: "Multi Lojas" },
+  { pattern: /vagas?.+emprego/i,   store: "Multi Lojas" },
+  { pattern: /nova.+campanha/i,    store: "Multi Lojas" },
 ];
 
 const STORE_COLORS = {
