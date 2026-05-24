@@ -5,36 +5,36 @@
  */
 
 const CAMPAIGN_STORE_PATTERNS = [
-  { pattern: /gonzaga/i,          store: "Gonzaga" },
-  { pattern: /santos/i,           store: "Gonzaga" },
+  { pattern: /gonzaga/i,          store: "Gonzaga/Santos" },
+  { pattern: /santos/i,           store: "Gonzaga/Santos" },
   { pattern: /enseada/i,          store: "Enseada" },
   { pattern: /pitangueiras?/i,    store: "Pitangueiras" },
   { pattern: /\bpita\b/i,         store: "Pitangueiras" },
   { pattern: /\btarget\b/i,       store: "Target" },
   { pattern: /multi.?lojas?/i,    store: "Multi Lojas" },
-  { pattern: /campanha.+famil/i,  store: "Campanha Família" },
-  { pattern: /familia/i,          store: "Campanha Família" },
-  { pattern: /olhar.+saud/i,      store: "Olhar Saudável" },
-  { pattern: /oculos.+sol/i,      store: "Óculos de Sol" },
+  { pattern: /campanha.+famil/i,  store: "Multi Lojas" },
+  { pattern: /familia/i,          store: "Multi Lojas" },
+  { pattern: /olhar.+saud/i,      store: "Multi Lojas" },
+  { pattern: /oculos.+sol/i,      store: "Multi Lojas" },
+  { pattern: /tgt/i,              store: "Multi Lojas" },
+  { pattern: /otica/i,            store: "Multi Lojas" },
+  { pattern: /promo/i,            store: "Multi Lojas" },
 ];
 
 const STORE_COLORS = {
-  "Gonzaga":           "#378ADD",
-  "Enseada":           "#1D9E75",
-  "Pitangueiras":      "#D85A30",
-  "Target":            "#BA7517",
-  "Multi Lojas":       "#7F77DD",
-  "Campanha Família":  "#E24B4A",
-  "Olhar Saudável":    "#888780",
-  "Óculos de Sol":     "#D4537E",
-  "Outros":            "#999999",
+  "Gonzaga/Santos": "#378ADD",
+  "Enseada":        "#1D9E75",
+  "Pitangueiras":   "#D85A30",
+  "Target":         "#BA7517",
+  "Multi Lojas":    "#7F77DD",
+  "Outros":         "#999999",
 };
 
 const STORE_WHATSAPP = {
-  "Gonzaga":      "https://wa.me/5513996453111",
-  "Enseada":      "https://wa.me/5513997214862",
-  "Pitangueiras": "https://wa.me/5513997040234",
-  "Target":       "https://wa.me/5513997856493",
+  "Gonzaga/Santos": "https://wa.me/5513996453111",
+  "Enseada":        "https://wa.me/5513997214862",
+  "Pitangueiras":   "https://wa.me/5513997040234",
+  "Target":         "https://wa.me/5513997856493",
 };
 
 function resolveStore(campaignName = "") {
