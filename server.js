@@ -46,6 +46,9 @@ app.use('/api/google', require('./src/routes/googleApis.routes'));
 // ── GTM Admin (auto-provisionamento de tags) ──────────────────
 app.use('/api/gtm', require('./src/routes/gtmAdmin.routes'));
 
+// ── Dashboard por loja (Meta Ads + IA) ───────────────────────
+app.use('/api/dashboard', require('./src/routes/dashboard'));
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
