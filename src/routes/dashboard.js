@@ -86,6 +86,29 @@ router.get("/summary", async (req, res) => {
   }
 });
 
+// GET /api/dashboard/unmatched — lista campanhas que caíram em "Outros"
+router.get("/unmatched", async (req, res) => {
+  try {
+    const { resolveStore } = require("../modules/storeConsolidation");
+    const campaigns = await fetchCampaigns();
+    const unmatched = campaigns
+      .filter((c) => resolveStore(c.campaign_name || c.name) === "Outros")
+      .map((c) => ({
+        name:    c.campaign_name || c.name,
+        spend:   Number(c.spend || 0).toFixed(2),
+        actions: Array.isArray(c.actions)
+          ? c.actions.reduce((s, a) => s + Number(a.value || 0), 0)
+          : Number(c.actions || 0),
+        ctr: c.ctr ? `${Number(c.ctr).toFixed(2)}%` : "-",
+      }))
+      .sort((a, b) => Number(b.spend) - Number(a.spend));
+
+    res.json({ total: unmatched.length, campaigns: unmatched });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/dashboard/cache/clear
 router.post("/cache/clear", (req, res) => {
   cache.clear();
