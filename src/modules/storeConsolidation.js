@@ -5,20 +5,28 @@
  */
 
 const CAMPAIGN_STORE_PATTERNS = [
-  { pattern: /gonzaga/i,          store: "Gonzaga/Santos" },
-  { pattern: /santos/i,           store: "Gonzaga/Santos" },
-  { pattern: /enseada/i,          store: "Enseada" },
-  { pattern: /pitangueiras?/i,    store: "Pitangueiras" },
-  { pattern: /\bpita\b/i,         store: "Pitangueiras" },
-  { pattern: /\btarget\b/i,       store: "Target" },
-  { pattern: /multi.?lojas?/i,    store: "Multi Lojas" },
-  { pattern: /campanha.+famil/i,  store: "Multi Lojas" },
-  { pattern: /familia/i,          store: "Multi Lojas" },
-  { pattern: /olhar.+saud/i,      store: "Multi Lojas" },
-  { pattern: /oculos.+sol/i,      store: "Multi Lojas" },
-  { pattern: /tgt/i,              store: "Multi Lojas" },
-  { pattern: /otica/i,            store: "Multi Lojas" },
-  { pattern: /promo/i,            store: "Multi Lojas" },
+  // Lojas específicas (ordem importa — mais específico primeiro)
+  { pattern: /gonzaga/i,           store: "Gonzaga/Santos" },
+  { pattern: /santos/i,            store: "Gonzaga/Santos" },
+  { pattern: /enseada/i,           store: "Enseada" },
+  { pattern: /pitangueiras?/i,     store: "Pitangueiras" },  // grafia correta
+  { pattern: /pintagueiras?/i,     store: "Pitangueiras" },  // typo comum nas campanhas
+  { pattern: /\bpita\b/i,          store: "Pitangueiras" },
+  { pattern: /\btarget\b/i,        store: "Target" },
+  // Campanhas gerais / multi-lojas
+  { pattern: /multi.?lojas?/i,     store: "Multi Lojas" },
+  { pattern: /familia/i,           store: "Multi Lojas" },
+  { pattern: /olhar.+saud/i,       store: "Multi Lojas" },
+  { pattern: /oculos.+sol/i,       store: "Multi Lojas" },
+  { pattern: /conj/i,              store: "Multi Lojas" },  // CONJ-06-AN- T.VISÃO+ARMAÇÃO
+  { pattern: /vis[aã]o/i,          store: "Multi Lojas" },
+  { pattern: /armac[aã]o/i,        store: "Multi Lojas" },
+  { pattern: /instucional/i,       store: "Multi Lojas" },  // GABI-VIDEO-INSTUCIONAL
+  { pattern: /institucional/i,     store: "Multi Lojas" },
+  { pattern: /gabi/i,              store: "Multi Lojas" },
+  { pattern: /tgt/i,               store: "Multi Lojas" },
+  { pattern: /otica/i,             store: "Multi Lojas" },
+  { pattern: /promo/i,             store: "Multi Lojas" },
 ];
 
 const STORE_COLORS = {
