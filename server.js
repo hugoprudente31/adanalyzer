@@ -43,6 +43,9 @@ app.use('/auth', require('./src/routes/googleOAuth'));
 // ── Google APIs (GA4 + Search Console + GTM) ─────────────────
 app.use('/api/google', require('./src/routes/googleApis.routes'));
 
+// ── GTM Admin (auto-provisionamento de tags) ──────────────────
+app.use('/api/gtm', require('./src/routes/gtmAdmin.routes'));
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
