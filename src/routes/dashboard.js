@@ -86,9 +86,14 @@ router.get("/", async (req, res) => {
       metaAds.getCampaigns({ status: "ALL" }),
     ]);
 
+    if (campRes.status === "rejected") console.error("[Dashboard] Meta campaigns:", campRes.reason?.message);
+    if (dailyRes.status === "rejected") console.error("[Dashboard] Meta daily:", dailyRes.reason?.message);
+    if (campListRes.status === "rejected") console.error("[Dashboard] Meta campList:", campListRes.reason?.message);
+
     const campaigns = campRes.status     === "fulfilled" ? campRes.value     : [];
     const dailyData = dailyRes.status    === "fulfilled" ? dailyRes.value    : [];
     const campList  = campListRes.status === "fulfilled" ? campListRes.value : [];
+    const metaError = campRes.status === "rejected" ? campRes.reason?.message : null;
 
     // campaign_id → objective
     const objMap = {};
@@ -152,6 +157,7 @@ router.get("/", async (req, res) => {
       google: { spend: 0, clicks: 0, impressions: 0, conversions: 0, cpc: 0, stores },
       daily,
       updatedAt: new Date().toLocaleTimeString("pt-BR"),
+      ...(metaError ? { metaError } : {}),
     };
 
     setDashCached(cKey, result);
