@@ -68,6 +68,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ── Dashboard React (componente adanalyzer-dashboard.jsx) ────
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
 // Serve arquivos estáticos da pasta atual
 app.use(express.static(__dirname));
 

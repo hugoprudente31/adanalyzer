@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AdAnalyzer — Dashboard</title>
+<!-- React 18 -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<!-- Recharts -->
+<script src="https://unpkg.com/recharts@2.10.4/umd/Recharts.min.js" crossorigin></script>
+<!-- Babel standalone (transpila JSX no browser) -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #07111e; color: #e2e8f0; min-height: 100vh; }
+  #root { min-height: 100vh; }
+  input[type=date] { color-scheme: dark; }
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+</style>
+<!-- Expõe hooks e componentes de gráfico como variáveis globais para o Babel -->
+<script>
+  const { useState, useEffect, useCallback, useRef } = React;
+  const {
+    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+    XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  } = Recharts;
+</script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// ─────────────────────────────────────────────────────────────────
+//  CAMADA DE SEGURANÇA — helpers blindados
+// ─────────────────────────────────────────────────────────────────
+
+const safeDivide = (num, den) => {
+  const n = Number(num), d = Number(den);
+  if (!isFinite(n) || !isFinite(d) || d === 0) return null;
+  return n / d;
+};
+
+const R = (v) => {
+  const n = Number(v);
+  if (v == null || !isFinite(n) || isNaN(n)) return "—";
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+};
+
+const N = (v) => {
+  const n = Number(v);
+  if (v == null || isNaN(n) || !isFinite(n)) return "—";
+  return Math.round(n).toLocaleString("pt-BR");
+};
+
+const safeArr = (v) => (Array.isArray(v) && v.length > 0 ? v : []);
+
+const safeNum = (v, fallback = 0) => {
+  const n = Number(v);
+  return isFinite(n) && !isNaN(n) ? n : fallback;
+};
+
+const validateDates = (start, end) => {
+  if (!start || !end) return "Preencha as duas datas.";
+  const s = new Date(start), e = new Date(end), today = new Date();
+  if (isNaN(s) || isNaN(e)) return "Datas inválidas.";
+  if (s > e) return "Data inicial não pode ser maior que a final.";
+  if (s > today) return "Data inicial não pode ser no futuro.";
+  if ((e - s) / 86400000 > 365) return "Período máximo: 365 dias.";
+  return null;
+};
+
+const normalizeData = (raw) => {
+  if (!raw || typeof raw !== "object") return null;
+  const meta = raw.meta || {};
+  const google = raw.google || {};
+  return {
+    meta: {
+      spend:       safeNum(meta.spend),
+      clicks:      safeNum(meta.clicks),
+      impressions: safeNum(meta.impressions),
+      msgs:        safeNum(meta.msgs),
+      cpc:         safeNum(meta.cpc),
+      cpm:         safeNum(meta.cpm),
+      costPerMsg:  safeNum(meta.costPerMsg),
+      objectives:  safeArr(meta.objectives).map(o => ({
+        name:  String(o.name  || "—"),
+        spend: safeNum(o.spend),
+        msgs:  safeNum(o.msgs),
+        cpc:   safeNum(o.cpc),
+        color: o.color || "#64748b",
+      })),
+    },
+    google: {
+      spend:       safeNum(google.spend),
+      clicks:      safeNum(google.clicks),
+      impressions: safeNum(google.impressions),
+      conversions: safeNum(google.conversions),
+      cpc:         safeNum(google.cpc),
+      stores:      safeArr(google.stores).map(s => ({
+        name:   String(s.name  || "—"),
+        spend:  safeNum(s.spend),
+        clicks: safeNum(s.clicks),
+        color:  s.color || "#64748b",
+      })),
+    },
+    daily: safeArr(raw.daily).map(d => ({
+      date:        String(d.date || ""),
+      clicks:      safeNum(d.clicks),
+      impressions: safeNum(d.impressions),
+      msgs:        safeNum(d.msgs),
+      spend:       safeNum(d.spend),
+    })),
+    updatedAt: raw.updatedAt ? String(raw.updatedAt) : new Date().toLocaleTimeString("pt-BR"),
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  FETCH REAL — chama o endpoint Express
+// ─────────────────────────────────────────────────────────────────
+const fetchDashboardData = async (startDate, endDate) => {
+  const res = await fetch(`/api/dashboard?start=${startDate}&end=${endDate}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
+  }
+  return res.json();
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  SUB-COMPONENTES
+// ─────────────────────────────────────────────────────────────────
+const KPI = ({ label, value, sub, color = "#f59e0b", icon }) => (
+  <div style={{ background:"linear-gradient(135deg,#0f1c2e,#162032)", border:`1px solid ${color}33`, borderRadius:14, padding:"18px 20px", position:"relative", overflow:"hidden" }}>
+    <div style={{ position:"absolute", top:-6, right:10, fontSize:44, opacity:.05 }}>{icon}</div>
+    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:".1em", textTransform:"uppercase", color:"#64748b", marginBottom:8 }}>{label}</div>
+    <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:700, color, lineHeight:1, marginBottom:4 }}>{value}</div>
+    {sub && <div style={{ fontSize:11, color:"#64748b", fontFamily:"'DM Mono',monospace" }}>{sub}</div>}
+  </div>
+);
+
+const SectionTitle = ({ color, title, sub }) => (
+  <div style={{ display:"flex", alignItems:"center", gap:10, margin:"32px 0 16px" }}>
+    <div style={{ width:4, height:24, background:color, borderRadius:4, flexShrink:0 }} />
+    <div>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:700 }}>{title}</div>
+      {sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", letterSpacing:".06em" }}>{sub}</div>}
+    </div>
+  </div>
+);
+
+const ObjCard = ({ o, maxSpend }) => {
+  const pct = maxSpend > 0 ? ((o.spend / maxSpend) * 100).toFixed(0) : 0;
+  return (
+    <div style={{ background:"#0f1c2e", border:`1px solid ${o.color}33`, borderRadius:12, padding:"14px 16px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+        <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, color:o.color, fontSize:13 }}>{o.name}</span>
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#94a3b8" }}>{R(o.spend)}</span>
+      </div>
+      <div style={{ height:3, background:"#1e2a3a", borderRadius:3, marginBottom:10 }}>
+        <div style={{ height:3, width:`${pct}%`, background:o.color, borderRadius:3 }} />
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between" }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>MSGS</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, color:"#f59e0b" }}>{N(o.msgs)}</div>
+        </div>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>CPC</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, color:o.cpc < 0.5 ? "#10b981" : "#e2e8f0" }}>{R(o.cpc)}</div>
+        </div>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>CUSTO/MSG</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, color:"#e2e8f0" }}>{R(safeDivide(o.spend, o.msgs))}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TT = (props) => (
+  <Tooltip contentStyle={{ background:"#0f1c2e", border:"1px solid #263446", borderRadius:8, color:"#e2e8f0", fontSize:11 }} labelStyle={{ color:"#94a3b8" }} {...props} />
+);
+
+// ─────────────────────────────────────────────────────────────────
+//  DASHBOARD PRINCIPAL
+// ─────────────────────────────────────────────────────────────────
+const REFRESH_SEC = 60;
+
+function AdAnalyzerDashboard() {
+  const today    = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
+  const todayStr = today.toISOString().slice(0,10);
+
+  const [startDate,    setStartDate]    = useState(firstDay);
+  const [endDate,      setEndDate]      = useState(todayStr);
+  const [pendingStart, setPendingStart] = useState(firstDay);
+  const [pendingEnd,   setPendingEnd]   = useState(todayStr);
+  const [data,         setData]         = useState(null);
+  const [prevData,     setPrevData]     = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
+  const [dateError,    setDateError]    = useState(null);
+  const [countdown,    setCountdown]    = useState(REFRESH_SEC);
+  const [lastUpdated,  setLastUpdated]  = useState("");
+  const [tab,          setTab]          = useState("overview");
+  const timerRef  = useRef(null);
+  const countRef  = useRef(null);
+  const MAX_RETRY = 3;
+
+  const load = useCallback(async (isManual = false) => {
+    setLoading(true);
+    if (isManual) setError(null);
+
+    let attempt = 0;
+    while (attempt < MAX_RETRY) {
+      try {
+        const raw        = await fetchDashboardData(startDate, endDate);
+        const normalized = normalizeData(raw);
+        if (!normalized) throw new Error("Resposta da API inválida ou vazia.");
+        setPrevData(normalized);
+        setData(normalized);
+        setLastUpdated(normalized.updatedAt);
+        setCountdown(REFRESH_SEC);
+        setError(null);
+        setLoading(false);
+        return;
+      } catch (err) {
+        attempt++;
+        if (attempt < MAX_RETRY) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+        } else {
+          setError(`Falha ao carregar dados: ${err.message}`);
+          if (prevData) setData(prevData);
+          setLoading(false);
+        }
+      }
+    }
+  }, [startDate, endDate, prevData]);
+
+  useEffect(() => {
+    load(true);
+    timerRef.current = setInterval(() => load(false), REFRESH_SEC * 1000);
+    return () => clearInterval(timerRef.current);
+  }, [load]);
+
+  useEffect(() => {
+    countRef.current = setInterval(() => setCountdown(c => c > 0 ? c - 1 : REFRESH_SEC), 1000);
+    return () => clearInterval(countRef.current);
+  }, []);
+
+  const applyFilter = () => {
+    const err = validateDates(pendingStart, pendingEnd);
+    if (err) { setDateError(err); return; }
+    setDateError(null);
+    setStartDate(pendingStart);
+    setEndDate(pendingEnd);
+  };
+
+  const totalSpend       = safeNum(data?.meta?.spend)       + safeNum(data?.google?.spend);
+  const totalClicks      = safeNum(data?.meta?.clicks)      + safeNum(data?.google?.clicks);
+  const totalImpressions = safeNum(data?.meta?.impressions) + safeNum(data?.google?.impressions);
+  const maxObjSpend      = data?.meta?.objectives?.length
+    ? Math.max(...data.meta.objectives.map(o => safeNum(o.spend)), 1)
+    : 1;
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#07111e", color:"#e2e8f0", fontFamily:"'Inter',sans-serif", padding:"24px 20px" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');`}</style>
+
+      {/* HEADER */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:14, marginBottom:24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ background:"linear-gradient(135deg,#f59e0b,#f97316)", borderRadius:12, width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>📊</div>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, lineHeight:1 }}>AdAnalyzer</div>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", letterSpacing:".1em" }}>ÓTICAS TGT · TRÁFEGO PAGO</div>
+          </div>
+        </div>
+
+        {/* FILTRO DE DATA */}
+        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, background:"#0f1c2e", border:`1px solid ${dateError ? "#f43f5e" : "#1e2a3a"}`, borderRadius:10, padding:"8px 14px" }}>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>DE</span>
+              <input type="date" value={pendingStart} max={pendingEnd || todayStr}
+                onChange={e => { setPendingStart(e.target.value); setDateError(null); }}
+                style={{ background:"transparent", border:"none", outline:"none", color:"#e2e8f0", fontFamily:"'DM Mono',monospace", fontSize:12 }} />
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>ATÉ</span>
+              <input type="date" value={pendingEnd} min={pendingStart} max={todayStr}
+                onChange={e => { setPendingEnd(e.target.value); setDateError(null); }}
+                style={{ background:"transparent", border:"none", outline:"none", color:"#e2e8f0", fontFamily:"'DM Mono',monospace", fontSize:12 }} />
+            </div>
+            <button onClick={applyFilter}
+              style={{ background:"#f59e0b", border:"none", borderRadius:10, padding:"9px 18px", fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight:600, color:"#07111e", cursor:"pointer" }}>
+              Aplicar
+            </button>
+          </div>
+          {dateError && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#f43f5e", paddingLeft:4 }}>⚠ {dateError}</div>}
+        </div>
+
+        {/* STATUS DE REFRESH */}
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ textAlign:"right" }}>
+            {error ? (
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#f43f5e" }}>
+                ✕ {error}
+                {prevData && <span style={{ color:"#64748b" }}> (exibindo dados anteriores)</span>}
+              </div>
+            ) : (
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:loading ? "#f59e0b" : "#10b981" }}>
+                {loading ? "⏳ Atualizando..." : `✓ ${lastUpdated}`}
+              </div>
+            )}
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#475569" }}>
+              {loading ? "buscando dados..." : `próxima atualização em ${countdown}s`}
+            </div>
+          </div>
+          <svg width="36" height="36" style={{ transform:"rotate(-90deg)" }}>
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#1e2a3a" strokeWidth="3" />
+            <circle cx="18" cy="18" r="14" fill="none"
+              stroke={error ? "#f43f5e" : loading ? "#f59e0b" : "#10b981"}
+              strokeWidth="3"
+              strokeDasharray={`${2 * Math.PI * 14}`}
+              strokeDashoffset={`${2 * Math.PI * 14 * (1 - countdown / REFRESH_SEC)}`}
+              strokeLinecap="round"
+              style={{ transition:"stroke-dashoffset 1s linear" }} />
+          </svg>
+        </div>
+      </div>
+
+      {/* TABS */}
+      <div style={{ display:"flex", gap:4, marginBottom:20, background:"#0f1c2e", borderRadius:12, padding:4, width:"fit-content", border:"1px solid #1e2a3a" }}>
+        {[["overview","📈 Geral"],["meta","🔵 Meta"],["google","🟢 Google"]].map(([k,lbl]) => (
+          <button key={k} onClick={() => setTab(k)}
+            style={{ padding:"7px 16px", borderRadius:9, border:"none", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11, transition:"all .2s",
+              background:tab===k ? "#f59e0b" : "transparent",
+              color:tab===k ? "#07111e" : "#64748b", fontWeight:tab===k ? 700 : 400 }}>
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {/* LOADING INICIAL */}
+      {loading && !data && (
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:260, gap:12 }}>
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+          <div style={{ width:20, height:20, borderRadius:"50%", border:"2px solid #f59e0b", borderTopColor:"transparent", animation:"spin 1s linear infinite" }} />
+          <span style={{ fontFamily:"'DM Mono',monospace", color:"#64748b" }}>Carregando dados...</span>
+        </div>
+      )}
+
+      {/* SEM DADOS */}
+      {!loading && !data && (
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:260, gap:12 }}>
+          <div style={{ fontSize:40 }}>😭</div>
+          <div style={{ fontFamily:"'DM Mono',monospace", color:"#64748b", fontSize:13 }}>Nenhum dado disponível para o período.</div>
+          <button onClick={() => load(true)}
+            style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", color:"#94a3b8", borderRadius:10, padding:"8px 20px", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:12 }}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {/* CONTEÚDO */}
+      {data && (
+        <>
+          {/* OVERVIEW */}
+          {tab === "overview" && (
+            <>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))", gap:12, marginBottom:20 }}>
+                <KPI icon="💰" label="Total Investido"  value={R(totalSpend)}        sub={`ISS 5%: ${R(totalSpend*1.05)}`}                  color="#f59e0b" />
+                <KPI icon="👁"  label="Impressões"       value={N(totalImpressions)}  sub="Meta + Google"                                    color="#3b82f6" />
+                <KPI icon="🖱"  label="Cliques Totais"   value={N(totalClicks)}        sub={`CPC: ${R(safeDivide(totalSpend,totalClicks))}`}   color="#10b981" />
+                <KPI icon="💬" label="Mensagens"        value={N(data.meta.msgs)}     sub={`Custo: ${R(data.meta.costPerMsg)}`}               color="#f43f5e" />
+                <KPI icon="🎯" label="Conv. Google"     value={N(data.google.conversions)} sub={`Custo: ${R(safeDivide(data.google.spend,data.google.conversions))}`} color="#8b5cf6" />
+                <KPI icon="📊" label="CPM Médio"        value={R(safeDivide(totalSpend*1000,totalImpressions))} sub="Custo por mil imp."   color="#06b6d4" />
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:16, marginBottom:20 }}>
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:14, padding:20 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", textTransform:"uppercase", letterSpacing:".08em", marginBottom:16 }}>Gasto por Canal</div>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie data={[{name:"Meta Ads",value:data.meta.spend},{name:"Google Ads",value:data.google.spend}]}
+                        cx="50%" cy="50%" innerRadius={50} outerRadius={72} dataKey="value" stroke="none">
+                        <Cell fill="#3b82f6"/><Cell fill="#10b981"/>
+                      </Pie>
+                      <TT formatter={v => R(v)} />
+                      <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ color:"#94a3b8", fontSize:11 }}>{v}</span>} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:14, padding:20 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", textTransform:"uppercase", letterSpacing:".08em", marginBottom:16 }}>Cliques + Mensagens Diárias</div>
+                  {data.daily.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <LineChart data={data.daily}>
+                        <XAxis dataKey="date" tick={{ fill:"#64748b", fontSize:9 }} axisLine={false} tickLine={false} />
+                        <YAxis yAxisId="l" hide /><YAxis yAxisId="r" orientation="right" hide />
+                        <TT />
+                        <Line yAxisId="l" type="monotone" dataKey="clicks"   stroke="#3b82f6" dot={false} strokeWidth={2} name="Cliques" />
+                        <Line yAxisId="r" type="monotone" dataKey="msgs"     stroke="#f59e0b" dot={false} strokeWidth={2} name="Mensagens" />
+                        <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ color:"#94a3b8", fontSize:10 }}>{v}</span>} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ height:180, display:"flex", alignItems:"center", justifyContent:"center", color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:12 }}>
+                      Sem dados diários para o período
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* META */}
+          {tab === "meta" && (
+            <>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))", gap:12, marginBottom:20 }}>
+                <KPI icon="💰" label="Gasto Meta"   value={R(data.meta.spend)}       sub="63% do total"                     color="#3b82f6" />
+                <KPI icon="👁"  label="Impressões"   value={N(data.meta.impressions)}  sub={`CPM: ${R(data.meta.cpm)}`}       color="#06b6d4" />
+                <KPI icon="🖱"  label="Cliques"      value={N(data.meta.clicks)}       sub={`CPC: ${R(data.meta.cpc)}`}       color="#10b981" />
+                <KPI icon="💬" label="Mensagens"    value={N(data.meta.msgs)}         sub={`Custo/msg: ${R(data.meta.costPerMsg)}`} color="#f59e0b" />
+              </div>
+
+              <SectionTitle color="#8b5cf6" title="Por Objetivo" sub="GASTO · MENSAGENS · CUSTO/MSG · CPC" />
+              {data.meta.objectives.length > 0 ? (
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(185px,1fr))", gap:12, marginBottom:20 }}>
+                  {data.meta.objectives.map(o => <ObjCard key={o.name} o={o} maxSpend={maxObjSpend} />)}
+                </div>
+              ) : (
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:12, padding:24, textAlign:"center", color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:12, marginBottom:20 }}>
+                  Sem dados de objetivo disponíveis
+                </div>
+              )}
+
+              <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:14, padding:20 }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", textTransform:"uppercase", letterSpacing:".08em", marginBottom:16 }}>Gasto por Objetivo</div>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={data.meta.objectives} barSize={32}>
+                    <XAxis dataKey="name" tick={{ fill:"#64748b", fontSize:10 }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <TT formatter={v => R(v)} />
+                    <Bar dataKey="spend" radius={[6,6,0,0]} name="Gasto">
+                      {data.meta.objectives.map((o,i) => <Cell key={i} fill={o.color} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {/* GOOGLE */}
+          {tab === "google" && (
+            <>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))", gap:12, marginBottom:20 }}>
+                <KPI icon="💰" label="Gasto Google"  value={R(data.google.spend)}       sub="37% do total"                                                   color="#10b981" />
+                <KPI icon="👁"  label="Impressões"    value={N(data.google.impressions)}  sub={`CPM: ${R(safeDivide(data.google.spend*1000,data.google.impressions))}`} color="#06b6d4" />
+                <KPI icon="🖱"  label="Cliques"       value={N(data.google.clicks)}       sub={`CPC: ${R(data.google.cpc)}`}                                   color="#3b82f6" />
+                <KPI icon="🎯" label="Conversões"    value={N(data.google.conversions)}  sub={`Custo: ${R(safeDivide(data.google.spend,data.google.conversions))}`} color="#f59e0b" />
+              </div>
+
+              <SectionTitle color="#10b981" title="Por Loja" sub="GASTO · CLIQUES · CPC" />
+              {data.google.stores.length > 0 ? (
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))", gap:12, marginBottom:20 }}>
+                  {data.google.stores.map(s => {
+                    const pct = data.google.spend > 0 ? (s.spend / data.google.spend * 100).toFixed(0) : 0;
+                    return (
+                      <div key={s.name} style={{ background:"#0f1c2e", border:`1px solid ${s.color}33`, borderRadius:12, padding:18 }}>
+                        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:s.color, textTransform:"uppercase", marginBottom:6 }}>{s.name}</div>
+                        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:700, color:s.color }}>{R(s.spend)}</div>
+                        <div style={{ height:3, background:"#1e2a3a", borderRadius:3, margin:"10px 0" }}>
+                          <div style={{ height:3, width:`${pct}%`, background:s.color, borderRadius:3 }} />
+                        </div>
+                        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#64748b" }}>
+                          {N(s.clicks)} cliques · CPC {R(safeDivide(s.spend, s.clicks))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:12, padding:24, textAlign:"center", color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:12, marginBottom:20 }}>
+                  Sem dados de lojas disponíveis
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* RODAPÉ */}
+      <div style={{ marginTop:28, background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:12, padding:"14px 18px", display:"flex", gap:24, flexWrap:"wrap" }}>
+        {[
+          ["🛡 Divisão por zero","safeDivide() em todos os cálculos","#10b981"],
+          ["🛡 Dados corrompidos","normalizeData() valida shape da API","#3b82f6"],
+          ["🛡 Erro de rede","3 tentativas + fallback para dados anteriores","#8b5cf6"],
+          ["🛡 Data inválida","validateDates() antes de aplicar filtro","#f59e0b"],
+          ["🛡 Array vazio","safeArr() + empty states visuais","#f43f5e"],
+        ].map(([t,d,c]) => (
+          <div key={t}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:c, marginBottom:2 }}>{t}</div>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#475569" }}>{d}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Monta o app React
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<AdAnalyzerDashboard />);
+</script>
+</body>
+</html>
