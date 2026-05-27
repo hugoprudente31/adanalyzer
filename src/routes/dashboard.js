@@ -221,6 +221,7 @@ router.get("/", async (req, res) => {
       daily,
       updatedAt: new Date().toLocaleTimeString("pt-BR"),
       ...(metaError ? { metaError } : {}),
+      googleError: googleRes.find(r => r.status === "rejected")?.reason?.message || null,
     };
 
     setDashCached(cKey, result);
