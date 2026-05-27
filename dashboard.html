@@ -20,11 +20,22 @@
 </style>
 <!-- Expõe hooks e componentes de gráfico como variáveis globais para o Babel -->
 <script>
-  const { useState, useEffect, useCallback, useRef } = React;
-  const {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-  } = Recharts;
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useCallback = React.useCallback;
+  var useRef = React.useRef;
+  var LineChart = Recharts.LineChart;
+  var Line = Recharts.Line;
+  var BarChart = Recharts.BarChart;
+  var Bar = Recharts.Bar;
+  var PieChart = Recharts.PieChart;
+  var Pie = Recharts.Pie;
+  var Cell = Recharts.Cell;
+  var XAxis = Recharts.XAxis;
+  var YAxis = Recharts.YAxis;
+  var Tooltip = Recharts.Tooltip;
+  var ResponsiveContainer = Recharts.ResponsiveContainer;
+  var Legend = Recharts.Legend;
 </script>
 </head>
 <body>
