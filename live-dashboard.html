@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AdAnalyzer — Live Dashboard</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js" crossorigin></script>
+<script src="https://unpkg.com/recharts@2.10.4/umd/recharts.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #07111e; color: #e2e8f0; min-height: 100vh; font-family: 'Inter', sans-serif; }
+  #root { min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0f1c2e; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+</style>
+<script>
+  var useState       = React.useState;
+  var useEffect      = React.useEffect;
+  var useCallback    = React.useCallback;
+  var useRef         = React.useRef;
+  var LineChart      = Recharts.LineChart;
+  var AreaChart      = Recharts.AreaChart;
+  var Area           = Recharts.Area;
+  var Line           = Recharts.Line;
+  var BarChart       = Recharts.BarChart;
+  var Bar            = Recharts.Bar;
+  var XAxis          = Recharts.XAxis;
+  var YAxis          = Recharts.YAxis;
+  var Tooltip        = Recharts.Tooltip;
+  var ResponsiveContainer = Recharts.ResponsiveContainer;
+  var Cell           = Recharts.Cell;
+  var Legend         = Recharts.Legend;
+  var ReferenceLine  = Recharts.ReferenceLine;
+</script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+// ─── Formatadores ───────────────────────────────────────────────────
+var R = function(v) {
+  var n = Number(v);
+  if (v == null || !isFinite(n)) return "—";
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+};
+var N = function(v) {
+  var n = Number(v);
+  if (v == null || isNaN(n) || !isFinite(n)) return "—";
+  return Math.round(n).toLocaleString("pt-BR");
+};
+var P = function(v) {
+  var n = Number(v);
+  if (v == null || !isFinite(n)) return "—";
+  return n.toFixed(2) + "%";
+};
+var safeNum = function(v, fb) { var n = Number(v); return isFinite(n) && !isNaN(n) ? n : (fb || 0); };
+var safeArr = function(v) { return Array.isArray(v) && v.length > 0 ? v : []; };
+
+// ─── KPI Card ───────────────────────────────────────────────────────
+var KPI = function(props) {
+  var label = props.label, value = props.value, sub = props.sub, color = props.color || "#f59e0b", icon = props.icon, trend = props.trend;
+  return (
+    <div style={{ background:"linear-gradient(135deg,#0f1c2e,#162032)", border:"1px solid " + color + "33", borderRadius:14, padding:"18px 20px", position:"relative", overflow:"hidden" }}>
+      <div style={{ position:"absolute", top:-4, right:10, fontSize:40, opacity:.06 }}>{icon}</div>
+      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:".1em", textTransform:"uppercase", color:"#64748b", marginBottom:8 }}>{label}</div>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:700, color:color, lineHeight:1, marginBottom:4 }}>{value}</div>
+      {sub   && <div style={{ fontSize:11, color:"#64748b", fontFamily:"'DM Mono',monospace" }}>{sub}</div>}
+      {trend && <div style={{ marginTop:6, fontSize:11, color: trend > 0 ? "#10b981" : "#f43f5e", fontFamily:"'DM Mono',monospace" }}>{trend > 0 ? "▲" : "▼"} {Math.abs(trend).toFixed(1)}%</div>}
+    </div>
+  );
+};
+
+// ─── Section Title ──────────────────────────────────────────────────
+var SectionTitle = function(props) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:10, margin:"28px 0 14px" }}>
+      <div style={{ width:4, height:24, background:props.color, borderRadius:4, flexShrink:0 }} />
+      <div>
+        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700 }}>{props.title}</div>
+        {props.sub && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", letterSpacing:".06em" }}>{props.sub}</div>}
+      </div>
+    </div>
+  );
+};
+
+// ─── Tab ────────────────────────────────────────────────────────────
+var Tab = function(props) {
+  return (
+    <button onClick={props.onClick} style={{ padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:12, letterSpacing:".05em", fontWeight: props.active ? 600 : 400, background: props.active ? "#1e3a5f" : "transparent", color: props.active ? "#60a5fa" : "#64748b", borderBottom: props.active ? "2px solid #3b82f6" : "2px solid transparent", transition:"all .2s" }}>
+      {props.label}
+    </button>
+  );
+};
+
+// ─── Store Bar ──────────────────────────────────────────────────────
+var StoreBar = function(props) {
+  var s = props.store, max = props.max;
+  var pct = max > 0 ? (s.spend / max * 100).toFixed(1) : 0;
+  return (
+    <div style={{ background:"#0f1c2e", border:"1px solid " + s.color + "22", borderRadius:12, padding:"14px 16px", marginBottom:10 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+        <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, color:s.color, fontSize:13 }}>{s.name}</span>
+        <div style={{ textAlign:"right" }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12, color:"#e2e8f0" }}>{R(s.spend)}</div>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>{N(s.clicks)} cliques{s.conversions > 0 ? " · " + N(s.conversions) + " conv." : ""}</div>
+        </div>
+      </div>
+      <div style={{ height:4, background:"#1e2a3a", borderRadius:4 }}>
+        <div style={{ height:4, width:pct + "%", background:s.color, borderRadius:4, transition:"width .6s ease" }} />
+      </div>
+    </div>
+  );
+};
+
+// ─── Tooltip customizado ────────────────────────────────────────────
+var CustomTooltip = function(props) {
+  if (!props.active || !props.payload || !props.payload.length) return null;
+  return (
+    <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:8, padding:"10px 14px", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+      <div style={{ color:"#94a3b8", marginBottom:6 }}>{props.label}</div>
+      {props.payload.map(function(p, i) {
+        return (
+          <div key={i} style={{ color:p.color || p.stroke, marginBottom:3 }}>
+            {p.name}: {p.name && p.name.toLowerCase().includes("gasto") ? R(p.value) : N(p.value)}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ─── MAIN APP ───────────────────────────────────────────────────────
+function LiveDashboardApp() {
+  var initialState = useState({
+    loading: false, error: null, data: null,
+    tab: "overview", days: 30, countdown: 60
+  });
+  var state = initialState[0];
+  var setState = initialState[1];
+
+  var fetchRef = useRef(null);
+  var timerRef = useRef(null);
+
+  var load = useCallback(function(days) {
+    setState(function(s) { return Object.assign({}, s, { loading: true, error: null }); });
+    fetch("/api/live-dashboard?days=" + (days || state.days))
+      .then(function(r) {
+        if (!r.ok) return r.text().then(function(t) { throw new Error("HTTP " + r.status + ": " + t.slice(0, 120)); });
+        return r.json();
+      })
+      .then(function(data) {
+        setState(function(s) { return Object.assign({}, s, { loading: false, data: data, countdown: 60 }); });
+      })
+      .catch(function(e) {
+        setState(function(s) { return Object.assign({}, s, { loading: false, error: e.message }); });
+      });
+  }, [state.days]);
+
+  useEffect(function() {
+    load(state.days);
+  }, [state.days]);
+
+  useEffect(function() {
+    timerRef.current = setInterval(function() {
+      setState(function(s) {
+        if (s.countdown <= 1) {
+          load(s.days);
+          return Object.assign({}, s, { countdown: 60 });
+        }
+        return Object.assign({}, s, { countdown: s.countdown - 1 });
+      });
+    }, 1000);
+    return function() { clearInterval(timerRef.current); };
+  }, [load]);
+
+  var setDays = function(d) {
+    setState(function(s) { return Object.assign({}, s, { days: d }); });
+  };
+  var setTab = function(t) {
+    setState(function(s) { return Object.assign({}, s, { tab: t }); });
+  };
+
+  var d = state.data;
+  var meta    = d ? (d.meta    || {}) : {};
+  var google  = d ? (d.google  || {}) : {};
+  var totals  = d ? (d.totals  || {}) : {};
+  var proj    = d ? (d.projections || {}) : {};
+  var daily   = safeArr(d && d.daily);
+  var stores  = safeArr(google.stores);
+  var maxStore = stores.reduce(function(m, s) { return Math.max(m, s.spend); }, 0);
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#07111e" }}>
+      {/* ── Header ── */}
+      <div style={{ background:"linear-gradient(90deg,#0f1c2e,#0d1b30)", borderBottom:"1px solid #1e3a5f", padding:"16px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <a href="/" style={{ color:"#60a5fa", textDecoration:"none", fontSize:12, fontFamily:"'DM Mono',monospace" }}>← Início</a>
+          <div style={{ width:1, height:20, background:"#1e3a5f" }} />
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, background:"linear-gradient(135deg,#60a5fa,#a78bfa)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+            Live Dashboard
+          </div>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+          {/* Seletor de período */}
+          <div style={{ display:"flex", gap:6 }}>
+            {[7, 15, 30, 60, 90].map(function(n) {
+              return (
+                <button key={n} onClick={function() { setDays(n); }} style={{ padding:"4px 12px", borderRadius:6, border:"1px solid " + (state.days === n ? "#3b82f6" : "#1e3a5f"), background: state.days === n ? "#1e3a5f" : "transparent", color: state.days === n ? "#60a5fa" : "#64748b", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+                  {n}d
+                </button>
+              );
+            })}
+          </div>
+          {/* Atualizar */}
+          <button onClick={function() { load(state.days); setState(function(s) { return Object.assign({}, s, { countdown: 60 }); }); }} style={{ padding:"6px 14px", borderRadius:8, border:"1px solid #1e3a5f", background:"#0f1c2e", color:"#94a3b8", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+            ↻ Atualizar
+          </button>
+          {/* Countdown */}
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#64748b", minWidth:80, textAlign:"right" }}>
+            auto em {state.countdown}s {state.loading && <span style={{ color:"#f59e0b" }}>⟳</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabs ── */}
+      <div style={{ background:"#0d1b30", borderBottom:"1px solid #1e3a5f", padding:"0 28px", display:"flex", gap:4 }}>
+        <Tab label="Visão Geral"  active={state.tab === "overview"}    onClick={function() { setTab("overview"); }} />
+        <Tab label="Meta Ads"     active={state.tab === "meta"}        onClick={function() { setTab("meta"); }} />
+        <Tab label="Google Ads"   active={state.tab === "google"}      onClick={function() { setTab("google"); }} />
+        <Tab label="Diário"       active={state.tab === "daily"}       onClick={function() { setTab("daily"); }} />
+        <Tab label="Projeções"    active={state.tab === "projections"} onClick={function() { setTab("projections"); }} />
+      </div>
+
+      {/* ── Conteúdo ── */}
+      <div style={{ padding:"24px 28px", maxWidth:1280, margin:"0 auto" }}>
+
+        {/* Alertas de erro */}
+        {state.error && (
+          <div style={{ background:"#2d1515", border:"1px solid #f43f5e55", borderRadius:10, padding:"12px 16px", marginBottom:20, color:"#f87171", fontFamily:"'DM Mono',monospace", fontSize:12 }}>
+            ⚠ {state.error}
+          </div>
+        )}
+        {d && d.metaError && (
+          <div style={{ background:"#1c1a10", border:"1px solid #f59e0b55", borderRadius:10, padding:"10px 14px", marginBottom:12, color:"#fbbf24", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+            Meta: {d.metaError}
+          </div>
+        )}
+        {d && d.googleError && (
+          <div style={{ background:"#1c1a10", border:"1px solid #f59e0b55", borderRadius:10, padding:"10px 14px", marginBottom:12, color:"#fbbf24", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+            Google Ads: {d.googleError}
+          </div>
+        )}
+        {d && !d.googleTokenAvailable && (
+          <div style={{ background:"#0d1b2a", border:"1px solid #3b82f655", borderRadius:10, padding:"10px 14px", marginBottom:12, color:"#93c5fd", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+            ℹ Google Ads: configure GOOGLE_ADS_DEVELOPER_TOKEN para ativar dados reais
+          </div>
+        )}
+
+        {/* ══ OVERVIEW ══ */}
+        {state.tab === "overview" && (
+          <div>
+            <SectionTitle color="#a78bfa" title="Total Consolidado" sub={"Últimos " + state.days + " dias · atualizado " + (d && d.updatedAt ? d.updatedAt : "—")} />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14, marginBottom:28 }}>
+              <KPI label="Investimento Total"  value={R(totals.spend)}       icon="💰" color="#f59e0b" sub={"Meta " + R(meta.spend) + " · Google " + R(google.spend)} />
+              <KPI label="Cliques Totais"      value={N(totals.clicks)}      icon="👆" color="#3b82f6" sub={"Meta " + N(meta.clicks) + " · Google " + N(google.clicks)} />
+              <KPI label="Mensagens (Meta)"    value={N(totals.msgs)}        icon="💬" color="#10b981" sub={meta.costPerMsg > 0 ? R(meta.costPerMsg) + "/msg" : "—"} />
+              <KPI label="Conversões (Google)" value={N(totals.conversions)} icon="🎯" color="#f43f5e" sub={google.cpc > 0 ? "CPC Google " + R(google.cpc) : "—"} />
+            </div>
+
+            {/* Mini cards Meta x Google */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <div style={{ background:"linear-gradient(135deg,#0f1c2e,#162032)", border:"1px solid #3b82f633", borderRadius:14, padding:"20px" }}>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:15, color:"#3b82f6", marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ background:"#1d4ed8", borderRadius:6, padding:"3px 8px", fontSize:11 }}>META</span> Anúncios
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>Gasto</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#f59e0b" }}>{R(meta.spend)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>Cliques</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#3b82f6" }}>{N(meta.clicks)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>CPC</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#a78bfa" }}>{R(meta.cpc)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>CPM</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#06b6d4" }}>{R(meta.cpm)}</div></div>
+                </div>
+              </div>
+              <div style={{ background:"linear-gradient(135deg,#0f1c2e,#162032)", border:"1px solid #10b98133", borderRadius:14, padding:"20px" }}>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:15, color:"#10b981", marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ background:"#065f46", borderRadius:6, padding:"3px 8px", fontSize:11 }}>GOOGLE</span> Ads
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>Gasto</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#f59e0b" }}>{R(google.spend)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>Cliques</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#3b82f6" }}>{N(google.clicks)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>CPC</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#a78bfa" }}>{R(google.cpc)}</div></div>
+                  <div><div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", textTransform:"uppercase", marginBottom:3 }}>Conv.</div><div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:"#10b981" }}>{N(google.conversions)}</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ META ADS ══ */}
+        {state.tab === "meta" && (
+          <div>
+            <SectionTitle color="#3b82f6" title="Meta Ads" sub={"Facebook + Instagram · " + state.days + " dias"} />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:28 }}>
+              <KPI label="Gasto"          value={R(meta.spend)}       icon="💰" color="#f59e0b" />
+              <KPI label="Cliques"        value={N(meta.clicks)}      icon="👆" color="#3b82f6" sub={"CPC " + R(meta.cpc)} />
+              <KPI label="Impressões"     value={N(meta.impressions)} icon="👁"  color="#a78bfa" sub={"CPM " + R(meta.cpm)} />
+              <KPI label="Mensagens"      value={N(meta.msgs)}        icon="💬" color="#10b981" sub={meta.costPerMsg > 0 ? "Custo/msg " + R(meta.costPerMsg) : "—"} />
+            </div>
+            {daily.length > 0 && (
+              <div>
+                <SectionTitle color="#3b82f6" title="Evolução Diária" />
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:14, padding:"16px", marginBottom:20 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={daily} margin={{ top:5, right:10, bottom:5, left:10 }}>
+                      <defs>
+                        <linearGradient id="gradSpend" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%"  stopColor="#f59e0b" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="gradMsgs" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%"  stopColor="#10b981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="date" tick={{ fontSize:10, fill:"#64748b", fontFamily:"'DM Mono',monospace" }} interval="preserveStartEnd" />
+                      <YAxis yAxisId="spend" tick={{ fontSize:10, fill:"#64748b" }} tickFormatter={function(v) { return "R$" + (v/1000).toFixed(1) + "k"; }} />
+                      <YAxis yAxisId="msgs"  orientation="right" tick={{ fontSize:10, fill:"#64748b" }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area yAxisId="spend" type="monotone" dataKey="spend" name="Gasto (R$)" stroke="#f59e0b" fill="url(#gradSpend)" strokeWidth={2} dot={false} />
+                      <Area yAxisId="msgs"  type="monotone" dataKey="msgs"  name="Mensagens"  stroke="#10b981" fill="url(#gradMsgs)"  strokeWidth={2} dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ GOOGLE ADS ══ */}
+        {state.tab === "google" && (
+          <div>
+            <SectionTitle color="#10b981" title="Google Ads" sub={"4 Lojas · " + state.days + " dias"} />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:28 }}>
+              <KPI label="Gasto Total"    value={R(google.spend)}       icon="💰" color="#f59e0b" />
+              <KPI label="Cliques"        value={N(google.clicks)}      icon="👆" color="#3b82f6" sub={"CPC " + R(google.cpc)} />
+              <KPI label="Impressões"     value={N(google.impressions)} icon="👁"  color="#a78bfa" />
+              <KPI label="Conversões"     value={N(google.conversions)} icon="🎯" color="#10b981" />
+            </div>
+            <SectionTitle color="#10b981" title="Por Loja" />
+            {stores.length > 0
+              ? stores.map(function(s) { return <StoreBar key={s.name} store={s} max={maxStore} />; })
+              : <div style={{ color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:12, padding:"20px 0" }}>Configure GOOGLE_ADS_DEVELOPER_TOKEN para ver dados por loja.</div>
+            }
+            {stores.length > 0 && (
+              <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:14, padding:"16px", marginTop:20 }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={stores} margin={{ top:5, right:10, bottom:5, left:10 }}>
+                    <XAxis dataKey="name" tick={{ fontSize:10, fill:"#64748b", fontFamily:"'DM Mono',monospace" }} />
+                    <YAxis tick={{ fontSize:10, fill:"#64748b" }} tickFormatter={function(v) { return "R$" + (v/1000).toFixed(1) + "k"; }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="spend" name="Gasto (R$)" radius={[4,4,0,0]}>
+                      {stores.map(function(s, i) { return <Cell key={i} fill={s.color} />; })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ DIÁRIO ══ */}
+        {state.tab === "daily" && (
+          <div>
+            <SectionTitle color="#06b6d4" title="Série Diária" sub={"Meta Ads — Cliques, Gasto e Mensagens"} />
+            {daily.length > 0 ? (
+              <div>
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:14, padding:"16px", marginBottom:20 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", marginBottom:10 }}>CLIQUES / DIA</div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={daily} margin={{ top:5, right:10, bottom:5, left:10 }}>
+                      <XAxis dataKey="date" tick={{ fontSize:10, fill:"#64748b", fontFamily:"'DM Mono',monospace" }} interval="preserveStartEnd" />
+                      <YAxis tick={{ fontSize:10, fill:"#64748b" }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <ReferenceLine y={daily.reduce(function(s, d) { return s + d.clicks; }, 0) / Math.max(1, daily.length)} stroke="#334155" strokeDasharray="3 3" />
+                      <Line type="monotone" dataKey="clicks" name="Cliques" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:14, padding:"16px" }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", marginBottom:10 }}>GASTO + MENSAGENS / DIA</div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={daily} margin={{ top:5, right:10, bottom:5, left:10 }}>
+                      <XAxis dataKey="date" tick={{ fontSize:10, fill:"#64748b", fontFamily:"'DM Mono',monospace" }} interval="preserveStartEnd" />
+                      <YAxis yAxisId="spend" tick={{ fontSize:10, fill:"#64748b" }} tickFormatter={function(v) { return "R$" + v.toFixed(0); }} />
+                      <YAxis yAxisId="msgs" orientation="right" tick={{ fontSize:10, fill:"#64748b" }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line yAxisId="spend" type="monotone" dataKey="spend" name="Gasto (R$)" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                      <Line yAxisId="msgs"  type="monotone" dataKey="msgs"  name="Mensagens"  stroke="#10b981" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ) : (
+              <div style={{ color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:12, padding:"40px 0", textAlign:"center" }}>
+                {state.loading ? "Carregando..." : "Nenhum dado diário disponível."}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ PROJEÇÕES ══ */}
+        {state.tab === "projections" && (
+          <div>
+            <SectionTitle color="#a78bfa" title="Projeções Mensais" sub={"Base: ritmo dos últimos " + (proj.daysElapsed || state.days) + " dias"} />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14, marginBottom:28 }}>
+              <KPI label="Investimento / Mês"  value={R(proj.monthlySpend)}  icon="📊" color="#a78bfa" sub={R(proj.dailySpend) + "/dia (média)"} />
+              <KPI label="Cliques / Mês"       value={N(proj.monthlyClicks)} icon="👆" color="#3b82f6" sub="Projeção 30 dias" />
+              <KPI label="Mensagens / Mês"     value={N(proj.monthlyMsgs)}   icon="💬" color="#10b981" sub="Apenas Meta Ads" />
+            </div>
+
+            {/* Barra de ritmo */}
+            <div style={{ background:"#0f1c2e", border:"1px solid #a78bfa33", borderRadius:14, padding:"20px", marginBottom:20 }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", marginBottom:12, textTransform:"uppercase", letterSpacing:".08em" }}>
+                Ritmo de Investimento — {proj.daysElapsed} dias computados
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+                <div style={{ flex:1, minWidth:200 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#94a3b8" }}>Realizado até hoje</span>
+                    <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, color:"#f59e0b" }}>{R(totals.spend)}</span>
+                  </div>
+                  <div style={{ height:6, background:"#1e2a3a", borderRadius:6 }}>
+                    <div style={{ height:6, width: proj.monthlySpend > 0 ? Math.min(100, (totals.spend / proj.monthlySpend * 100)).toFixed(1) + "%" : "0%", background:"linear-gradient(90deg,#f59e0b,#f43f5e)", borderRadius:6, transition:"width .6s ease" }} />
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>0</span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b" }}>Proj. mês: {R(proj.monthlySpend)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Meta por projeção */}
+            <div style={{ background:"#0f1c2e", border:"1px solid #1e3a5f", borderRadius:14, padding:"20px" }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", marginBottom:14, textTransform:"uppercase", letterSpacing:".08em" }}>
+                Projeção vs Realizado
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+                <div style={{ textAlign:"center", padding:"14px", background:"#162032", borderRadius:10 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", marginBottom:6, textTransform:"uppercase" }}>Spend / Dia</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:700, color:"#f59e0b" }}>{R(proj.dailySpend)}</div>
+                </div>
+                <div style={{ textAlign:"center", padding:"14px", background:"#162032", borderRadius:10 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", marginBottom:6, textTransform:"uppercase" }}>Cliques / Dia</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:700, color:"#3b82f6" }}>{N(proj.monthlyClicks / 30)}</div>
+                </div>
+                <div style={{ textAlign:"center", padding:"14px", background:"#162032", borderRadius:10 }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#64748b", marginBottom:6, textTransform:"uppercase" }}>Msgs / Dia</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:700, color:"#10b981" }}>{N(proj.monthlyMsgs / 30)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        {d && (
+          <div style={{ marginTop:28, textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:10, color:"#334155" }}>
+            Atualizado às {d.updatedAt} · {state.days} dias · Cache 60s · próxima atualização em {state.countdown}s
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+var root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<LiveDashboardApp />);
+</script>
+</body>
+</html>

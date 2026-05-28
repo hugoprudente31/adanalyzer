@@ -49,6 +49,9 @@ app.use('/api/gtm', require('./src/routes/gtmAdmin.routes'));
 // ── Dashboard por loja (Meta Ads + IA) ───────────────────────
 app.use('/api/dashboard', require('./src/routes/dashboard'));
 
+// ── Live Dashboard (Meta + Google Ads em tempo real) ─────────
+app.use('/api/live-dashboard', require('./src/routes/live-dashboard'));
+
 // ── Hub de integração Kommo ↔ Sistema ────────────────────────
 app.use('/api', require('./src/integrations/index'));
 
@@ -71,6 +74,11 @@ app.get('/health', (req, res) => {
 // ── Dashboard React (componente adanalyzer-dashboard.jsx) ────
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// ── Live Dashboard ────────────────────────────────────────────
+app.get('/live', (req, res) => {
+  res.sendFile(path.join(__dirname, 'live-dashboard.html'));
 });
 
 // Serve arquivos estáticos da pasta atual
