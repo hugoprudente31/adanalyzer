@@ -133,21 +133,57 @@ var CustomTooltip = function(props) {
   );
 };
 
+// ─── Helpers de período ─────────────────────────────────────────────
+function calcPeriod(key) {
+  var today = new Date();
+  var y = today.getFullYear(), m = today.getMonth(); // m = 0-based
+
+  if (key === "mes_atual") {
+    var start = new Date(y, m, 1);
+    var label = start.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+    return { label: "Mês Atual — " + label, start: fmt(start), end: fmt(today) };
+  }
+  if (key === "mes_anterior") {
+    var start = new Date(y, m - 1, 1);
+    var end   = new Date(y, m, 0);
+    var label = start.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+    return { label: "Mês Anterior — " + label, start: fmt(start), end: fmt(end) };
+  }
+  if (key === "trimestre_anterior") {
+    var q = Math.floor(m / 3); // 0=Q1,1=Q2,2=Q3,3=Q4
+    var prevQ = q - 1;
+    var prevY = y;
+    if (prevQ < 0) { prevQ = 3; prevY = y - 1; }
+    var qStart = new Date(prevY, prevQ * 3, 1);
+    var qEnd   = new Date(prevY, prevQ * 3 + 3, 0);
+    var qNames = ["Q1","Q2","Q3","Q4"];
+    return { label: "Trimestre Anterior — " + qNames[prevQ] + "/" + prevY, start: fmt(qStart), end: fmt(qEnd) };
+  }
+  // fallback: last N days
+  var n = parseInt(key) || 30;
+  var s = new Date(today); s.setDate(s.getDate() - n + 1);
+  return { label: "Últimos " + n + " dias", start: fmt(s), end: fmt(today) };
+}
+
+function fmt(d) {
+  return d.toISOString().split("T")[0];
+}
+
 // ─── MAIN APP ───────────────────────────────────────────────────────
 function LiveDashboardApp() {
   var initialState = useState({
     loading: false, error: null, data: null,
-    tab: "overview", days: 30, countdown: 60
+    tab: "overview", periodKey: "mes_atual", countdown: 60
   });
   var state = initialState[0];
   var setState = initialState[1];
 
-  var fetchRef = useRef(null);
   var timerRef = useRef(null);
 
-  var load = useCallback(function(days) {
+  var load = useCallback(function(pKey) {
+    var p = calcPeriod(pKey || state.periodKey);
     setState(function(s) { return Object.assign({}, s, { loading: true, error: null }); });
-    fetch("/api/live-dashboard?days=" + (days || state.days))
+    fetch("/api/live-dashboard?start=" + p.start + "&end=" + p.end)
       .then(function(r) {
         if (!r.ok) return r.text().then(function(t) { throw new Error("HTTP " + r.status + ": " + t.slice(0, 120)); });
         return r.json();
@@ -158,17 +194,17 @@ function LiveDashboardApp() {
       .catch(function(e) {
         setState(function(s) { return Object.assign({}, s, { loading: false, error: e.message }); });
       });
-  }, [state.days]);
+  }, [state.periodKey]);
 
   useEffect(function() {
-    load(state.days);
-  }, [state.days]);
+    load(state.periodKey);
+  }, [state.periodKey]);
 
   useEffect(function() {
     timerRef.current = setInterval(function() {
       setState(function(s) {
         if (s.countdown <= 1) {
-          load(s.days);
+          load(s.periodKey);
           return Object.assign({}, s, { countdown: 60 });
         }
         return Object.assign({}, s, { countdown: s.countdown - 1 });
@@ -177,12 +213,14 @@ function LiveDashboardApp() {
     return function() { clearInterval(timerRef.current); };
   }, [load]);
 
-  var setDays = function(d) {
-    setState(function(s) { return Object.assign({}, s, { days: d }); });
+  var setPeriod = function(k) {
+    setState(function(s) { return Object.assign({}, s, { periodKey: k }); });
   };
   var setTab = function(t) {
     setState(function(s) { return Object.assign({}, s, { tab: t }); });
   };
+
+  var activePeriod = calcPeriod(state.periodKey);
 
   var d = state.data;
   var meta    = d ? (d.meta    || {}) : {};
@@ -204,24 +242,38 @@ function LiveDashboardApp() {
             Live Dashboard
           </div>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-          {/* Seletor de período */}
-          <div style={{ display:"flex", gap:6 }}>
-            {[7, 15, 30, 60, 90].map(function(n) {
-              return (
-                <button key={n} onClick={function() { setDays(n); }} style={{ padding:"4px 12px", borderRadius:6, border:"1px solid " + (state.days === n ? "#3b82f6" : "#1e3a5f"), background: state.days === n ? "#1e3a5f" : "transparent", color: state.days === n ? "#60a5fa" : "#64748b", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
-                  {n}d
-                </button>
-              );
-            })}
-          </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+          {/* Períodos calendário */}
+          {[
+            { key:"mes_atual",          label:"Mês Atual",           color:"#10b981" },
+            { key:"mes_anterior",       label:"Mês Anterior",        color:"#3b82f6" },
+            { key:"trimestre_anterior", label:"Trimestre Anterior",  color:"#a78bfa" },
+          ].map(function(p) {
+            var active = state.periodKey === p.key;
+            return (
+              <button key={p.key} onClick={function() { setPeriod(p.key); }} style={{ padding:"5px 14px", borderRadius:7, border:"1px solid " + (active ? p.color : "#1e3a5f"), background: active ? p.color + "22" : "transparent", color: active ? p.color : "#64748b", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11, fontWeight: active ? 700 : 400, whiteSpace:"nowrap" }}>
+                {p.label}
+              </button>
+            );
+          })}
+          {/* Separador */}
+          <div style={{ width:1, height:20, background:"#1e3a5f" }} />
+          {/* Dias rápidos */}
+          {[7, 30].map(function(n) {
+            var active = state.periodKey === String(n);
+            return (
+              <button key={n} onClick={function() { setPeriod(String(n)); }} style={{ padding:"5px 10px", borderRadius:6, border:"1px solid " + (active ? "#f59e0b" : "#1e3a5f"), background: active ? "#f59e0b22" : "transparent", color: active ? "#f59e0b" : "#64748b", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+                {n}d
+              </button>
+            );
+          })}
           {/* Atualizar */}
-          <button onClick={function() { load(state.days); setState(function(s) { return Object.assign({}, s, { countdown: 60 }); }); }} style={{ padding:"6px 14px", borderRadius:8, border:"1px solid #1e3a5f", background:"#0f1c2e", color:"#94a3b8", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
-            ↻ Atualizar
+          <button onClick={function() { load(state.periodKey); setState(function(s) { return Object.assign({}, s, { countdown: 60 }); }); }} style={{ padding:"5px 12px", borderRadius:7, border:"1px solid #1e3a5f", background:"#0f1c2e", color:"#94a3b8", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+            ↻
           </button>
           {/* Countdown */}
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#64748b", minWidth:80, textAlign:"right" }}>
-            auto em {state.countdown}s {state.loading && <span style={{ color:"#f59e0b" }}>⟳</span>}
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#64748b", minWidth:60, textAlign:"right" }}>
+            {state.loading ? <span style={{ color:"#f59e0b" }}>carregando…</span> : <span>auto {state.countdown}s</span>}
           </div>
         </div>
       </div>
@@ -263,7 +315,7 @@ function LiveDashboardApp() {
         {/* ══ OVERVIEW ══ */}
         {state.tab === "overview" && (
           <div>
-            <SectionTitle color="#a78bfa" title="Total Consolidado" sub={"Últimos " + state.days + " dias · atualizado " + (d && d.updatedAt ? d.updatedAt : "—")} />
+            <SectionTitle color="#a78bfa" title="Total Consolidado" sub={activePeriod.label + " · atualizado " + (d && d.updatedAt ? d.updatedAt : "—")} />
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14, marginBottom:28 }}>
               <KPI label="Investimento Total"  value={R(totals.spend)}       icon="💰" color="#f59e0b" sub={"Meta " + R(meta.spend) + " · Google " + R(google.spend)} />
               <KPI label="Cliques Totais"      value={N(totals.clicks)}      icon="👆" color="#3b82f6" sub={"Meta " + N(meta.clicks) + " · Google " + N(google.clicks)} />
@@ -302,7 +354,7 @@ function LiveDashboardApp() {
         {/* ══ META ADS ══ */}
         {state.tab === "meta" && (
           <div>
-            <SectionTitle color="#3b82f6" title="Meta Ads" sub={"Facebook + Instagram · " + state.days + " dias"} />
+            <SectionTitle color="#3b82f6" title="Meta Ads" sub={"Facebook + Instagram · " + activePeriod.label} />
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:28 }}>
               <KPI label="Gasto"          value={R(meta.spend)}       icon="💰" color="#f59e0b" />
               <KPI label="Cliques"        value={N(meta.clicks)}      icon="👆" color="#3b82f6" sub={"CPC " + R(meta.cpc)} />
@@ -342,7 +394,7 @@ function LiveDashboardApp() {
         {/* ══ GOOGLE ADS ══ */}
         {state.tab === "google" && (
           <div>
-            <SectionTitle color="#10b981" title="Google Ads" sub={"4 Lojas · " + state.days + " dias"} />
+            <SectionTitle color="#10b981" title="Google Ads" sub={"4 Lojas · " + activePeriod.label} />
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:28 }}>
               <KPI label="Gasto Total"    value={R(google.spend)}       icon="💰" color="#f59e0b" />
               <KPI label="Cliques"        value={N(google.clicks)}      icon="👆" color="#3b82f6" sub={"CPC " + R(google.cpc)} />
@@ -414,7 +466,7 @@ function LiveDashboardApp() {
         {/* ══ PROJEÇÕES ══ */}
         {state.tab === "projections" && (
           <div>
-            <SectionTitle color="#a78bfa" title="Projeções Mensais" sub={"Base: ritmo dos últimos " + (proj.daysElapsed || state.days) + " dias"} />
+            <SectionTitle color="#a78bfa" title="Projeções Mensais" sub={"Base: " + activePeriod.label + " · " + (proj.daysElapsed || 1) + " dias computados"} />
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14, marginBottom:28 }}>
               <KPI label="Investimento / Mês"  value={R(proj.monthlySpend)}  icon="📊" color="#a78bfa" sub={R(proj.dailySpend) + "/dia (média)"} />
               <KPI label="Cliques / Mês"       value={N(proj.monthlyClicks)} icon="👆" color="#3b82f6" sub="Projeção 30 dias" />
@@ -469,7 +521,7 @@ function LiveDashboardApp() {
         {/* Footer */}
         {d && (
           <div style={{ marginTop:28, textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:10, color:"#334155" }}>
-            Atualizado às {d.updatedAt} · {state.days} dias · Cache 60s · próxima atualização em {state.countdown}s
+            Atualizado às {d.updatedAt} · {activePeriod.label} · Cache 60s · próxima atualização em {state.countdown}s
           </div>
         )}
       </div>

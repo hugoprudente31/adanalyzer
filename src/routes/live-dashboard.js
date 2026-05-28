@@ -190,16 +190,21 @@ function calcProjections(meta, google, startDate) {
   };
 }
 
-// GET /api/live-dashboard?days=30
+// GET /api/live-dashboard?days=30  OU  ?start=YYYY-MM-DD&end=YYYY-MM-DD
 router.get('/', async (req, res) => {
-  const days = Math.min(90, Math.max(1, parseInt(req.query.days || '30')));
+  let startDate, endDate;
 
-  const end   = new Date();
-  const start = new Date(end);
-  start.setDate(start.getDate() - days + 1);
-
-  const startDate = start.toISOString().split('T')[0];
-  const endDate   = end.toISOString().split('T')[0];
+  if (req.query.start && req.query.end) {
+    startDate = req.query.start;
+    endDate   = req.query.end;
+  } else {
+    const days = Math.min(365, Math.max(1, parseInt(req.query.days || '30')));
+    const end   = new Date();
+    const start = new Date(end);
+    start.setDate(start.getDate() - days + 1);
+    startDate = start.toISOString().split('T')[0];
+    endDate   = end.toISOString().split('T')[0];
+  }
 
   const cKey   = `live_${startDate}_${endDate}`;
   const cached = getCached(cKey);
@@ -269,7 +274,7 @@ router.get('/', async (req, res) => {
       daily,
       totals,
       projections:          calcProjections(meta, google, startDate),
-      period:               { startDate, endDate, days },
+      period:               { startDate, endDate },
       updatedAt:            new Date().toLocaleTimeString('pt-BR'),
       googleTokenAvailable: !!googleToken,
       ...(metaError   ? { metaError }   : {}),
