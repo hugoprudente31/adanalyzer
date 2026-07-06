@@ -55,6 +55,12 @@ app.use('/api/live-dashboard', require('./src/routes/live-dashboard'));
 // ── Hub de integração Kommo ↔ Sistema ────────────────────────
 app.use('/api', require('./src/integrations/index'));
 
+// ── Sync diário de desempenho de anúncios → github-sistema ──
+require('./src/jobs/syncGithubSistema').start();
+
+// ── DIAGNÓSTICO TEMPORÁRIO — testar conectividade com a API do Kondado ──
+app.use('/api', require('./src/routes/diagKondado'));
+
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
