@@ -26,6 +26,7 @@ const PORT = process.env.PORT || 3000;
 // ── Configurações ─────────────────────────────────────────────
 const GAS_URL     = process.env.GAS_URL || '';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@empresa.com';
+const schedulingSystem = require('./src/services/schedulingSystem');
 
 // ── Middlewares ───────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ads.oticastgt.com.br').split(',').map(value => value.trim()).filter(Boolean);
@@ -151,6 +152,18 @@ app.get('/api/gas', async (req, res) => {
   } catch(err) {
     console.error('[GAS] Erro:', err.message);
     res.status(500).json({ ok: false, erro: err.message });
+  }
+});
+
+// PostgreSQL scheduling metrics through the authenticated scheduling API.
+app.get('/api/scheduling-performance', async (req, res) => {
+  try {
+    const end = String(req.query.end || new Date().toISOString().slice(0, 10));
+    const start = String(req.query.start || `${end.slice(0, 8)}01`);
+    res.json(await schedulingSystem.getMarketingPerformance(start, end));
+  } catch (err) {
+    console.error('[SchedulingSystem] Erro:', err.message);
+    res.status(502).json({ ok: false, error: 'Sistema de agendamento indisponível' });
   }
 });
 

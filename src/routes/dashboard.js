@@ -9,6 +9,7 @@ const router  = express.Router();
 const { runAlerts }      = require("../modules/optimizationAlerts");
 const { generateReport } = require("../modules/performanceReport");
 const metaAds            = require("../services/metaAds");
+const schedulingSystem   = require("../services/schedulingSystem");
 
 // Cache em memória (5 minutos) — rotas existentes
 const cache = new Map();
@@ -205,6 +206,8 @@ router.get("/", async (req, res) => {
       if (r.status !== "fulfilled") return s;
       return s + r.value.reduce((rs, row) => rs + parseFloat(row.Conversions || row.conversions || 0), 0);
     }, 0);
+    const schedulingResult = await Promise.allSettled([schedulingSystem.getMarketingPerformance(start, end)]);
+    const scheduling = schedulingResult[0].status === "fulfilled" ? schedulingResult[0].value : null;
 
     const result = {
       meta: {
@@ -219,9 +222,11 @@ router.get("/", async (req, res) => {
       },
       google: { spend: gSpend, clicks: gClicks, impressions: 0, conversions: gConversions, cpc: gClicks > 0 ? gSpend / gClicks : 0, stores },
       daily,
+      scheduling,
       updatedAt: new Date().toLocaleTimeString("pt-BR"),
       ...(metaError ? { metaError } : {}),
       googleError: googleRes.find(r => r.status === "rejected")?.reason?.message || null,
+      schedulingError: schedulingResult[0].status === "rejected" ? schedulingResult[0].reason?.message : null,
     };
 
     setDashCached(cKey, result);
