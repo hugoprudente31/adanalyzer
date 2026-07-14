@@ -123,14 +123,15 @@ Retorne SOMENTE este JSON:
   }
 }
 
-async function runAlerts(campaigns, previousCampaigns = []) {
+async function runAlerts(campaigns, previousCampaigns = [], options = {}) {
   const report     = generateReport(campaigns, previousCampaigns);
   const ruleAlerts = generateRuleAlerts(report);
-  const aiInsights = await generateAIInsights(report);
+  const aiInsights = options.enableAI === true ? await generateAIInsights(report) : null;
 
   return {
     report,
     alerts:     ruleAlerts,
+    aiEnabled:  options.enableAI === true,
     aiInsights: aiInsights || { summary: "Análise indisponível.", recommendations: [] },
     summary: {
       critical: ruleAlerts.filter((a) => a.severity === "critical").length,

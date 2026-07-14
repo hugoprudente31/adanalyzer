@@ -85,7 +85,7 @@ async function fetchGoogleAdsStore(accessToken, customerId, startDate, endDate) 
   if (managerId) headers['login-customer-id'] = managerId;
 
   const res = await fetch(
-    `https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:search`,
+    `https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:search`,
     { method: 'POST', headers, body: JSON.stringify({ query }) }
   );
 

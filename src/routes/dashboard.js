@@ -295,7 +295,7 @@ router.get("/alerts", async (req, res) => {
     if (cached) return res.json(cached);
 
     const campaigns = await fetchCampaigns(parseDateParams(req.query));
-    const result    = await runAlerts(campaigns);
+    const result    = await runAlerts(campaigns, [], { enableAI: req.query.ai === "1" });
 
     setCached(key, result);
     res.json(result);
