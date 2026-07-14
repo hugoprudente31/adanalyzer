@@ -305,11 +305,26 @@ app.get('/studio/*', (req, res) => {
 
 // ── Status ────────────────────────────────────────────────────
 app.get('/api/status', (req, res) => {
+  const googleDirectMissing = [
+    'GOOGLE_ADS_DEVELOPER_TOKEN',
+    'GOOGLE_ADS_MANAGER_ID',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_REFRESH_TOKEN'
+  ].filter((name) => !process.env[name]);
   res.json({
     ok:      true,
     versao:  '1.0.0',
     gas_url: GAS_URL.replace(/AKfycbx[^/]+/, 'AKfycbx***'),
     admin:   ADMIN_EMAIL,
+    integrations: {
+      metaOfficial: !!process.env.META_ACCESS_TOKEN && !!process.env.META_AD_ACCOUNT_ID,
+      googleAdsOfficial: googleDirectMissing.length === 0,
+      googleAdsMissing: googleDirectMissing,
+      schedulingPostgresql: !!process.env.SCHEDULING_SYSTEM_API_URL && !!process.env.ADANALYZER_SYNC_KEY,
+      claudeOnDemand: !!process.env.ANTHROPIC_API_KEY,
+      supermetricsFallback: !!process.env.SUPERMETRICS_API_KEY
+    },
     rotas: [
       'GET  /api/gas?format=roi&dias=30  → ROI do Agendamento',
       'GET  /api/gas?format=json         → Campanhas GAS',
