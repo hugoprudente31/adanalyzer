@@ -5,6 +5,7 @@ const router  = express.Router();
 
 const { syncAgendamentoToKommo }    = require("./flows/gasToKommo");
 const { triggerAgendamentoFromKommo } = require("./flows/kommoToGas");
+const { requireWebhookSecret } = require("../middleware/security");
 
 // GET /api/integration/health
 router.get("/integration/health", (req, res) => {
@@ -18,7 +19,7 @@ router.get("/integration/health", (req, res) => {
 });
 
 // POST /api/webhook/kommo — recebe eventos do Kommo (inbox, pipeline, etc.)
-router.post("/webhook/kommo", async (req, res) => {
+router.post("/webhook/kommo", requireWebhookSecret, async (req, res) => {
   // Sempre responde 200 para o Kommo não parar de enviar
   res.status(200).json({ received: true });
 
@@ -34,7 +35,7 @@ router.post("/webhook/kommo", async (req, res) => {
 });
 
 // POST /api/webhook/gas — recebe eventos do sistema de agendamento
-router.post("/webhook/gas", async (req, res) => {
+router.post("/webhook/gas", requireWebhookSecret, async (req, res) => {
   res.status(200).json({ received: true });
 
   const payload = req.body;

@@ -58,13 +58,6 @@ router.get("/google/callback", async (req, res) => {
     console.log("[Google OAuth] ✅ Tokens obtidos");
     console.log("[Google OAuth] Refresh token:", tokens.refresh_token ? "✅ recebido" : "⚠️ não recebido");
 
-    if (tokens.refresh_token) {
-      console.log("\n========================================");
-      console.log("GOOGLE_REFRESH_TOKEN =", tokens.refresh_token);
-      console.log("Adicione esta variável no Railway!");
-      console.log("========================================\n");
-    }
-
     res.redirect("/?google_auth=success");
   } catch (err) {
     console.error("[Google OAuth Error]", err.message);

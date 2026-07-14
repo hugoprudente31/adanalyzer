@@ -15,18 +15,31 @@ const express = require('express');
 const fetch   = require('node-fetch');
 const cors    = require('cors');
 const path    = require('path');
+const helmet  = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { basicAuth } = require('./src/middleware/security');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
 
 // ── Configurações ─────────────────────────────────────────────
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbxDyY44dANjV7cyH4Jc1O7xgNuX7zr3-hrM7a15bCgRecoeKxW5ZUrSEBj0P6P9upTcdA/exec';
-const ADMIN_EMAIL = 'admin@empresa.com';
+const GAS_URL     = process.env.GAS_URL || '';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@empresa.com';
 
 // ── Middlewares ───────────────────────────────────────────────
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ads.oticastgt.com.br').split(',').map(value => value.trim()).filter(Boolean);
+app.set('trust proxy', 1);
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(cors({ origin(origin, callback) {
+  if (!origin || allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin))) return callback(null, true);
+  callback(new Error('Origem não permitida'));
+}, credentials: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false }));
+app.use('/api/claude', rateLimit({ windowMs: 60_000, limit: 10 }));
+app.use('/api/openai', rateLimit({ windowMs: 60_000, limit: 5 }));
+app.use(basicAuth);
 
 // ── Rotas Meta Ads (Graph API completa) ──────────────────────
 app.use('/api/meta/v2', require('./src/routes/metaAds'));
@@ -57,9 +70,6 @@ app.use('/api', require('./src/integrations/index'));
 
 // ── Sync diário de desempenho de anúncios → github-sistema ──
 require('./src/jobs/syncGithubSistema').start();
-
-// ── DIAGNÓSTICO TEMPORÁRIO — testar conectividade com a API do Kondado ──
-app.use('/api', require('./src/routes/diagKondado'));
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
