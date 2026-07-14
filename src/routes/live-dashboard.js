@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const schedulingSystem = require('../services/schedulingSystem');
 
 const STORES = [
   { id: '9212873095',  name: 'Gonzaga',       color: '#f59e0b' },
@@ -223,6 +224,9 @@ router.get('/', async (req, res) => {
 
     const metaError = metaRes.status === 'rejected' ? metaRes.reason?.message : null;
     const daily     = dailyRes.status === 'fulfilled' ? dailyRes.value : [];
+    const schedulingRes = await Promise.allSettled([schedulingSystem.getMarketingPerformance(startDate, endDate)]);
+    const scheduling = schedulingRes[0].status === 'fulfilled' ? schedulingRes[0].value : null;
+    const schedulingError = schedulingRes[0].status === 'rejected' ? schedulingRes[0].reason?.message : null;
 
     // ── Google Ads ─────────────────────────────────────────────────
     let googleStores = STORES.map(s => ({ ...s, spend: 0, clicks: 0, impressions: 0, conversions: 0 }));
@@ -273,12 +277,14 @@ router.get('/', async (req, res) => {
       google,
       daily,
       totals,
+      scheduling,
       projections:          calcProjections(meta, google, startDate),
       period:               { startDate, endDate },
       updatedAt:            new Date().toLocaleTimeString('pt-BR'),
       googleTokenAvailable: !!googleToken,
       ...(metaError   ? { metaError }   : {}),
       ...(googleError ? { googleError } : {}),
+      ...(schedulingError ? { schedulingError } : {}),
     };
 
     setCached(cKey, result);
