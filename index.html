@@ -2031,7 +2031,7 @@ function renderizarROI(dados) {
   setText('roi-ticket-medio', `Ticket: ${moeda(r.ticketMedio)}`);
 
   // ROI calculado (cruzando com gastos do Meta/Google se disponíveis)
-  const gastoMeta   = (estadoApp.dadosAnalise?.resumo?.totalGastos || 0);
+  const gastoMeta   = campanhas().reduce((s, c) => s + (c.gastos || 0), 0);
   const receitaTotal = r.totalReceita || 0;
   if (gastoMeta > 0 && receitaTotal > 0) {
     const roiPct  = ((receitaTotal - gastoMeta) / gastoMeta * 100).toFixed(0);
