@@ -51,8 +51,8 @@ async function refreshGoogleToken() {
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
       client_id:     clientId,
       client_secret: clientSecret,
       refresh_token: refreshToken,
