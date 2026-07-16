@@ -166,9 +166,9 @@ select.inp{cursor:pointer}
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════
      APP SHELL
-══════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════ -->
 <div class="app">
 
 <!-- TOPBAR -->
@@ -179,8 +179,8 @@ select.inp{cursor:pointer}
   <span style="font-size:12px;color:var(--muted)">Workspace:</span>
   <select class="tenant-select" id="workspace-select" onchange="trocarWorkspace(this.value)">
     <option value="0">🏢 Agência Principal</option>
-    <option value="1">👤 Cliente: E-commerce X</option>
-    <option value="2">👤 Cliente: Clínica Y</option>
+    <option value="1">🛍️ Cliente: E-commerce X</option>
+    <option value="2">🏥 Cliente: Clínica Y</option>
     <option value="3">➕ Adicionar workspace...</option>
   </select>
   <div class="topbar-right">
@@ -199,19 +199,19 @@ select.inp{cursor:pointer}
     <span>🤖</span> Analisar com IA
   </div>
   <div class="nav-item" onclick="navTo('campaigns',this)" title="Configure objetivos de campanha">
-    <span>📊</span> Campanhas
+    <span>📋</span> Campanhas
     <span style="font-size:9px;background:rgba(91,94,244,.2);color:var(--accentL);padding:1px 5px;border-radius:99px;margin-left:auto">ROI</span>
   </div>
   <div class="nav-item" onclick="navTo('reports',this)">
-    <span>📋</span> Relatórios
+    <span>📊</span> Relatórios
   </div>
   <div class="nav-item" onclick="navTo('roi',this)">
-    <span>📊</span> ROI Real
+    <span>💰</span> ROI Real
   </div>
 
   <div class="nav-section">CONTAS</div>
   <div class="nav-item" onclick="navTo('integrations',this)">
-    <span>🔑</span> Integrações
+    <span>🔌</span> Integrações
   </div>
   <div class="nav-item" onclick="navTo('alerts',this)">
     <span>🔔</span> Alertas
@@ -236,7 +236,7 @@ select.inp{cursor:pointer}
 <!-- MAIN -->
 <main class="main" id="main">
 
-<!-- ══════════════════════════════════ VIEW: DASHBOARD -->
+<!-- ═══════════════════════════════════ VIEW: DASHBOARD -->
 <div class="view active" id="view-dashboard">
   <div class="row-between" style="margin-bottom:20px">
     <div>
@@ -275,7 +275,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: ANALYZE -->
+<!-- ═══════════════════════════════════ VIEW: ANALYZE -->
 <div class="view" id="view-analyze">
   <div class="page-title">Análise Inteligente com IA</div>
   <div class="page-sub">Cole os dados das campanhas e deixe o Claude analisar em tempo real</div>
@@ -312,7 +312,7 @@ select.inp{cursor:pointer}
 
       <!-- Ações rápidas geradas pelas regras -->
       <div class="card">
-        <div class="section-title">⚙️ Diagnóstico Rápido (Regras)</div>
+        <div class="section-title">⚡️ Diagnóstico Rápido (Regras)</div>
         <div id="quick-actions" class="stack"></div>
       </div>
     </div>
@@ -343,7 +343,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: CAMPAIGNS -->
+<!-- ═══════════════════════════════════ VIEW: CAMPAIGNS -->
 <div class="view" id="view-campaigns">
   <div class="row-between" style="margin-bottom:16px">
     <div>
@@ -413,7 +413,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: INTEGRATIONS -->
+<!-- ═══════════════════════════════════ VIEW: INTEGRATIONS -->
 <div class="view" id="view-integrations">
   <div class="page-title">Integrações de API</div>
   <div class="page-sub">Configure os tokens de acesso para cada plataforma de anúncios</div>
@@ -456,27 +456,27 @@ select.inp{cursor:pointer}
         <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;font-size:20px">🔍</div>
         <div>
           <div style="font-weight:600">Google Ads</div>
-          <div class="text-sm text-muted">Não configurado</div>
+          <div id="google-ads-status" class="text-sm text-muted">Verificando configuração...</div>
         </div>
-        <div style="margin-left:auto"><span class="badge badge-red">Desconectado</span></div>
+        <div style="margin-left:auto" id="google-ads-badge"><span class="badge badge-red">Desconectado</span></div>
       </div>
       <div class="stack">
         <div>
-          <label>Developer Token</label>
-          <input class="inp inp-mono" type="password" placeholder="xxxxxxxxxxxxxxxxxxxxxx"/>
+          <label>Conta administradora (MCC)</label>
+          <input class="inp inp-mono" value="3629216923" readonly/>
         </div>
         <div>
-          <label>Customer ID</label>
-          <input class="inp inp-mono" placeholder="1234567890"/>
+          <label>Contas monitoradas</label>
+          <div id="google-ads-accounts" class="inp inp-mono" style="height:auto;min-height:42px;color:var(--muted)">Carregando...</div>
         </div>
-        <div>
-          <label>Refresh Token</label>
-          <input class="inp inp-mono" type="password" placeholder="1//xxxxxxxxxxxxx"/>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary flex-1" id="btn-conectar-google-ads" onclick="conectarGoogleAds()">Autorizar Google Ads</button>
+          <button class="btn btn-ghost" id="btn-sync-google-ads" onclick="sincronizarGoogleAds()">Sincronizar</button>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center">Conectar Google Ads</button>
         <div class="divider"></div>
         <div style="font-size:11px;color:var(--muted)">
-          💡 Gere o Refresh Token via OAuth Playground com scope <span class="font-mono">https://www.googleapis.com/auth/adwords</span>
+          🔒 Developer Token, Client Secret e Refresh Token ficam protegidos no Railway e nunca são enviados ao navegador.<br>
+          A integração consulta campanhas e métricas em modo somente leitura.
         </div>
       </div>
     </div>
@@ -507,7 +507,7 @@ select.inp{cursor:pointer}
         1. Acesse <span class="font-mono" style="color:var(--accentL)">console.anthropic.com</span><br>
         2. Menu → <span class="font-mono">API Keys</span> → <span class="font-mono">Create Key</span><br>
         3. Copie a chave e cole aqui<br><br>
-        🔒 A chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para servidores externos.
+        🔐 A chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para servidores externos.
       </div>
     </div>
   </div>
@@ -527,7 +527,7 @@ select.inp{cursor:pointer}
       <div>
         <label>URL do Web App GAS</label>
         <input class="inp inp-mono" id="int-gas-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
-      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
+      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✓ URL embutida no software — sem configuração necessária</div>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-primary flex-1" id="btn-conectar-gas" onclick="conectarGAS()">Sincronizar Agora</button>
@@ -552,7 +552,7 @@ select.inp{cursor:pointer}
   <!-- ROI Real card -->
   <div class="card" style="margin-top:16px;border-color:rgba(245,158,11,.3)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:20px">📅</div>
       <div>
         <div style="font-weight:600">ROI Real — Sistema de Agendamento</div>
         <div id="roi-status" class="text-sm text-muted">Não configurado</div>
@@ -563,7 +563,7 @@ select.inp{cursor:pointer}
       <div>
         <label>URL do Sistema de Agendamento (GAS)</label>
         <input class="inp inp-mono" id="int-roi-url" value="https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec" style="color:var(--green);opacity:.7" readonly/>
-      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✅ URL embutida no software — sem configuração necessária</div>
+      <div style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:4px">✓ URL embutida no software — sem configuração necessária</div>
       </div>
       <div>
         <label>Período de análise (dias)</label>
@@ -590,13 +590,13 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: ALERTS -->
+<!-- ═══════════════════════════════════ VIEW: ALERTS -->
 <div class="view" id="view-alerts">
   <div class="page-title">Alertas Automáticos</div>
   <div class="page-sub">Configure gatilhos para ser notificado quando algo fugir da meta</div>
   <div class="grid-2">
     <div class="card">
-      <div class="section-title">🔔 Regras de Alerta</div>
+      <div class="section-title">📋 Regras de Alerta</div>
       <div class="stack" id="alert-rules">
         <div class="card-sm row-between">
           <div><div style="font-weight:500;font-size:13px">CPA &gt; Meta em 20%</div><div class="text-sm text-muted">Notificar quando CPA ultrapassar</div></div>
@@ -621,7 +621,7 @@ select.inp{cursor:pointer}
       </div>
     </div>
     <div class="card">
-      <div class="section-title">📬 Canais de Notificação</div>
+      <div class="section-title">💬 Canais de Notificação</div>
       <div class="stack">
         <div><label>E-mail</label><input class="inp" type="email" placeholder="contato@agencia.com"/></div>
         <div><label>Webhook Slack (opcional)</label><input class="inp inp-mono" placeholder="https://hooks.slack.com/..."/></div>
@@ -636,7 +636,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: WORKSPACE -->
+<!-- ═══════════════════════════════════ VIEW: WORKSPACE -->
 <div class="view" id="view-workspace">
   <div class="page-title">Workspace — Agência Principal</div>
   <div class="page-sub">Gerencie clientes, membros e permissões</div>
@@ -670,7 +670,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: BILLING -->
+<!-- ═══════════════════════════════════ VIEW: BILLING -->
 <div class="view" id="view-billing">
   <div class="page-title">Planos</div>
   <div class="page-sub">Você está no plano <strong style="color:var(--accentL)">PRO</strong>. Próxima cobrança: 16/06/2026</div>
@@ -714,7 +714,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: ROI REAL -->
+<!-- ═══════════════════════════════════ VIEW: ROI REAL -->
 <div class="view" id="view-roi">
   <div class="row-between" style="margin-bottom:20px">
     <div>
@@ -727,24 +727,24 @@ select.inp{cursor:pointer}
   <!-- Cards de resumo geral -->
   <div class="grid-4" id="roi-resumo-cards" style="margin-bottom:16px">
     <div class="card">
-      <div class="metric-label">💸 TOTAL LEADS</div>
-      <div class="metric-val text-text" id="roi-total-leads">—</div>
+      <div class="metric-label">👥 TOTAL LEADS</div>
+      <div class="metric-val text-text" id="roi-total-leads">–</div>
       <div class="metric-sub text-muted">período selecionado</div>
     </div>
     <div class="card">
       <div class="metric-label">✅ CONVERTIDOS</div>
-      <div class="metric-val text-success" id="roi-total-conv">—</div>
-      <div class="metric-sub text-muted" id="roi-taxa-geral">Taxa: —%</div>
+      <div class="metric-val text-success" id="roi-total-conv">–</div>
+      <div class="metric-sub text-muted" id="roi-taxa-geral">Taxa: –%</div>
     </div>
     <div class="card">
       <div class="metric-label">💰 RECEITA REAL</div>
-      <div class="metric-val text-yellow" id="roi-receita-total">R$ —</div>
-      <div class="metric-sub text-muted" id="roi-ticket-medio">Ticket: R$ —</div>
+      <div class="metric-val text-yellow" id="roi-receita-total">R$ –</div>
+      <div class="metric-sub text-muted" id="roi-ticket-medio">Ticket: R$ –</div>
     </div>
     <div class="card">
-      <div class="metric-label">📈 ROI CALCULADO</div>
-      <div class="metric-val" id="roi-calculado" style="color:var(--accentL)">—</div>
-      <div class="metric-sub text-muted" id="roi-roas-real">ROAS real: —x</div>
+      <div class="metric-label">📊 ROI CALCULADO</div>
+      <div class="metric-val" id="roi-calculado" style="color:var(--accentL)">–</div>
+      <div class="metric-sub text-muted" id="roi-roas-real">ROAS real: –x</div>
     </div>
   </div>
 
@@ -797,7 +797,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
-<!-- ══════════════════════════════════ VIEW: REPORTS -->
+<!-- ═══════════════════════════════════ VIEW: REPORTS -->
 <div class="view" id="view-reports">
   <div class="page-title">Relatórios</div>
   <div class="page-sub">Histórico de análises e relatórios gerados pela IA</div>
@@ -831,13 +831,13 @@ select.inp{cursor:pointer}
 <!-- Toast container -->
 <div id="toast-wrap"></div>
 
-<!-- ══════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════
      JAVASCRIPT
-══════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════ -->
 <script>
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // DADOS DE CAMPANHAS (simulados / substituir pela API real)
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 const WORKSPACES = [
   {
     nome: 'Agência Principal',
@@ -884,9 +884,9 @@ let chartProj = null;
 function workspace() { return WORKSPACES[wsIdx]; }
 function campanhas() { return workspace().campanhas; }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // NAVEGAÇÃO
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function navTo(id, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -905,9 +905,9 @@ function trocarWorkspace(val) {
   document.getElementById('dash-subtitle').textContent = workspace().nome + ' · últimos 7 dias · ' + campanhas().length + ' campanhas';
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // DASHBOARD
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function renderDashboard() {
   const camps = campanhas();
   const totalGasto = camps.reduce((s,c) => s + c.gastos, 0);
@@ -1042,10 +1042,10 @@ function renderChartRoas(camps) {
   });
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CAMPANHAS TABLE
-// ══════════════════════════════════════════════════════
-// ── Objetivos salvos por campanha ────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ── Objetivos salvos por campanha ──────────────────────────
 // Estrutura: { [campId]: { objetivo, valorConv, ticketMedio, taxaConv } }
 let objetivosCampanhas = JSON.parse(localStorage.getItem('objetivos_campanhas') || '{}');
 
@@ -1215,9 +1215,9 @@ function salvarObjetivosCampanhas() {
   renderDashboard(); // atualiza dashboard com novos cálculos
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ANÁLISE COM IA
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function renderAnalyze() {
   const sel = document.getElementById('camp-select');
   sel.innerHTML = campanhas().map(c =>
@@ -1284,7 +1284,7 @@ async function rodarAnaliseIA() {
     orcamento_diario: c.orcamento, utilizacao_budget_percent: +((c.gastos/c.orcamento/7)*100).toFixed(1)
   })), null, 2);
 
-  const systemPrompt = `Você é um Especialista Sênior em Tráfego Pago com 10+ anos de experiência em Meta Ads e Google Ads. 
+  const systemPrompt = `Você é um Especialista Sênior em Tráfego Pago com 10+ anos de experiência em Meta Ads e Google Ads.
 Analise os dados de campanhas fornecidos com profundidade técnica e responda em português brasileiro.
 
 Sua resposta deve ser estruturada com estes blocos:
@@ -1364,7 +1364,7 @@ Por favor, analise e forneça recomendações práticas e priorizadas.`;
 
     const texto = data.content.map(b => b.text || '').join('');
     await streamText(out, texto);
-    statusBadge.innerHTML = '<span class="badge badge-green">● Análise concluída</span>';
+    statusBadge.innerHTML = '<span class="badge badge-green">✔ Análise concluída</span>';
     renderProjecao(campsSelec, metaROAS);
 
     // Salva análise no histórico (localStorage)
@@ -1374,8 +1374,8 @@ Por favor, analise e forneça recomendações práticas e priorizadas.`;
 
   } catch(e) {
     console.error('Claude API error:', e);
-    statusBadge.innerHTML = '<span class="badge badge-red">● Erro</span>';
-    out.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
+    statusBadge.innerHTML = '<span class="badge badge-red">✖ Erro</span>';
+    out.innerHTML = `<span style="color:var(--red)">⚠ ${e.message}</span>`;
     toast('Erro: ' + e.message, 'red');
   } finally {
     btn.disabled = false;
@@ -1518,10 +1518,10 @@ function renderProjecao(camps, metaROAS) {
   });
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO DO SISTEMA DE AGENDAMENTO
 // URL de implantação embutida — não precisa configurar
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 // URL do próprio projeto GAS — injetada pelo AdAnalyzer.gs via template
 // Quando rodando dentro do GAS, <?= gasUrl ?> é substituído pela URL real
@@ -1535,11 +1535,11 @@ const GAS_ADMIN_EMAIL = 'admin@empresa.com';
   return 'https://script.google.com/macros/s/AKfycbwusw7yxivIppa5HgQonOhSIBVk15rGRvn9L1DZL644kvDrINPQPEGiJIHkWF7wa-vzGA/exec';
 })();
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CORS PROXY — necessário para chamar GAS do navegador
 // O GAS não inclui header Access-Control-Allow-Origin,
 // então usamos um proxy que adiciona esse header.
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 /**
  * Envolve uma URL do GAS num proxy CORS público.
@@ -1597,9 +1597,9 @@ async function fetchGAS(url) {
   throw new Error('Use o abrir.bat para acesso local.');
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ESTADO DA INTEGRAÇÃO META
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 let metaState = {
   token:   localStorage.getItem('meta_token')   || '',
   account: localStorage.getItem('meta_account') || '',
@@ -1615,9 +1615,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CONECTAR META — valida token e busca campanhas reais
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 async function conectarMeta() {
   const token   = document.getElementById('int-meta-token').value.trim();
   const account = document.getElementById('int-meta-account').value.trim();
@@ -1658,7 +1658,7 @@ async function conectarMeta() {
 
     // Atualiza UI
     document.getElementById('meta-badge').innerHTML =
-      '<span class="badge badge-green">● Conectado</span>';
+      '<span class="badge badge-green">✔ Conectado</span>';
     document.getElementById('meta-status').textContent =
       `${accData.name} · ${accData.currency}`;
 
@@ -1670,15 +1670,15 @@ async function conectarMeta() {
   } catch(e) {
     toast('Erro: ' + e.message, 'red');
     document.getElementById('meta-badge').innerHTML =
-      '<span class="badge badge-red">● Erro</span>';
+      '<span class="badge badge-red">✖ Erro</span>';
   } finally {
     setBtnLoading('btn-conectar-meta', false, 'Conectar');
   }
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // TESTAR TOKEN — verificação rápida sem buscar campanhas
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 async function testarMeta() {
   const token = document.getElementById('int-meta-token').value.trim();
   if (!token) { toast('Insira o token primeiro', 'yellow'); return; }
@@ -1705,9 +1705,9 @@ async function testarMeta() {
   }
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // SINCRONIZAR — busca campanhas e insights da Meta API
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 async function sincronizarMetaAds() {
   if (!metaState.token || !metaState.account) {
     toast('Configure a integração Meta Ads primeiro', 'yellow');
@@ -1718,7 +1718,7 @@ async function sincronizarMetaAds() {
   const btn    = document.getElementById('btn-sync');
   const status = document.getElementById('sync-status');
   if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Buscando...'; }
-  if (status) { status.textContent = '⟳ Conectando à Meta API...'; status.style.color = 'var(--yellow)'; }
+  if (status) { status.textContent = '⏳ Conectando à Meta API...'; status.style.color = 'var(--yellow)'; }
 
   try {
     // ── Passo 1: busca campanhas via GET (nunca POST para leitura) ──
@@ -1739,7 +1739,7 @@ async function sincronizarMetaAds() {
       return;
     }
 
-    if (status) status.textContent = `⟳ Buscando insights de ${todasCampanhas.length} campanhas...`;
+    if (status) status.textContent = `⏳ Buscando insights de ${todasCampanhas.length} campanhas...`;
 
     // ── Passo 2: busca insights de cada campanha (últimos 7 dias) ──
     const campanhasComInsights = await Promise.all(
@@ -1771,10 +1771,10 @@ async function sincronizarMetaAds() {
   }
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // BUSCAR INSIGHTS — métricas reais por campanha
 // Suporta: Conversão, Leads, WhatsApp, Mensagens, Tráfego
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 async function buscarInsightsCampanha(campanha) {
   // Todos os tipos de conversão/resultado do Meta Ads
   // Cobre: Compras, Leads, WhatsApp, Mensagens, Registros, Contatos
@@ -1867,7 +1867,7 @@ async function buscarInsightsCampanha(campanha) {
     const roas = gastos     > 0 ? valorConv/gastos         : 0;
     const cvr  = cliques    > 0 ? (conversoes/cliques)*100 : 0;
 
-    console.log(`[${campanha.name}] ✅ gastos=${gastos} conv=${conversoes} cpa=${cpa.toFixed(2)} roas=${roas.toFixed(2)}`);
+    console.log(`[${campanha.name}] → gastos=${gastos} conv=${conversoes} cpa=${cpa.toFixed(2)} roas=${roas.toFixed(2)}`);
 
     return {
       id:          campanha.id,
@@ -1902,9 +1902,9 @@ async function buscarInsightsCampanha(campanha) {
   }
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // SYNC BOTÃO DO DASHBOARD
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function simularSync() {
   if (metaState.conectado) {
     sincronizarMetaAds();
@@ -1914,7 +1914,7 @@ function simularSync() {
     const status = document.getElementById('sync-status');
     btn.disabled = true;
     btn.innerHTML = '⏳ Sincronizando...';
-    status.textContent = '⟳ Buscando dados...';
+    status.textContent = '⏳ Buscando dados...';
     status.style.color = 'var(--yellow)';
     setTimeout(() => {
       btn.disabled = false;
@@ -1935,10 +1935,10 @@ function setBtnLoading(id, loading, label) {
   el.textContent = label;
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ROI REAL — Sistema de Agendamento
 // Cruza dados de conversão com gastos de anúncios
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 let roiDados = null; // cache dos dados de ROI
 
@@ -1995,12 +1995,12 @@ async function sincronizarROI() {
     renderizarROI(dados);
 
     if (statusEl) statusEl.textContent = `${dados.periodo.diasHistorico} dias · ${dados.resumo.totalLeads} leads · atualizado agora`;
-    if (badgeEl)  badgeEl.innerHTML = '<span class="badge badge-green">● Conectado</span>';
+    if (badgeEl)  badgeEl.innerHTML = '<span class="badge badge-green">✔ Conectado</span>';
 
     toast(`✅ ROI carregado · ${dados.resumo.totalConvertidos} conversões · R$ ${dados.resumo.totalReceita.toFixed(2)}`, 'green');
 
   } catch(e) {
-    if (badgeEl) badgeEl.innerHTML = '<span class="badge badge-red">● Erro</span>';
+    if (badgeEl) badgeEl.innerHTML = '<span class="badge badge-red">✖ Erro</span>';
     if (statusEl) statusEl.textContent = 'Erro: ' + e.message;
     toast('Erro ao buscar ROI: ' + e.message, 'red');
   } finally {
@@ -2020,7 +2020,7 @@ function renderizarROI(dados) {
   // Atualiza label do período
   const periodoEl = document.getElementById('roi-periodo-label');
   if (periodoEl) {
-    periodoEl.textContent = `${dados.periodo.de} → ${dados.periodo.ate} · ${dados.periodo.diasHistorico} dias · ${dados.sistema}`;
+    periodoEl.textContent = `${dados.periodo.de} — ${dados.periodo.ate} · ${dados.periodo.diasHistorico} dias · ${dados.sistema}`;
   }
 
   // Cards de resumo geral
@@ -2249,14 +2249,14 @@ function setText(id, val) {
   const dEl = document.getElementById('int-roi-dias');
   if (dEl) dEl.value = dias;
   const b = document.getElementById('roi-badge');
-  if (b) b.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
+  if (b) b.innerHTML = '<span class="badge badge-green">✔ URL Configurada</span>';
   const s = document.getElementById('roi-status');
   if (s) s.textContent = 'Sistema de Agendamento vinculado — clique Buscar ROI';
 })();
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // INTEGRAÇÃO GOOGLE APPS SCRIPT — Sync de ROI
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 /**
  * Conecta e sincroniza dados do GAS Web App.
@@ -2364,7 +2364,7 @@ async function sincronizarGAS(url) {
 
     // Atualiza UI
     const ts = new Date(dados.geradoEm || Date.now()).toLocaleString('pt-BR');
-    document.getElementById('gas-badge').innerHTML   = '<span class="badge badge-green">● Sincronizado</span>';
+    document.getElementById('gas-badge').innerHTML   = '<span class="badge badge-green">✔ Sincronizado</span>';
     document.getElementById('gas-status').textContent = `${campanhasGAS.length} campanhas · ${ts}`;
 
     const det = document.getElementById('gas-sync-details');
@@ -2386,7 +2386,7 @@ async function sincronizarGAS(url) {
     toast(`✅ GAS sincronizado · ${campanhasGAS.length} campanhas · ROAS ${(res.roasMedio||0).toFixed(2)}x`, 'green');
 
   } catch(e) {
-    document.getElementById('gas-badge').innerHTML = '<span class="badge badge-red">● Erro</span>';
+    document.getElementById('gas-badge').innerHTML = '<span class="badge badge-red">✖ Erro</span>';
     toast('Erro GAS: ' + e.message, 'red');
     throw e;
   }
@@ -2401,13 +2401,13 @@ async function sincronizarGAS(url) {
   if (inp) inp.value = url;
   const badge  = document.getElementById('gas-badge');
   const status = document.getElementById('gas-status');
-  if (badge)  badge.innerHTML = '<span class="badge badge-green">● URL Configurada</span>';
+  if (badge)  badge.innerHTML = '<span class="badge badge-green">✔ URL Configurada</span>';
   if (status) status.textContent = 'Clique em Sincronizar para buscar dados';
 })();
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // INTEGRAÇÃO CLAUDE IA
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 function conectarClaude() {
   const key = document.getElementById('int-claude-key').value.trim();
@@ -2417,8 +2417,8 @@ function conectarClaude() {
     return;
   }
   localStorage.setItem('claude_api_key', key);
-  document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-  document.getElementById('claude-status').textContent = 'API key salva ✅';
+  document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">✔ Conectado</span>';
+  document.getElementById('claude-status').textContent = 'API key salva ✓';
   toast('Claude IA configurado! Vá em "Analisar com IA" para usar.', 'green');
 }
 
@@ -2445,8 +2445,8 @@ async function testarClaude() {
     const d = await resp.json();
     if (d.error) throw new Error(d.error.message);
     toast('✅ Claude respondeu: API key válida e funcionando!', 'green');
-    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-    document.getElementById('claude-status').textContent = 'API key válida ✅';
+    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">✔ Conectado</span>';
+    document.getElementById('claude-status').textContent = 'API key válida ✓';
   } catch(e) {
     toast('❌ Erro: ' + e.message, 'red');
   }
@@ -2458,14 +2458,14 @@ async function testarClaude() {
   if (k) {
     const inp = document.getElementById('int-claude-key');
     if (inp) inp.value = k;
-    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-    document.getElementById('claude-status').textContent = 'API key configurada ✅';
+    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">✔ Conectado</span>';
+    document.getElementById('claude-status').textContent = 'API key configurada ✓';
   }
 })();
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // UTILS
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function toast(msg, cor='blue') {
   const el = document.createElement('div');
   const cores = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',blue:'var(--blue)',purple:'var(--purple)'};
@@ -2477,11 +2477,97 @@ function toast(msg, cor='blue') {
   setTimeout(() => el.remove(), 4000);
 }
 
+// ═══════════════════════════════════════════════════════
+// GOOGLE ADS — OAuth e métricas sempre via servidor
+// Nenhum token secreto é armazenado no navegador.
+// ═══════════════════════════════════════════════════════
+let googleAdsState = { connected: false, accounts: [] };
+
+async function carregarStatusGoogleAds() {
+  const status = document.getElementById('google-ads-status');
+  const badge = document.getElementById('google-ads-badge');
+  const accounts = document.getElementById('google-ads-accounts');
+  const connectButton = document.getElementById('btn-conectar-google-ads');
+  try {
+    const response = await fetch('/api/google-ads/status', { credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) throw new Error(response.status === 401 ? 'Autenticação administrativa necessária' : `HTTP ${response.status}`);
+    const data = await response.json();
+    googleAdsState = { connected: Boolean(data.connected), accounts: data.accounts || [] };
+    accounts.textContent = googleAdsState.accounts.length
+      ? googleAdsState.accounts.map(item => `${item.name}: ${formatCustomerId(item.id)}`).join(' · ')
+      : 'Nenhuma conta configurada no Railway';
+    if (data.connected) {
+      status.textContent = `${googleAdsState.accounts.length} contas · API ${data.apiVersion}`;
+      badge.innerHTML = '<span class="badge badge-green">✔ Conectado</span>';
+      connectButton.textContent = 'Reautorizar Google Ads';
+    } else {
+      const missing = [];
+      if (!data.oauth) missing.push('OAuth');
+      if (!data.developerToken) missing.push('Developer Token');
+      if (!data.refreshToken) missing.push('Refresh Token');
+      if (!data.loginCustomerId) missing.push('MCC');
+      if (!googleAdsState.accounts.length) missing.push('contas');
+      status.textContent = missing.length ? `Falta: ${missing.join(', ')}` : 'Configuração incompleta';
+      badge.innerHTML = '<span class="badge badge-red">✖ Desconectado</span>';
+    }
+  } catch (error) {
+    status.textContent = error.message;
+    badge.innerHTML = '<span class="badge badge-red">✖ Erro</span>';
+    accounts.textContent = 'Não foi possível consultar o servidor';
+  }
+}
+
+function formatCustomerId(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.length === 10 ? `${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}` : digits;
+}
+
+function conectarGoogleAds() {
+  window.location.assign('/auth/google-ads');
+}
+
+async function sincronizarGoogleAds() {
+  const button = document.getElementById('btn-sync-google-ads');
+  const dashboardButton = document.getElementById('btn-sync');
+  const status = document.getElementById('sync-status');
+  if (button) { button.disabled = true; button.textContent = 'Buscando...'; }
+  if (dashboardButton) dashboardButton.disabled = true;
+  if (status) { status.textContent = '⏳ Google Ads: consultando quatro contas...'; status.style.color = 'var(--yellow)'; }
+  try {
+    const response = await fetch('/api/google-ads/campaigns', { credentials: 'same-origin', cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+
+    const googleCampaigns = data.campaigns || [];
+    const current = Array.isArray(WORKSPACES[0].campanhas) ? WORKSPACES[0].campanhas : [];
+    const nonGoogle = current.filter(campaign => campaign.fonte !== 'Google Ads');
+    WORKSPACES[0].campanhas = [...nonGoogle, ...googleCampaigns];
+    WORKSPACES[0].nome = 'Óticas TGT — Multiplataforma';
+    document.querySelector('#workspace-select option[value="0"]').textContent = '📘 ' + WORKSPACES[0].nome;
+    wsIdx = 0;
+    renderDashboard();
+    renderCampaignsTable();
+
+    if (data.errors?.length) {
+      toast(`Google Ads parcial: ${googleCampaigns.length} campanhas; ${data.errors.length} conta(s) com erro`, 'yellow');
+    } else {
+      toast(`✅ Google Ads: ${googleCampaigns.length} campanhas carregadas de ${googleAdsState.accounts.length} contas`, 'green');
+    }
+    if (status) { status.textContent = `● Google Ads atualizado · ${new Date(data.updatedAt).toLocaleTimeString('pt-BR')}`; status.style.color = 'var(--green)'; }
+  } catch (error) {
+    toast('Google Ads: ' + error.message, 'red');
+    if (status) { status.textContent = '● Erro no Google Ads'; status.style.color = 'var(--red)'; }
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'Sincronizar'; }
+    if (dashboardButton) dashboardButton.disabled = false;
+  }
+}
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // INIT
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
 async function syncGASDashboard() {
   const btn = document.getElementById('btn-sync-gas');
@@ -2502,6 +2588,7 @@ async function syncGASDashboard() {
 
 renderDashboard();
 renderCampaignsTable();
+carregarStatusGoogleAds();
 
 // Auto-busca ROI ao carregar (só quando aberto pelo abrir.bat)
 (async function autoCarregarROI() {
@@ -2524,7 +2611,7 @@ renderCampaignsTable();
     metaState.account = a;
     metaState.conectado = true;
     document.getElementById('meta-badge').innerHTML =
-      '<span class="badge badge-green">● Conectado</span>';
+      '<span class="badge badge-green">✔ Conectado</span>';
     document.getElementById('meta-status').textContent = a;
     // Informa no dashboard que há integração ativa
     const info = document.getElementById('meta-sync-info');
