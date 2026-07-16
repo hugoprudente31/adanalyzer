@@ -368,16 +368,21 @@ select.inp{cursor:pointer}
   <!-- Legenda de objetivos -->
   <div class="card" style="margin-bottom:12px;padding:14px 20px">
     <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">🎯 Objetivos de Campanha</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
       <div class="card-sm" style="border-color:rgba(0,214,143,.3)">
         <div style="font-size:12px;font-weight:600;color:var(--green)">🛒 Compra / E-commerce</div>
         <div style="font-size:11px;color:var(--muted);margin-top:3px">ROAS = Receita ÷ Gasto</div>
         <div style="font-size:11px;color:var(--muted)">Valor: pixel Meta ou agendamento</div>
       </div>
       <div class="card-sm" style="border-color:rgba(255,184,77,.3)">
-        <div style="font-size:12px;font-weight:600;color:var(--yellow)">💬 Lead / WhatsApp</div>
+        <div style="font-size:12px;font-weight:600;color:var(--yellow)">📝 Lead</div>
         <div style="font-size:11px;color:var(--muted);margin-top:3px">CPL = Gasto ÷ Leads</div>
         <div style="font-size:11px;color:var(--muted)">Valor: fixo por lead (você define)</div>
+      </div>
+      <div class="card-sm" style="border-color:rgba(37,211,102,.35)">
+        <div style="font-size:12px;font-weight:600;color:#25d366">💬 WhatsApp</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Custo/Msg = Gasto ÷ Conversas iniciadas</div>
+        <div style="font-size:11px;color:var(--muted)">Valor: fixo por conversa (você define)</div>
       </div>
       <div class="card-sm" style="border-color:rgba(56,189,248,.3)">
         <div style="font-size:12px;font-weight:600;color:var(--blue)">📅 Agendamento</div>
@@ -1051,7 +1056,8 @@ let objetivosCampanhas = JSON.parse(localStorage.getItem('objetivos_campanhas') 
 
 const OBJETIVOS = [
   { id:'compra',       label:'🛒 Compra',       cor:'var(--green)',  badge:'green'  },
-  { id:'lead',         label:'💬 Lead/WhatsApp', cor:'var(--yellow)', badge:'yellow' },
+  { id:'lead',         label:'📝 Lead',          cor:'var(--yellow)', badge:'yellow' },
+  { id:'whatsapp',     label:'💬 WhatsApp',      cor:'#25d366',       badge:'green'  },
   { id:'agendamento',  label:'📅 Agendamento',   cor:'var(--blue)',   badge:'blue'   },
   { id:'engajamento',  label:'👁 Engajamento',   cor:'var(--purple)', badge:'purple' },
 ];
@@ -1092,6 +1098,18 @@ function calcularMetricaObjetivo(c) {
         metricaPrincipal: `R$ ${cpl.toFixed(2)} CPL`,
         secundaria: roi !== null ? `ROI ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%` : `${conversoes} leads`,
         cor: cpl > 0 && cpl <= 50 ? 'var(--green)' : 'var(--yellow)',
+        roi: roi ? roi.toFixed(0) : null
+      };
+    }
+    case 'whatsapp': {
+      // Custo/Mensagem = Gasto ÷ Conversas iniciadas | ROI = (Conversas × Valor) ÷ Gasto
+      const custoMsg = conversoes > 0 ? gastos / conversoes : 0;
+      const receita = valorConv * conversoes;
+      const roi = gastos > 0 && valorConv > 0 ? ((receita - gastos) / gastos * 100) : null;
+      return {
+        metricaPrincipal: `R$ ${custoMsg.toFixed(2)} /msg`,
+        secundaria: roi !== null ? `ROI ${roi >= 0 ? '+' : ''}${roi.toFixed(0)}%` : `${conversoes} conversas`,
+        cor: custoMsg > 0 && custoMsg <= 30 ? 'var(--green)' : 'var(--yellow)',
         roi: roi ? roi.toFixed(0) : null
       };
     }
@@ -1165,7 +1183,7 @@ function renderCampaignsTable() {
                   style="width:55px;padding:3px 6px;font-size:11px"
                   onchange="atualizarValorConv('${c.id}','taxaConv',this.value)">
               </div>`
-            : `<input class="inp inp-mono" type="number" placeholder="${objSel==='compra'?'R$ por venda':'R$ por conv.'}"
+            : `<input class="inp inp-mono" type="number" placeholder="${objSel==='compra'?'R$ por venda':objSel==='whatsapp'?'R$ por msg':'R$ por conv.'}"
                 value="${obj.valorConv||''}"
                 style="width:110px;padding:3px 6px;font-size:11px"
                 onchange="atualizarValorConv('${c.id}','valorConv',this.value)">`
