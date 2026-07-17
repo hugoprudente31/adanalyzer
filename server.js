@@ -66,9 +66,6 @@ app.use('/api/dashboard', require('./src/routes/dashboard'));
 // ── Live Dashboard (Meta + Google Ads em tempo real) ─────────
 app.use('/api/live-dashboard', require('./src/routes/live-dashboard'));
 
-// ── Hub de integração Kommo ↔ Sistema ────────────────────────
-app.use('/api', require('./src/integrations/index'));
-
 // ── Sync diário de desempenho de anúncios → github-sistema ──
 require('./src/jobs/syncGithubSistema').start();
 
