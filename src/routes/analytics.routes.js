@@ -5,7 +5,7 @@
 
 const express = require("express");
 const router  = express.Router();
-const sm      = require("../services/supermetrics.service");
+const sm      = require("../services/marketingDb.service");
 
 const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
