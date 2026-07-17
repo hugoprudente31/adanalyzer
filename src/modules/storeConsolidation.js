@@ -15,6 +15,7 @@ const CAMPAIGN_STORE_PATTERNS = [
   { pattern: /pitagueiras?/i,      store: "Pitangueiras" },  // typo comum (falta o "n")
   { pattern: /\bpita\b/i,          store: "Pitangueiras" },
   { pattern: /\btarget\b/i,        store: "Target" },
+  { pattern: /santa.?rosa/i,       store: "Target" },  // bairro da loja Target
   // Campanhas gerais / multi-lojas
   { pattern: /multi.?lojas?/i,     store: "Multi Lojas" },
   { pattern: /familia/i,           store: "Multi Lojas" },
