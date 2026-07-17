@@ -8,9 +8,11 @@ const CAMPAIGN_STORE_PATTERNS = [
   // Lojas específicas (ordem importa — mais específico primeiro)
   { pattern: /gonzaga/i,           store: "Gonzaga/Santos" },
   { pattern: /santos/i,            store: "Gonzaga/Santos" },
+  { pattern: /sanots/i,            store: "Gonzaga/Santos" },  // typo comum (letras trocadas)
   { pattern: /enseada/i,           store: "Enseada" },
   { pattern: /pitangueiras?/i,     store: "Pitangueiras" },  // grafia correta
   { pattern: /pintagueiras?/i,     store: "Pitangueiras" },  // typo comum nas campanhas
+  { pattern: /pitagueiras?/i,      store: "Pitangueiras" },  // typo comum (falta o "n")
   { pattern: /\bpita\b/i,          store: "Pitangueiras" },
   { pattern: /\btarget\b/i,        store: "Target" },
   // Campanhas gerais / multi-lojas
@@ -27,10 +29,12 @@ const CAMPAIGN_STORE_PATTERNS = [
   { pattern: /tgt/i,               store: "Multi Lojas" },
   { pattern: /otica/i,             store: "Multi Lojas" },
   { pattern: /promo/i,             store: "Multi Lojas" },
-  { pattern: /indique/i,           store: "Multi Lojas" },
+  { pattern: /indi[cq]/i,          store: "Multi Lojas" },  // indique, indicação, indicar
   { pattern: /engajamento/i,       store: "Multi Lojas" },
   { pattern: /vagas?.+emprego/i,   store: "Multi Lojas" },
   { pattern: /nova.+campanha/i,    store: "Multi Lojas" },
+  { pattern: /\bgeral\b/i,         store: "Multi Lojas" },  // Reconhecimento/Autoridade Geral
+  { pattern: /post do instagram/i, store: "Multi Lojas" },  // boost de post orgânico da conta da marca
 ];
 
 const STORE_COLORS = {
@@ -53,6 +57,7 @@ function resolveStore(campaignName = "") {
   for (const { pattern, store } of CAMPAIGN_STORE_PATTERNS) {
     if (pattern.test(campaignName)) return store;
   }
+  if (campaignName) console.warn(`[StoreConsolidation] Campanha sem loja reconhecida: "${campaignName}"`);
   return "Outros";
 }
 
