@@ -67,7 +67,7 @@ async function refreshGoogleToken() {
 
 async function fetchGoogleAdsStore(accessToken, customerId, startDate, endDate) {
   const devToken  = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-  const managerId = process.env.GOOGLE_ADS_MANAGER_ID;
+  const managerId = process.env.GOOGLE_ADS_MANAGER_ID || process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID;
 
   if (!devToken) throw new Error('GOOGLE_ADS_DEVELOPER_TOKEN não configurado');
 
@@ -169,10 +169,12 @@ async function fetchMetaDaily(startDate, endDate) {
   }).filter(d => d.date);
 }
 
-function calcProjections(meta, google, startDate) {
-  const start       = new Date(startDate);
-  const today       = new Date();
-  const daysElapsed = Math.max(1, Math.ceil((today - start) / 86400000));
+function calcProjections(meta, google, startDate, endDate) {
+  const start         = new Date(startDate);
+  const today         = new Date();
+  const periodEnd     = new Date(endDate);
+  const referenceEnd  = periodEnd < today ? periodEnd : today;
+  const daysElapsed   = Math.max(1, Math.ceil((referenceEnd - start) / 86400000));
 
   const totalSpend  = meta.spend + google.spend;
   const totalClicks = meta.clicks + google.clicks;
@@ -278,7 +280,7 @@ router.get('/', async (req, res) => {
       daily,
       totals,
       scheduling,
-      projections:          calcProjections(meta, google, startDate),
+      projections:          calcProjections(meta, google, startDate, endDate),
       period:               { startDate, endDate },
       updatedAt:            new Date().toLocaleTimeString('pt-BR'),
       googleTokenAvailable: !!googleToken,

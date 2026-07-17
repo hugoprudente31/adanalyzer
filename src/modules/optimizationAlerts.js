@@ -105,7 +105,7 @@ Retorne SOMENTE este JSON:
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model:      "claude-sonnet-4-6",
+        model:      "claude-sonnet-4-5",
         max_tokens: 800,
         messages:   [{ role: "user", content: prompt }],
       }),

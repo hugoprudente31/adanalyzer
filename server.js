@@ -307,11 +307,13 @@ app.get('/studio/*', (req, res) => {
 app.get('/api/status', (req, res) => {
   const googleDirectMissing = [
     'GOOGLE_ADS_DEVELOPER_TOKEN',
-    'GOOGLE_ADS_MANAGER_ID',
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
     'GOOGLE_REFRESH_TOKEN'
   ].filter((name) => !process.env[name]);
+  if (!process.env.GOOGLE_ADS_MANAGER_ID && !process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) {
+    googleDirectMissing.push('GOOGLE_ADS_MANAGER_ID (ou GOOGLE_ADS_LOGIN_CUSTOMER_ID)');
+  }
   res.json({
     ok:      true,
     versao:  '1.0.0',
