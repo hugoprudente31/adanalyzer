@@ -10,6 +10,7 @@ const { runAlerts }      = require("../modules/optimizationAlerts");
 const { generateReport } = require("../modules/performanceReport");
 const metaAds            = require("../services/metaAds");
 const schedulingSystem   = require("../services/schedulingSystem");
+const marketingDb        = require("../services/marketingDb.service");
 
 // Cache em memória (5 minutos) — rotas existentes
 const cache = new Map();
@@ -52,40 +53,6 @@ const GOOGLE_STORES = [
   { id: "1420756198", name: "Enseada",       color: "#f43f5e" },
 ];
 
-// ── Supermetrics REST API ─────────────────────────────────────
-async function smRESTQuery({ ds_id, ds_accounts, fields, start_date, end_date, date_range_type = "custom" }) {
-  const apiKey = process.env.SUPERMETRICS_API_KEY;
-  const dsUser = process.env.SUPERMETRICS_DS_USER;
-  if (!apiKey || !dsUser) throw new Error("SUPERMETRICS_API_KEY ou SUPERMETRICS_DS_USER não configurados");
-
-  const params = {
-    api_key:         apiKey,
-    ds_user:         dsUser,
-    ds_id,
-    ds_accounts,
-    date_range_type,
-    fields:          Array.isArray(fields) ? fields.join(",") : fields,
-    max_rows:        10000,
-  };
-  if (date_range_type === "custom") { params.start_date = start_date; params.end_date = end_date; }
-
-  const url = `https://api.supermetrics.com/enterprise/v2/query/data/json?json=${encodeURIComponent(JSON.stringify(params))}`;
-  const res  = await fetch(url);
-  const data = await res.json();
-
-  if (data.error) throw new Error(`Supermetrics: ${data.error.message || JSON.stringify(data.error)}`);
-
-  const rows    = data.data?.rows    || [];
-  const headers = data.data?.headers || [];
-  if (!rows.length) return [];
-
-  return rows.map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[h.id ?? h] = row[i] ?? null; });
-    return obj;
-  });
-}
-
 // ── Helpers Meta actions ──────────────────────────────────────
 const MSG_TYPES = [
   "onsite_conversion.messaging_conversation_started_7d",
@@ -112,22 +79,15 @@ router.get("/", async (req, res) => {
   if (cached) return res.json(cached);
 
   try {
-    const [campRes, dailyRes, campListRes, ...googleRes] = await Promise.allSettled([
+    const [campRes, dailyRes, campListRes, googleRes] = await Promise.allSettled([
       // Meta — insights por campanha
       metaAds.getInsights({ dateRange: { since: start, until: end }, level: "campaign" }),
       // Meta — série diária
       metaAds.getInsights({ dateRange: { since: start, until: end }, level: "account", timeIncrement: 1 }),
       // Meta — lista de campanhas para objetivo
       metaAds.getCampaigns({ status: "ALL" }),
-      // Google Ads — 4 lojas via Supermetrics REST API
-      ...GOOGLE_STORES.map(s => smRESTQuery({
-        ds_id:           "AW",
-        ds_accounts:     s.id,
-        fields:          ["Impressions", "Clicks", "Cost", "Conversions"],
-        date_range_type: "custom",
-        start_date:      start,
-        end_date:        end,
-      })),
+      // Google Ads — 4 lojas, replicadas pelo Kondado no Postgres
+      marketingDb.getGoogleAdsDashboard({ startDate: start, endDate: end }),
     ]);
 
     if (campRes.status === "rejected") console.error("[Dashboard] Meta campaigns:", campRes.reason?.message);
@@ -184,28 +144,25 @@ router.get("/", async (req, res) => {
       };
     }).filter(d => d.date);
 
-    // ── Google Ads via Supermetrics REST ─────────────────────────
-    if (googleRes.some(r => r.status === "rejected")) {
-      googleRes.forEach((r, i) => {
-        if (r.status === "rejected") console.error(`[Dashboard] Google ${GOOGLE_STORES[i].name}:`, r.reason?.message);
-      });
-    }
-    const stores = GOOGLE_STORES.map((store, i) => {
-      if (googleRes[i]?.status !== "fulfilled") return { name: store.name, spend: 0, clicks: 0, color: store.color };
-      const rows = googleRes[i].value;
+    // ── Google Ads via Postgres (replicado pelo Kondado) ─────────
+    const googleRows = googleRes.status === "fulfilled" && Array.isArray(googleRes.value) ? googleRes.value : [];
+    const googleErrorMsg = googleRes.status === "rejected"
+      ? googleRes.reason?.message
+      : (googleRes.status === "fulfilled" && googleRes.value?.error) || null;
+    if (googleErrorMsg) console.error("[Dashboard] Google Ads:", googleErrorMsg);
+
+    const stores = GOOGLE_STORES.map((store) => {
+      const row = googleRows.find((r) => r.account.id === store.id);
       return {
         name:   store.name,
-        spend:  rows.reduce((s, r) => s + parseFloat(r.Cost  || r.cost  || 0), 0),
-        clicks: rows.reduce((s, r) => s + parseInt(r.Clicks || r.clicks || 0), 0),
+        spend:  row ? row.metrics.cost        : 0,
+        clicks: row ? row.metrics.clicks      : 0,
         color:  store.color,
       };
     });
     const gSpend       = stores.reduce((s, st) => s + st.spend,  0);
     const gClicks      = stores.reduce((s, st) => s + st.clicks, 0);
-    const gConversions = googleRes.reduce((s, r) => {
-      if (r.status !== "fulfilled") return s;
-      return s + r.value.reduce((rs, row) => rs + parseFloat(row.Conversions || row.conversions || 0), 0);
-    }, 0);
+    const gConversions = googleRows.reduce((s, r) => s + r.metrics.conversions, 0);
     const schedulingResult = await Promise.allSettled([schedulingSystem.getMarketingPerformance(start, end)]);
     const scheduling = schedulingResult[0].status === "fulfilled" ? schedulingResult[0].value : null;
 
@@ -225,7 +182,7 @@ router.get("/", async (req, res) => {
       scheduling,
       updatedAt: new Date().toLocaleTimeString("pt-BR"),
       ...(metaError ? { metaError } : {}),
-      googleError: googleRes.find(r => r.status === "rejected")?.reason?.message || null,
+      googleError: googleErrorMsg,
       schedulingError: schedulingResult[0].status === "rejected" ? schedulingResult[0].reason?.message : null,
     };
 
