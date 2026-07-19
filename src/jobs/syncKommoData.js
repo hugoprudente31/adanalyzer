@@ -30,6 +30,34 @@ function toDate(unixSeconds) {
   return unixSeconds ? new Date(unixSeconds * 1000) : null;
 }
 
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+// Monta um INSERT multi-linha: colocar N linhas de `cols.length` valores cada
+// numa única query, em vez de N round-trips separados ao Postgres.
+async function bulkUpsert(table, cols, conflictCol, updateCols, rows, batchSize = 500) {
+  let total = 0;
+  for (const batch of chunk(rows, batchSize)) {
+    const values = [];
+    const placeholders = batch.map((row, i) => {
+      const base = i * cols.length;
+      values.push(...row);
+      return `(${cols.map((_, j) => `$${base + j + 1}`).join(",")})`;
+    });
+    const setClause = updateCols.map((c) => `${c} = EXCLUDED.${c}`).join(", ");
+    await db.query(
+      `INSERT INTO ${table} (${cols.join(",")}) VALUES ${placeholders.join(",")}
+       ON CONFLICT (${conflictCol}) DO UPDATE SET ${setClause}, synced_at = now()`,
+      values
+    );
+    total += batch.length;
+  }
+  return total;
+}
+
 function extractTracking(customFieldsValues) {
   const out = {};
   for (const field of customFieldsValues || []) {
@@ -128,53 +156,45 @@ async function syncPipelines() {
 
 async function syncContacts() {
   const contacts = await kommo.getAllContacts();
-  for (const c of contacts) {
-    await db.query(
-      `INSERT INTO kommo_contacts (id, name, phone, email, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (id) DO UPDATE SET name = $2, phone = $3, email = $4, updated_at = $6, synced_at = now()`,
-      [
-        c.id,
-        c.name,
-        extractContactField(c.custom_fields_values, "PHONE"),
-        extractContactField(c.custom_fields_values, "EMAIL"),
-        toDate(c.created_at),
-        toDate(c.updated_at),
-      ]
-    );
-  }
-  return contacts.length;
+  const rows = contacts.map((c) => [
+    c.id,
+    c.name,
+    extractContactField(c.custom_fields_values, "PHONE"),
+    extractContactField(c.custom_fields_values, "EMAIL"),
+    toDate(c.created_at),
+    toDate(c.updated_at),
+  ]);
+  return bulkUpsert(
+    "kommo_contacts",
+    ["id", "name", "phone", "email", "created_at", "updated_at"],
+    "id",
+    ["name", "phone", "email", "updated_at"],
+    rows
+  );
 }
+
+const LEAD_COLS = [
+  "id", "name", "price", "status_id", "pipeline_id", "main_contact_id", "is_deleted",
+  "created_at", "updated_at", "closed_at",
+  "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "utm_referrer",
+  "referrer", "gclientid", "gclid", "fbclid",
+];
+const LEAD_UPDATE_COLS = LEAD_COLS.filter((c) => c !== "id" && c !== "created_at");
 
 async function syncLeads() {
   const leads = await kommo.getAllLeads();
-  for (const l of leads) {
+  const rows = leads.map((l) => {
     const tracking = extractTracking(l.custom_fields_values);
     const mainContact = (l._embedded?.contacts || []).find((c) => c.is_main) || l._embedded?.contacts?.[0];
-
-    await db.query(
-      `INSERT INTO kommo_leads (
-         id, name, price, status_id, pipeline_id, main_contact_id, is_deleted,
-         created_at, updated_at, closed_at,
-         utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_referrer,
-         referrer, gclientid, gclid, fbclid
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
-       ON CONFLICT (id) DO UPDATE SET
-         name = $2, price = $3, status_id = $4, pipeline_id = $5, main_contact_id = $6, is_deleted = $7,
-         updated_at = $9, closed_at = $10,
-         utm_source = $11, utm_medium = $12, utm_campaign = $13, utm_content = $14, utm_term = $15,
-         utm_referrer = $16, referrer = $17, gclientid = $18, gclid = $19, fbclid = $20,
-         synced_at = now()`,
-      [
-        l.id, l.name, l.price || 0, l.status_id, l.pipeline_id, mainContact?.id || null, !!l.is_deleted,
-        toDate(l.created_at), toDate(l.updated_at), toDate(l.closed_at),
-        tracking.utm_source || null, tracking.utm_medium || null, tracking.utm_campaign || null,
-        tracking.utm_content || null, tracking.utm_term || null, tracking.utm_referrer || null,
-        tracking.referrer || null, tracking.gclientid || null, tracking.gclid || null, tracking.fbclid || null,
-      ]
-    );
-  }
-  return leads.length;
+    return [
+      l.id, l.name, l.price || 0, l.status_id, l.pipeline_id, mainContact?.id || null, !!l.is_deleted,
+      toDate(l.created_at), toDate(l.updated_at), toDate(l.closed_at),
+      tracking.utm_source || null, tracking.utm_medium || null, tracking.utm_campaign || null,
+      tracking.utm_content || null, tracking.utm_term || null, tracking.utm_referrer || null,
+      tracking.referrer || null, tracking.gclientid || null, tracking.gclid || null, tracking.fbclid || null,
+    ];
+  });
+  return bulkUpsert("kommo_leads", LEAD_COLS, "id", LEAD_UPDATE_COLS, rows);
 }
 
 async function runSync() {
