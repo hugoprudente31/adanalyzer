@@ -65,6 +65,29 @@ router.get("/google-ads/:query", asyncHandler(async (req, res) => {
   res.json({ success: true, ...result });
 }));
 
+// ── Facebook Ads ──────────────────────────────────────────────
+
+// GET /api/analytics/facebook-ads
+router.get("/facebook-ads", asyncHandler(async (req, res) => {
+  const { period = "last_30_days" } = req.query;
+  const data = await sm.getFacebookAdsDashboard({ datePreset: period });
+  res.json({ success: true, count: Array.isArray(data) ? data.length : 0, data });
+}));
+
+// GET /api/analytics/facebook-ads/compare
+router.get("/facebook-ads/compare", asyncHandler(async (req, res) => {
+  const { metric = "cost", period = "last_30_days" } = req.query;
+  const data = await sm.compareFacebookAdsAccounts({ datePreset: period, metric });
+  res.json({ success: true, data });
+}));
+
+// GET /api/analytics/facebook-ads/:query
+router.get("/facebook-ads/:query", asyncHandler(async (req, res) => {
+  const { period = "last_30_days", since, until } = req.query;
+  const result = await sm.getFacebookAdsMetrics(req.params.query, { datePreset: period, startDate: since, endDate: until });
+  res.json({ success: true, ...result });
+}));
+
 // ── GA4 ───────────────────────────────────────────────────────
 
 // GET /api/analytics/ga4
