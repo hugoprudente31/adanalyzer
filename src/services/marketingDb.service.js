@@ -66,7 +66,8 @@ async function discoverFacebookAdsAccounts() {
 }
 
 async function discoverGA4Accounts() {
-  return []; // GA4 ainda não configurado no Kondado
+  if (!(await db.tableExists(GA4_TABLE))) return [];
+  return [{ ...GA4_PROPERTY, platform: "ga4" }];
 }
 
 async function discoverSearchConsoleAccounts() {
@@ -293,18 +294,71 @@ async function compareFacebookAdsAccounts({ datePreset = "last_30_days", metric 
     .sort((a, b) => (Number(b[metric]) || 0) - (Number(a[metric]) || 0));
 }
 
-// ── GA4 / Search Console (ainda não configurados no Kondado) ──
+// ── GA4 (replicado pelo Kondado — uma propriedade só, "LP Agendamento / Óticas TGT Site Multi Lojas") ──
 
-async function getAllGA4Metrics() {
-  return [];
+const GA4_TABLE = "ga4_custom_report";
+const GA4_PROPERTY = { id: "541104090", name: "LP Agendamento (Óticas TGT Site Multi Lojas)" };
+
+async function getAllGA4Metrics(options = {}) {
+  if (!(await db.tableExists(GA4_TABLE))) return [];
+  const { since, until } = resolveDateRange(options);
+
+  const { rows } = await db.query(
+    `
+    SELECT
+      sessionsourcemedium AS source_medium,
+      SUM(sessions)         AS sessions,
+      SUM(activeusers)      AS active_users,
+      SUM(screenpageviews)  AS views,
+      AVG(engagementrate)   AS engagement_rate
+    FROM ${GA4_TABLE}
+    WHERE date BETWEEN $1 AND $2
+    GROUP BY sessionsourcemedium
+    ORDER BY sessions DESC
+    `,
+    [since, until]
+  );
+
+  return rows.map((r) => ({
+    sourceMedium:   r.source_medium,
+    sessions:       Number(r.sessions)       || 0,
+    activeUsers:    Number(r.active_users)   || 0,
+    views:          Number(r.views)          || 0,
+    engagementRate: Number(r.engagement_rate) || 0,
+  }));
 }
 
-async function getGA4Metrics(query) {
-  throw new Error(`GA4 ainda não configurado no Kondado — não é possível buscar "${query}".`);
+async function getGA4Metrics(query, options = {}) {
+  if (!(await db.tableExists(GA4_TABLE))) {
+    throw new Error("GA4 ainda não sincronizado — tabela não encontrada no Postgres.");
+  }
+  const { since, until } = resolveDateRange(options);
+
+  const { rows } = await db.query(
+    `
+    SELECT date, sessionsourcemedium AS source_medium, sessions, activeusers, screenpageviews, engagementrate
+    FROM ${GA4_TABLE}
+    WHERE date BETWEEN $1 AND $2
+    ORDER BY date DESC, sessions DESC
+    `,
+    [since, until]
+  );
+
+  return {
+    property: GA4_PROPERTY,
+    data: rows.map((r) => ({
+      date:           r.date,
+      sourceMedium:   r.source_medium,
+      sessions:       Number(r.sessions)        || 0,
+      activeUsers:    Number(r.activeusers)     || 0,
+      views:          Number(r.screenpageviews) || 0,
+      engagementRate: Number(r.engagementrate)  || 0,
+    })),
+  };
 }
 
 async function getSearchConsoleMetrics() {
-  return [];
+  return []; // Search Console ainda não configurado no Kondado
 }
 
 // ── Relatório consolidado ──────────────────────────────────────
