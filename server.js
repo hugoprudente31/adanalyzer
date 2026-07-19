@@ -37,7 +37,7 @@ app.use(cors({ origin(origin, callback) {
   callback(new Error('Origem não permitida'));
 }, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
-app.use(rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false }));
+app.use(rateLimit({ windowMs: 60_000, limit: 600, standardHeaders: 'draft-8', legacyHeaders: false }));
 app.use('/api/claude', rateLimit({ windowMs: 60_000, limit: 10 }));
 app.use('/api/openai', rateLimit({ windowMs: 60_000, limit: 5 }));
 app.use(basicAuth);
