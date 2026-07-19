@@ -4,6 +4,7 @@
  */
 
 const { generateReport } = require("./performanceReport");
+const kommoDb = require("../services/kommoDb.service");
 const fetch = require("node-fetch");
 
 const ALERT_RULES = [
@@ -79,11 +80,25 @@ async function generateAIInsights(report) {
     `- ${s.store}: R$${s.metrics.spend.value} gasto, ${s.metrics.actions.value} ações, CTR ${s.metrics.ctr.formatted}, CPC ${s.metrics.cpc.formatted}`
   ).join("\n");
 
+  let funnelSummary = "";
+  try {
+    const funnel = await kommoDb.getFunnelSummary();
+    if (funnel.length > 0) {
+      funnelSummary = "\n\nFUNIL DE VENDAS REAL (Kommo CRM, todos os períodos):\n" +
+        funnel.map((f) => `- ${f.pipeline} → ${f.status}: ${f.leads} leads, R$${f.totalPrice.toFixed(2)} em negociação`).join("\n");
+    }
+  } catch (err) {
+    console.warn("[Alerts] Kommo indisponível para o prompt de IA:", err.message);
+  }
+
   const prompt = `Você é especialista em tráfego pago para óticas. Analise os dados e retorne JSON válido sem markdown.
 
-DADOS (últimos 30 dias):
+DADOS DE ANÚNCIOS (últimos 30 dias):
 ${storesSummary}
 Total: R$${report.grandTotal.spend} gasto, CTR ${report.grandTotal.ctr}%, CPC R$${report.grandTotal.cpc}
+${funnelSummary}
+
+Cruze o gasto de anúncio com o funil de vendas real quando possível — não julgue uma loja só pelo CTR/CPC, considere quantos leads realmente avançaram no funil.
 
 Retorne SOMENTE este JSON:
 {

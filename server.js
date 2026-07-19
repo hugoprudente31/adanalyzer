@@ -66,8 +66,14 @@ app.use('/api/dashboard', require('./src/routes/dashboard'));
 // ── Live Dashboard (Meta + Google Ads em tempo real) ─────────
 app.use('/api/live-dashboard', require('./src/routes/live-dashboard'));
 
+// ── Kommo (leads, contatos, funis) replicado no Postgres ─────
+app.use('/api/kommo', require('./src/routes/kommoDb.routes'));
+
 // ── Sync diário de desempenho de anúncios → github-sistema ──
 require('./src/jobs/syncGithubSistema').start();
+
+// ── Sync diário de leads/contatos/funis do Kommo ─────────────
+require('./src/jobs/syncKommoData').start();
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
