@@ -1,0 +1,18 @@
+{
+  "name": "nexus-crm-studio",
+  "version": "1.0.0",
+  "description": "AdAnalyzer — Nexus CRM (studio/). Fonte real do app servido em /studio, com dados reais do Kommo.",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "html2canvas": "^1.4.1",
+    "web-vitals": "^4.2.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
