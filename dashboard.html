@@ -461,6 +461,16 @@ function AdAnalyzerDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {data.facebookKondado && (
+                <div style={{ background:"#0f1c2e", border:"1px solid #1e2a3a", borderRadius:14, padding:16, marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center", gap:12 }}>
+                  <div>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#64748b", textTransform:"uppercase", letterSpacing:".08em" }}>Conferência · Facebook Ads (Kondado)</div>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"#64748b", marginTop:4 }}>{data.facebookKondado.note}</div>
+                  </div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:700, color:"#8b5cf6", whiteSpace:"nowrap" }}>{R(data.facebookKondado.spend)}</div>
+                </div>
+              )}
             </>
           )}
 

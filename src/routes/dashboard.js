@@ -79,7 +79,7 @@ router.get("/", async (req, res) => {
   if (cached) return res.json(cached);
 
   try {
-    const [campRes, dailyRes, campListRes, googleRes] = await Promise.allSettled([
+    const [campRes, dailyRes, campListRes, googleRes, facebookKondadoRes] = await Promise.allSettled([
       // Meta — insights por campanha
       metaAds.getInsights({ dateRange: { since: start, until: end }, level: "campaign" }),
       // Meta — série diária
@@ -88,6 +88,8 @@ router.get("/", async (req, res) => {
       metaAds.getCampaigns({ status: "ALL" }),
       // Google Ads — 4 lojas, replicadas pelo Kondado no Postgres
       marketingDb.getGoogleAdsDashboard({ startDate: start, endDate: end }),
+      // Facebook Ads — segunda fonte (Kondado, granularidade mensal), só para conferência do valor direto do Meta acima
+      marketingDb.getFacebookAdsDashboard({ startDate: start, endDate: end }),
     ]);
 
     if (campRes.status === "rejected") console.error("[Dashboard] Meta campaigns:", campRes.reason?.message);
@@ -163,6 +165,16 @@ router.get("/", async (req, res) => {
     const gSpend       = stores.reduce((s, st) => s + st.spend,  0);
     const gClicks      = stores.reduce((s, st) => s + st.clicks, 0);
     const gConversions = googleRows.reduce((s, r) => s + r.metrics.conversions, 0);
+
+    // ── Facebook Ads via Kondado — só para conferência, não substitui o Meta direto ──
+    const fbKondadoRows = facebookKondadoRes.status === "fulfilled" && Array.isArray(facebookKondadoRes.value)
+      ? facebookKondadoRes.value
+      : [];
+    const facebookKondado = {
+      spend:  fbKondadoRows.reduce((s, r) => s + r.metrics.cost, 0),
+      note:   "Fonte alternativa (Kondado, granularidade mensal) — usar só para conferência do gasto Meta acima.",
+    };
+
     const schedulingResult = await Promise.allSettled([schedulingSystem.getMarketingPerformance(start, end)]);
     const scheduling = schedulingResult[0].status === "fulfilled" ? schedulingResult[0].value : null;
 
@@ -177,6 +189,7 @@ router.get("/", async (req, res) => {
         costPerMsg:  metaMsgs   > 0 ? metaSpend / metaMsgs          : 0,
         objectives,
       },
+      facebookKondado,
       google: { spend: gSpend, clicks: gClicks, impressions: 0, conversions: gConversions, cpc: gClicks > 0 ? gSpend / gClicks : 0, stores },
       daily,
       scheduling,
