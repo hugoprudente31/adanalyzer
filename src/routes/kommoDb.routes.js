@@ -32,6 +32,25 @@ router.get("/leads-by-source", asyncHandler(async (req, res) => {
   res.json({ success: true, data });
 }));
 
+// GET /api/kommo/summary — KPIs do dashboard (pipeline ativo, ganhos, quentes, em risco)
+router.get("/summary", asyncHandler(async (req, res) => {
+  const data = await kommoDb.getDashboardSummary();
+  res.json({ success: true, data });
+}));
+
+// GET /api/kommo/pipelines — os 4 funis reais com seus estagios
+router.get("/pipelines", asyncHandler(async (req, res) => {
+  const data = await kommoDb.getPipelinesWithStages();
+  res.json({ success: true, data });
+}));
+
+// GET /api/kommo/pipelines/:id/board — quadro kanban de um funil
+router.get("/pipelines/:id/board", asyncHandler(async (req, res) => {
+  const data = await kommoDb.getPipelineBoard(Number(req.params.id));
+  if (!data) return res.status(404).json({ success: false, error: "Funil não encontrado ou ainda não sincronizado" });
+  res.json({ success: true, data });
+}));
+
 // POST /api/kommo/sync — força sincronização agora (a agendada roda 03:45)
 router.post("/sync", asyncHandler(async (req, res) => {
   const result = await syncKommo.runSync();
