@@ -198,7 +198,8 @@ app.get('/api/meta', async (req, res) => {
 // ── Proxy Anthropic Claude: /api/claude ──────────────────────
 app.post('/api/claude', async (req, res) => {
   try {
-    const { apiKey, ...body } = req.body;
+    const { apiKey: clientKey, ...body } = req.body;
+    const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return res.status(400).json({ erro: 'apiKey obrigatório' });
 
     console.log('[CLAUDE] → Enviando análise...');
