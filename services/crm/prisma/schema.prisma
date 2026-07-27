@@ -1,0 +1,96 @@
+// adAnalyzer OS — CRM module (Phase 1)
+//
+// Este schema mapeia as tabelas kommo_* JÁ EXISTENTES no mesmo Postgres usado
+// pelo app Express (criadas por ensureSchema() em src/jobs/syncKommoData.js,
+// na raiz do repositório). Este serviço é SOMENTE LEITURA: o job de sync
+// continua sendo o único responsável por escrever nessas tabelas.
+//
+// Verificado contra o banco real via `prisma db pull` — bate exatamente com
+// este schema (os únicos ajustes trazidos pela introspecção, incorporados
+// abaixo, foram `onDelete: Cascade` na FK real e `@default(now())` nos
+// campos synced_at, que já eram o comportamento real da tabela).
+//
+// O banco também tem tabelas de marketing (Google Ads, Facebook Ads, GA4,
+// replicadas pelo Kondado) que a introspecção também detecta — não são
+// modeladas aqui de propósito, pertencem a outro domínio.
+//
+// kommo_leads.status_id / pipeline_id / main_contact_id NÃO têm foreign key
+// no banco (confirmado em ensureSchema()) — por isso ficam como campos
+// escalares soltos abaixo, sem @relation. Os JOINs que o app original faz
+// nessas colunas são reproduzidos via $queryRaw nos repositórios, não via
+// API de relação do Prisma.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model KommoPipeline {
+  id       BigInt    @id
+  name     String?
+  sort     Int?
+  isMain   Boolean?  @map("is_main")
+  syncedAt DateTime? @default(now()) @map("synced_at") @db.Timestamptz(6)
+
+  statuses KommoPipelineStatus[]
+
+  @@map("kommo_pipelines")
+}
+
+model KommoPipelineStatus {
+  id         BigInt    @id
+  pipelineId BigInt?   @map("pipeline_id")
+  name       String?
+  sort       Int?
+  color      String?
+  syncedAt   DateTime? @default(now()) @map("synced_at") @db.Timestamptz(6)
+
+  pipeline KommoPipeline? @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  @@map("kommo_pipeline_statuses")
+}
+
+model KommoContact {
+  id        BigInt    @id
+  name      String?
+  phone     String?
+  email     String?
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6)
+  syncedAt  DateTime? @default(now()) @map("synced_at") @db.Timestamptz(6)
+
+  @@map("kommo_contacts")
+}
+
+model KommoLead {
+  id            BigInt    @id
+  name          String?
+  price         Decimal?  @db.Decimal
+  statusId      BigInt?   @map("status_id")
+  pipelineId    BigInt?   @map("pipeline_id")
+  mainContactId BigInt?   @map("main_contact_id")
+  isDeleted     Boolean?  @map("is_deleted")
+  createdAt     DateTime? @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime? @map("updated_at") @db.Timestamptz(6)
+  closedAt      DateTime? @map("closed_at") @db.Timestamptz(6)
+  utmSource     String?   @map("utm_source")
+  utmMedium     String?   @map("utm_medium")
+  utmCampaign   String?   @map("utm_campaign")
+  utmContent    String?   @map("utm_content")
+  utmTerm       String?   @map("utm_term")
+  utmReferrer   String?   @map("utm_referrer")
+  referrer      String?
+  gclientid     String?
+  gclid         String?
+  fbclid        String?
+  syncedAt      DateTime? @default(now()) @map("synced_at") @db.Timestamptz(6)
+
+  @@index([createdAt], map: "idx_kommo_leads_created_at")
+  @@index([pipelineId, statusId], map: "idx_kommo_leads_pipeline_status")
+  @@index([utmSource], map: "idx_kommo_leads_utm_source")
+  @@map("kommo_leads")
+}
