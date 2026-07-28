@@ -1,0 +1,54 @@
+// adAnalyzer OS — Financeiro module (Phase 1)
+//
+// Este schema mapeia a tabela financeiro_vendas JÁ EXISTENTE no mesmo
+// Postgres usado pelo app Express (criada por ensureSchema() em
+// src/jobs/syncFinanceiro.js, na raiz do repositório). Este serviço é
+// SOMENTE LEITURA: o job de sync continua sendo o único responsável por
+// escrever nessa tabela.
+//
+// A origem real do dado é a tabela `agendamentos` de um projeto Railway
+// separado ("sistema de agendamento 7.2") — não existe forma/status de
+// pagamento no dado real, então este módulo cobre Receita, não fluxo de
+// caixa/conciliação de pagamento (ver README.md).
+//
+// As tabelas de marketing (Google Ads/Facebook Ads, replicadas pelo Kondado)
+// vivem no MESMO Postgres mas não são modeladas aqui — não têm chave única
+// simples (mesma decisão já tomada no módulo CRM pras tabelas fora do seu
+// domínio) e são lidas via $queryRaw em ad-spend.repository.ts.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model FinanceiroVenda {
+  id                   Int       @id
+  clienteNome          String?   @map("cliente_nome")
+  loja                 String?
+  vendedorNome         String?   @map("vendedor_nome")
+  consultorResponsavel String?   @map("consultor_responsavel")
+  valorVenda           Decimal?  @map("valor_venda") @db.Decimal
+  desconto             Decimal?  @db.Decimal
+  motivoPerda          String?   @map("motivo_perda")
+  statusOs             String?   @map("status_os")
+  numeroOs             String?   @map("numero_os")
+  status               String?
+  compareceu           String?
+  dataAgendamento      DateTime? @map("data_agendamento") @db.Date
+  dataAberturaOs       DateTime? @map("data_abertura_os") @db.Date
+  dataEntradaOs        DateTime? @map("data_entrada_os") @db.Date
+  dataFinalizacaoOs    DateTime? @map("data_finalizacao_os") @db.Date
+  dataEntregaOs        DateTime? @map("data_entrega_os") @db.Date
+  kommoLeadId          String?   @map("kommo_lead_id")
+  criadoEm             DateTime? @map("criado_em")
+  atualizadoEm         DateTime? @map("atualizado_em")
+  syncedAt             DateTime? @default(now()) @map("synced_at") @db.Timestamptz(6)
+
+  @@index([loja], map: "idx_financeiro_vendas_loja")
+  @@index([dataAgendamento], map: "idx_financeiro_vendas_data")
+  @@map("financeiro_vendas")
+}
