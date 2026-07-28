@@ -69,11 +69,17 @@ app.use('/api/live-dashboard', require('./src/routes/live-dashboard'));
 // ── Kommo (leads, contatos, funis) replicado no Postgres ─────
 app.use('/api/kommo', require('./src/routes/kommoDb.routes'));
 
+// ── Financeiro (vendas reais replicadas do sistema de agendamento) ──
+app.use('/api/financeiro', require('./src/routes/financeiroDb.routes'));
+
 // ── Sync diário de desempenho de anúncios → github-sistema ──
 require('./src/jobs/syncGithubSistema').start();
 
 // ── Sync diário de leads/contatos/funis do Kommo ─────────────
 require('./src/jobs/syncKommoData').start();
+
+// ── Sync diário de vendas reais do sistema de agendamento ────
+require('./src/jobs/syncFinanceiro').start();
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/health', (req, res) => {
