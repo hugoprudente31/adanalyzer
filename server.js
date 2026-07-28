@@ -18,6 +18,8 @@ const path    = require('path');
 const helmet  = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { basicAuth } = require('./src/middleware/security');
+const db = require('./src/services/db');
+const { generateLocalAnalysis } = require('./src/services/localAnalysis');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +39,13 @@ app.use(cors({ origin(origin, callback) {
   callback(new Error('Origem não permitida'));
 }, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
-app.use(rateLimit({ windowMs: 60_000, limit: 600, standardHeaders: 'draft-8', legacyHeaders: false }));
+app.use(rateLimit({
+  windowMs: 60_000,
+  limit: 600,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health' || req.path === '/api/status',
+}));
 app.use('/api/claude', rateLimit({ windowMs: 60_000, limit: 10 }));
 app.use('/api/openai', rateLimit({ windowMs: 60_000, limit: 5 }));
 app.use(basicAuth);
@@ -82,12 +90,27 @@ require('./src/jobs/syncKommoData').start();
 require('./src/jobs/syncFinanceiro').start();
 
 // ── Health check ──────────────────────────────────────────────
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   const ACCOUNTS = require('./src/config/accounts.config');
-  res.json({
-    status: 'ok',
+  let databaseReachable = false;
+  try {
+    if (process.env.DATABASE_URL) {
+      await db.query('SELECT 1');
+      databaseReachable = true;
+    }
+  } catch (error) {
+    console.error('[Health] PostgreSQL:', error.message);
+  }
+  res.status(databaseReachable ? 200 : 503).json({
+    status: databaseReachable ? 'ok' : 'degraded',
     service: 'AdAnalyzer',
     timestamp: new Date().toISOString(),
+    dependencies: {
+      database: {
+        configured: !!process.env.DATABASE_URL,
+        reachable: databaseReachable,
+      },
+    },
     connectedAccounts: {
       googleAds: ACCOUNTS.googleAds.length,
       ga4: ACCOUNTS.googleAnalytics.length,
@@ -204,9 +227,14 @@ app.get('/api/meta', async (req, res) => {
 // ── Proxy Anthropic Claude: /api/claude ──────────────────────
 app.post('/api/claude', async (req, res) => {
   try {
-    const { apiKey: clientKey, ...body } = req.body;
-    const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(400).json({ erro: 'apiKey obrigatório' });
+    const { apiKey: _ignoredClientKey, ...body } = req.body;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return res.json({
+        mode: 'local',
+        content: [{ type: 'text', text: generateLocalAnalysis(body) }],
+      });
+    }
 
     console.log('[CLAUDE] → Enviando análise...');
 
@@ -241,7 +269,15 @@ app.get('/api/builderall', async (req, res) => {
     const { account, path, api_key, cKey, ...rest } = req.query;
     if (!account || !path) return res.status(400).json({ erro: 'account e path obrigatórios' });
 
-    const base   = account.startsWith('http') ? account : `https://${account}`;
+    const allowedBuilderallHosts = new Set(['app.mailingboss.com']);
+    const normalizedAccount = String(account).replace(/^https?:\/\//, '').replace(/\/$/, '');
+    if (!allowedBuilderallHosts.has(normalizedAccount)) {
+      return res.status(400).json({ erro: 'account não permitido' });
+    }
+    if (!String(path).startsWith('/api/')) {
+      return res.status(400).json({ erro: 'path não permitido' });
+    }
+    const base = `https://${normalizedAccount}`;
     const qp     = new URLSearchParams(rest);
     if (cKey)    qp.set('cKey', cKey);
     if (api_key) qp.set('api_key', api_key);
@@ -278,8 +314,9 @@ app.get('/api/builderall', async (req, res) => {
 // ── Proxy OpenAI (DALL-E): /api/openai/images ────────────────
 app.post('/api/openai/images', async (req, res) => {
   try {
-    const { apiKey, ...body } = req.body;
-    if (!apiKey) return res.status(400).json({ error: { message: 'apiKey obrigatório' } });
+    const { apiKey: _ignoredClientKey, ...body } = req.body;
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: { message: 'OpenAI não configurada no servidor' } });
 
     console.log('[OPENAI] → Gerando imagem DALL-E...');
 
@@ -314,7 +351,16 @@ app.get('/studio/*', (req, res) => {
 });
 
 // ── Status ────────────────────────────────────────────────────
-app.get('/api/status', (req, res) => {
+app.get('/api/status', async (req, res) => {
+  let databaseReachable = false;
+  try {
+    if (process.env.DATABASE_URL) {
+      await db.query('SELECT 1');
+      databaseReachable = true;
+    }
+  } catch (error) {
+    console.error('[Status] PostgreSQL:', error.message);
+  }
   const googleDirectMissing = [
     'GOOGLE_ADS_DEVELOPER_TOKEN',
     'GOOGLE_CLIENT_ID',
@@ -324,12 +370,17 @@ app.get('/api/status', (req, res) => {
   if (!process.env.GOOGLE_ADS_MANAGER_ID && !process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) {
     googleDirectMissing.push('GOOGLE_ADS_MANAGER_ID (ou GOOGLE_ADS_LOGIN_CUSTOMER_ID)');
   }
-  res.json({
-    ok:      true,
+  res.status(databaseReachable ? 200 : 503).json({
+    ok:      databaseReachable,
+    status:  databaseReachable ? 'ready' : 'degraded',
     versao:  '1.0.0',
     gas_url: GAS_URL.replace(/AKfycbx[^/]+/, 'AKfycbx***'),
     admin:   ADMIN_EMAIL,
     integrations: {
+      database: {
+        configured: !!process.env.DATABASE_URL,
+        reachable: databaseReachable,
+      },
       metaOfficial: !!process.env.META_ACCESS_TOKEN && !!process.env.META_AD_ACCOUNT_ID,
       googleAdsOfficial: googleDirectMissing.length === 0,
       googleAdsMissing: googleDirectMissing,

@@ -2404,7 +2404,7 @@ function renderDashboard() {
       [
         { label:'Conectar Meta Ads', sub:'Access Token + Ad Account ID', ok: metaState.conectado, link:'integrations' },
         { label:'Conectar GA4', sub:'Client ID + Property ID (cidades reais)', ok: ga4State.conectado, link:'integrations' },
-        { label:'Configurar Claude IA', sub:'API Key da Anthropic para análises', ok: !!localStorage.getItem('claude_api_key'), link:'integrations' },
+        { label:'Análise inteligente', sub:'Executada com segurança pelo servidor', ok: true, link:'integrations' },
         { label:'Definir objetivos de campanha', sub:'Compra / Lead / Agendamento por campanha', ok: false, link:'campaigns' },
         { label:'Configurar UTM nos links', sub:'Rastreamento de origem dos cliques', ok: false, link:'utm' },
       ].map(function(s) {
@@ -3185,18 +3185,6 @@ ${contexto ? `Contexto adicional fornecido pelo gestor:\n${contexto}` : ''}
 
 Por favor, analise e forneça recomendações práticas e priorizadas.`;
 
-  // Verifica se tem API key configurada
-  const claudeKey = localStorage.getItem('claude_api_key') || '';
-
-  if (!claudeKey) {
-    toast('Configure a API key do Claude em Integrações primeiro', 'yellow');
-    btn.disabled = false;
-    btn.innerHTML = '🤖 Analisar com Claude IA';
-    out.innerHTML = '<span style="color:var(--yellow)">⚠️ API key não configurada. Vá em <strong>Integrações → Claude IA</strong> e salve sua chave.</span>';
-    statusBadge.innerHTML = '<span class="badge badge-yellow">● Sem API key</span>';
-    return;
-  }
-
   try {
     statusBadge.innerHTML = '<span class="badge badge-yellow">● Gerando análise...</span>';
     out.innerHTML = '<span class="cursor"></span>';
@@ -3204,7 +3192,7 @@ Por favor, analise e forneça recomendações práticas e priorizadas.`;
     // Sempre usa o proxy do servidor (funciona em localhost E Railway)
     const claudeEndpoint = '/api/claude';
     const claudeHeaders  = { 'Content-Type': 'application/json' };
-    const claudeBody     = { apiKey: claudeKey, model: 'claude-sonnet-4-6', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
+    const claudeBody     = { max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] };
 
     const resp = await fetch(claudeEndpoint, {
       method: 'POST',
@@ -5593,13 +5581,6 @@ async function rodarAnaliseRapida(tipo) {
   var cfg = QUICK_PROMPTS[tipo];
   if (!cfg) return;
 
-  var key = localStorage.getItem('claude_api_key');
-  if (!key) {
-    toast('Configure a API key do Claude em Integracoes', 'yellow');
-    navTo('integrations', null);
-    return;
-  }
-
   var camps = campanhas();
   navTo('analyze', document.querySelector('.nav-item[onclick*="analyze"]'));
 
@@ -5613,8 +5594,6 @@ async function rodarAnaliseRapida(tipo) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        apiKey: key,
-        model: 'claude-sonnet-4-6',
         max_tokens: 1200,
         system: 'Voce e um especialista em trafego pago com 10+ anos de experiencia em Meta Ads e Google Ads. Responda em portugues brasileiro de forma direta e pratica, com dados especificos e acoes concretas.',
         messages: [{ role: 'user', content: cfg.buildPrompt(camps) }],
@@ -5643,55 +5622,39 @@ async function rodarAnaliseRapida(tipo) {
 // ══════════════════════════════════════════════════════
 
 function conectarClaude() {
-  const key = document.getElementById('int-claude-key').value.trim();
-  if (!key) { toast('Cole sua API key do Claude', 'red'); return; }
-  if (!key.startsWith('sk-ant-')) {
-    toast('API key inválida — deve começar com sk-ant-', 'yellow');
-    return;
-  }
-  localStorage.setItem('claude_api_key', key);
-  document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-  document.getElementById('claude-status').textContent = 'API key salva ✅';
-  toast('Claude IA configurado! Vá em "Analisar com IA" para usar.', 'green');
+  localStorage.removeItem('claude_api_key');
+  document.getElementById('claude-badge').innerHTML = '<span class="badge badge-green">● Servidor</span>';
+  document.getElementById('claude-status').textContent = 'Credenciais protegidas no servidor';
+  toast('A análise é configurada e protegida pelo servidor.', 'green');
 }
 
 async function testarClaude() {
-  const key = document.getElementById('int-claude-key').value.trim()
-              || localStorage.getItem('claude_api_key') || '';
-  if (!key) { toast('Cole sua API key primeiro', 'yellow'); return; }
-
-  toast('Testando conexão com o Claude...', 'blue');
+  toast('Testando análise do servidor...', 'blue');
   try {
     const resp = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        apiKey: key,
-        model: 'claude-sonnet-4-6', max_tokens: 20,
+        max_tokens: 20,
         messages: [{ role: 'user', content: 'Responda apenas: OK' }]
       })
     });
     const d = await resp.json();
     if (d.error) throw new Error(d.error.message);
-    // Salva a key no localStorage ao confirmar que é válida
-    localStorage.setItem('claude_api_key', key);
-    toast('✅ Claude respondeu: API key válida e funcionando!', 'green');
-    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-    document.getElementById('claude-status').textContent = 'API key válida ✅';
+    localStorage.removeItem('claude_api_key');
+    toast('✅ Análise do servidor funcionando!', 'green');
+    document.getElementById('claude-badge').innerHTML = '<span class="badge badge-green">● Servidor</span>';
+    document.getElementById('claude-status').textContent = 'Configuração segura ✅';
   } catch(e) {
     toast('❌ Erro: ' + e.message, 'red');
   }
 }
 
-// Restaura API key do Claude salva
+// Remove credenciais antigas que possam ter ficado salvas no navegador.
 (function restaurarClaude() {
-  const k = localStorage.getItem('claude_api_key');
-  if (k) {
-    const inp = document.getElementById('int-claude-key');
-    if (inp) inp.value = k;
-    document.getElementById('claude-badge').innerHTML  = '<span class="badge badge-green">● Conectado</span>';
-    document.getElementById('claude-status').textContent = 'API key configurada ✅';
-  }
+  localStorage.removeItem('claude_api_key');
+  document.getElementById('claude-badge').innerHTML = '<span class="badge badge-green">● Servidor</span>';
+  document.getElementById('claude-status').textContent = 'Credenciais protegidas no servidor';
 })();
 
 // ══════════════════════════════════════════════════════
@@ -5813,12 +5776,6 @@ async function enviarCopilot() {
   var msg = (input.value || '').trim();
   if (!msg) return;
 
-  var claudeKey = localStorage.getItem('claude_api_key') || '';
-  if (!claudeKey) {
-    toast('Configure a API key do Claude em Integrações → Claude IA', 'yellow');
-    return;
-  }
-
   input.value = '';
   input.style.height = '44px';
   copilotHistory.push({ role: 'user', text: msg });
@@ -5844,8 +5801,6 @@ async function enviarCopilot() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        apiKey: claudeKey,
-        model: 'claude-sonnet-4-6',
         max_tokens: 1800,
         system: copilotContexto(),
         messages: messages
@@ -5863,7 +5818,7 @@ async function enviarCopilot() {
 
   } catch(e) {
     copilotHistory = copilotHistory.filter(function(m){ return m.text !== '⟳ Analisando...'; });
-    copilotHistory.push({ role: 'assistant', text: '❌ Erro: ' + e.message + '\n\nVerifique a API key em **Integrações → Claude IA**.' });
+    copilotHistory.push({ role: 'assistant', text: '❌ Erro: ' + e.message + '\n\nVerifique o status da análise no servidor.' });
   }
 
   copilotLoading = false;

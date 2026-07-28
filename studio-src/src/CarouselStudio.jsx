@@ -114,8 +114,6 @@ export default function CarouselStudio() {
   };
 
   const generateSlideImage = async (idx) => {
-    const openaiKey = localStorage.getItem("nexus_openai_key");
-    if (!openaiKey) { alert("Configure a OpenAI key em Integrações para gerar imagens."); return; }
     setGeneratingImg(idx);
     try {
       const slide = slides[idx];
@@ -123,7 +121,6 @@ export default function CarouselStudio() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          apiKey: openaiKey,
           model: "dall-e-3",
           prompt: `Social media carousel slide background for: "${slide.title}". ${slide.body}. Bold, modern, high-contrast, cinematic. NO TEXT in image. Instagram-ready aesthetic.`,
           n: 1, size: "1024x1024", quality: "standard", response_format: "b64_json",
@@ -147,13 +144,10 @@ export default function CarouselStudio() {
     if (!topic) return;
     setLoading(true);
     try {
-      const claudeKey = process.env.REACT_APP_ANTHROPIC_KEY || localStorage.getItem("claude_api_key") || "";
       const res = await fetch("/api/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          apiKey: claudeKey,
-          model: "claude-sonnet-4-6",
           max_tokens: 1000,
           messages: [{ role: "user", content: `Crie um carrossel viral com 7 slides sobre: "${topic}". Nicho: ${niche||"geral"}. Tom: ${tone}. Slide 1 = gancho, slides 2-6 = conteúdo, slide 7 = CTA. Responda SOMENTE em JSON válido sem markdown: [{"title":"TÍTULO","body":"Texto."},...]` }]
         })

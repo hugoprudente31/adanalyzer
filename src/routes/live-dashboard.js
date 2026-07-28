@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
 const schedulingSystem = require('../services/schedulingSystem');
+const marketingDb = require('../services/marketingDb.service');
 
 const STORES = [
   { id: '9212873095',  name: 'Gonzaga',       color: '#f59e0b' },
@@ -232,28 +233,25 @@ router.get('/', async (req, res) => {
 
     // ── Google Ads ─────────────────────────────────────────────────
     let googleStores = STORES.map(s => ({ ...s, spend: 0, clicks: 0, impressions: 0, conversions: 0 }));
-    let googleError  = null;
-    let googleToken  = null;
-
+    let googleError = null;
     try {
-      googleToken = await refreshGoogleToken();
+      const googleRows = await marketingDb.getGoogleAdsDashboard({ startDate, endDate });
+      if (!Array.isArray(googleRows)) {
+        throw new Error(googleRows?.error || 'Google Ads não disponível no Kondado');
+      }
+      googleStores = STORES.map((store) => {
+        const row = googleRows.find((item) => String(item.account.id) === String(store.id));
+        return {
+          ...store,
+          spend: row?.metrics.cost || 0,
+          clicks: row?.metrics.clicks || 0,
+          impressions: row?.metrics.impressions || 0,
+          conversions: row?.metrics.conversions || 0,
+        };
+      });
     } catch (e) {
       googleError = e.message;
-      console.error('[LiveDashboard] Google OAuth:', e.message);
-    }
-
-    if (googleToken) {
-      const results = await Promise.allSettled(
-        STORES.map(s => fetchGoogleAdsStore(googleToken, s.id, startDate, endDate))
-      );
-      googleStores = STORES.map((s, i) => {
-        const r = results[i];
-        if (r.status === 'rejected') {
-          console.error(`[LiveDashboard] Google ${s.name}:`, r.reason?.message);
-          return { ...s, spend: 0, clicks: 0, impressions: 0, conversions: 0 };
-        }
-        return { name: s.name, color: s.color, ...r.value };
-      });
+      console.error('[LiveDashboard] Google Ads via Kondado:', e.message);
     }
 
     const google = {
@@ -283,7 +281,7 @@ router.get('/', async (req, res) => {
       projections:          calcProjections(meta, google, startDate, endDate),
       period:               { startDate, endDate },
       updatedAt:            new Date().toLocaleTimeString('pt-BR'),
-      googleTokenAvailable: !!googleToken,
+      googleDataSource:     'kondado_postgresql',
       ...(metaError   ? { metaError }   : {}),
       ...(googleError ? { googleError } : {}),
       ...(schedulingError ? { schedulingError } : {}),

@@ -367,7 +367,7 @@ async function getFullReport(options = {}) {
   const [googleAds, facebookAds, ga4, searchConsole, accounts] = await Promise.allSettled([
     getGoogleAdsDashboard(options),
     getFacebookAdsDashboard(options),
-    getAllGA4Metrics(),
+    getAllGA4Metrics(options),
     getSearchConsoleMetrics(),
     discoverAllAccounts(),
   ]);

@@ -51,16 +51,11 @@ export default function ContentPlanner() {
   const [sortBy, setSortBy]       = useState("viral");
   const textareaRef               = useRef();
 
-  const claudeKey = process.env.REACT_APP_ANTHROPIC_KEY;
-
   const callClaude = async (prompt, systemPrompt) => {
-    const apiKey = claudeKey || localStorage.getItem("claude_api_key") || "";
     const res = await fetch("/api/claude", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        apiKey,
-        model: "claude-sonnet-4-6",
         max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: "user", content: prompt }],
