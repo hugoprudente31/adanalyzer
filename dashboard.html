@@ -219,6 +219,7 @@ function AdAnalyzerDashboard() {
   const [tab,          setTab]          = useState("overview");
   const timerRef  = useRef(null);
   const countRef  = useRef(null);
+  const lastDataRef = useRef(null);
   const MAX_RETRY = 3;
 
   const load = useCallback(async (isManual = false) => {
@@ -231,6 +232,7 @@ function AdAnalyzerDashboard() {
         const raw        = await fetchDashboardData(startDate, endDate);
         const normalized = normalizeData(raw);
         if (!normalized) throw new Error("Resposta da API inválida ou vazia.");
+        lastDataRef.current = normalized;
         setPrevData(normalized);
         setData(normalized);
         setLastUpdated(normalized.updatedAt);
@@ -244,12 +246,12 @@ function AdAnalyzerDashboard() {
           await new Promise(r => setTimeout(r, 1000 * attempt));
         } else {
           setError(`Falha ao carregar dados: ${err.message}`);
-          if (prevData) setData(prevData);
+          if (lastDataRef.current) setData(lastDataRef.current);
           setLoading(false);
         }
       }
     }
-  }, [startDate, endDate, prevData]);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     load(true);

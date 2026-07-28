@@ -107,13 +107,10 @@ export default function NexusCRM() {
     setAiMessages(prev => [...prev, { role: "user", text: msg }]);
     setAiLoading(true);
     try {
-      const claudeKey = process.env.REACT_APP_ANTHROPIC_KEY || localStorage.getItem("claude_api_key") || "";
       const res = await fetch("/api/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          apiKey: claudeKey,
-          model: "claude-sonnet-4-5",
           max_tokens: 1000,
           system: `Você é o Nexus AI, copiloto de CRM para uma rede de óticas. Responda de forma concisa e prática, em português. Use **negrito** para destacar. ${crmContext}`,
           messages: aiMessages.filter(m => m.role !== "system").concat({ role: "user", text: msg }).map(m => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.text }))
