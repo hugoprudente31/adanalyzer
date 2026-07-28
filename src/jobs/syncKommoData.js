@@ -11,6 +11,7 @@
 const cron = require("node-cron");
 const db = require("../services/db");
 const kommo = require("../services/kommoClient");
+const { bulkUpsert } = require("../utils/pgBulkUpsert");
 
 // field_id → coluna, descoberto via /leads/custom_fields na conta real
 const TRACKING_FIELD_MAP = {
@@ -28,34 +29,6 @@ const TRACKING_FIELD_MAP = {
 
 function toDate(unixSeconds) {
   return unixSeconds ? new Date(unixSeconds * 1000) : null;
-}
-
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
-
-// Monta um INSERT multi-linha: colocar N linhas de `cols.length` valores cada
-// numa única query, em vez de N round-trips separados ao Postgres.
-async function bulkUpsert(table, cols, conflictCol, updateCols, rows, batchSize = 500) {
-  let total = 0;
-  for (const batch of chunk(rows, batchSize)) {
-    const values = [];
-    const placeholders = batch.map((row, i) => {
-      const base = i * cols.length;
-      values.push(...row);
-      return `(${cols.map((_, j) => `$${base + j + 1}`).join(",")})`;
-    });
-    const setClause = updateCols.map((c) => `${c} = EXCLUDED.${c}`).join(", ");
-    await db.query(
-      `INSERT INTO ${table} (${cols.join(",")}) VALUES ${placeholders.join(",")}
-       ON CONFLICT (${conflictCol}) DO UPDATE SET ${setClause}, synced_at = now()`,
-      values
-    );
-    total += batch.length;
-  }
-  return total;
 }
 
 function extractTracking(customFieldsValues) {
