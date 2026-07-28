@@ -56,9 +56,7 @@ router.get("/google/callback", async (req, res) => {
     storedTokens = tokens;
 
     console.log("[Google OAuth] ✅ Tokens obtidos");
-    // TEMPORÁRIO: loga o refresh token pra capturar e configurar em GOOGLE_REFRESH_TOKEN no Railway.
-    // Reverter este log assim que o token novo for salvo (ver sessão de 2026-07-28).
-    console.log("[Google OAuth] Refresh token completo:", tokens.refresh_token || "⚠️ não recebido");
+    console.log("[Google OAuth] Refresh token:", tokens.refresh_token ? "✅ recebido" : "⚠️ não recebido");
 
     res.redirect("/?google_auth=success");
   } catch (err) {
